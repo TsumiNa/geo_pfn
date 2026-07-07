@@ -1,9 +1,10 @@
 """Pretrain the mini-PFN on synthetic tasks: ``python -m geo_pfn.minipfn.train``.
 
 Each step samples a fresh batch of synthetic tasks from the prior, applies the
-test-time feature-dropout augmentation, and minimizes cross-entropy on the
-test rows — the standard PFN objective. Set ``--drop-task-prob 0`` to train a
-vanilla (non missingness-augmented) ablation model.
+configured missingness augmentation (``--augmentation cells|columns|none``),
+and minimizes cross-entropy on the test rows — the standard PFN objective.
+Use ``--augmentation none`` to train a vanilla (no augmentation) ablation
+model; ``--drop-task-prob`` applies only to the ``columns`` mode.
 """
 
 from __future__ import annotations

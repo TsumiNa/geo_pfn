@@ -16,8 +16,9 @@ missingness pattern itself carries signal. Strategies:
   way to keep the missingness signal).
 - ``logreg knn-impute``    — KNNImputer(5) + logistic regression.
 
-``columns``: whole feature columns are hidden from the TEST rows only (the
-train context stays complete); strategies additionally include
+``columns``: whole feature columns are hidden from the TEST rows only — the
+corruption leaves the train context untouched, though rows may still carry
+the prior's own mild MCAR cells. Strategies additionally include
 ``drop-context`` (remove the columns from both sides — free for in-context
 learners) and ``logreg retrain``.
 
@@ -84,6 +85,9 @@ def _logreg_accuracy(
     y_test: np.ndarray,
     imputer: SimpleImputer | KNNImputer | None = None,
 ) -> float:
+    classes = np.unique(y_train)
+    if len(classes) < 2:  # degenerate train slice: predict the only seen class
+        return float((y_test == classes[0]).mean())
     if imputer is None:
         imputer = SimpleImputer(strategy="mean", keep_empty_features=True)
     pipeline = make_pipeline(

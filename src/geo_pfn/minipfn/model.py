@@ -83,6 +83,7 @@ class MiniPFN(nn.Module):
         self.head = nn.Sequential(
             nn.Linear(d, d), nn.GELU(), nn.Linear(d, config.max_classes)
         )
+        self._eval_codes: dict[tuple[int, int, str], torch.Tensor] = {}
 
     def forward(
         self, x: torch.Tensor, y: torch.Tensor, train_size: int
@@ -145,8 +146,13 @@ class MiniPFN(nn.Module):
         shape = (batch_size, n_feat, self.config.feature_emb_dim)
         if self.training:
             return torch.randn(shape, device=device)
-        generator = torch.Generator().manual_seed(0)
-        return torch.randn(shape, generator=generator).to(device)
+        key = (batch_size, n_feat, str(device))
+        codes = self._eval_codes.get(key)
+        if codes is None:
+            generator = torch.Generator().manual_seed(0)
+            codes = torch.randn(shape, generator=generator).to(device)
+            self._eval_codes[key] = codes
+        return codes
 
 
 def mask_class_logits(logits: torch.Tensor, n_classes: torch.Tensor) -> torch.Tensor:

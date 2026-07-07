@@ -1,14 +1,26 @@
 """Tests for the evaluation harness (strategies, pairing, accuracy ranges)."""
 
+import numpy as np
 import torch
 
 from geo_pfn.minipfn.config import ModelConfig, PriorConfig
 from geo_pfn.minipfn.eval import (
+    _logreg_accuracy,
     evaluate_real,
     evaluate_synthetic,
     evaluate_synthetic_cells,
 )
 from geo_pfn.minipfn.model import MiniPFN
+
+
+def test_logreg_accuracy_single_class_train_slice() -> None:
+    rng = np.random.default_rng(0)
+    x_train = rng.normal(size=(10, 3))
+    x_test = rng.normal(size=(6, 3))
+    y_train = np.ones(10, dtype=np.int64)  # degenerate: only one class seen
+    y_test = np.array([1, 1, 0, 1, 0, 1])
+    acc = _logreg_accuracy(x_train, y_train, x_test, y_test)
+    assert acc == 4 / 6
 
 
 def _tiny_model() -> MiniPFN:
