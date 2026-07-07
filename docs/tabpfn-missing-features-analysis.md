@@ -197,6 +197,7 @@ v1 的旧仓库（automl/TabPFN）里有可参考的 SCM 先验实现。
 - `model.py` — `MiniPFN`（per-cell token、双轴注意力、NaN 原生支持）
 - `train.py` — 预训练脚本；`--drop-task-prob 0` 训练无增强消融模型
 - `eval.py` — 缺失策略对比评估（合成任务 + sklearn 真实小数据集迁移）
+- `eval_tabpfn.py` — 原版 TabPFN v2 配对基线（重放同一随机序列）
 - 各 `*_test.py` — colocated pytest（含「test 行相互独立」「test 标签不泄漏」等性质测试）
 
 运行：
@@ -208,6 +209,8 @@ uv run python -m geo_pfn.minipfn.train --steps 12000 --out checkpoints/minipfn.p
 uv run python -m geo_pfn.minipfn.train --steps 12000 --drop-task-prob 0 --out checkpoints/minipfn_vanilla.pt
 # 评估（合成 + wine/breast_cancer 迁移；0%/25%/50% 测试列缺失）
 uv run python -m geo_pfn.minipfn.eval --checkpoint checkpoints/minipfn.pt
+# 真实基线：原版 TabPFN v2（配对重放，MPS 约 2 小时）
+uv run python -m geo_pfn.minipfn.eval_tabpfn
 # 测试
 uv run pytest src/geo_pfn/minipfn/
 ```
@@ -272,7 +275,10 @@ wine 上 aug 全面更好 0.962/0.882/0.803 vs 0.923/0.846/0.782，breast_cancer
 设置：`minipfn_cells`（训练增强：70% 任务带每行不同的缺失率，最高 60%，其中 30%
 为标签相关 MNAR）对比 `minipfn_vanilla`（只见过先验内建的 ≤10% MCAR）。
 评估：所有行（train 上下文 + test）都按每行不同的比例缺失；400 个合成任务，
-相同种子 → 两模型结果完全配对。
+相同种子 → 结果完全配对。**真实基线**：原版 TabPFN v2 checkpoint（7M 参数、
+约 1.3 亿合成数据集预训练、n_estimators=8）经 `eval_tabpfn.py` 重放同一随机序列
+参战（logreg 行逐位一致证明掩码级配对）。注意合成任务对 mini 模型是分布内、
+对 v2 是分布外（主场优势），跨模型水平以真实数据和 native−impute 差值为准。
 
 **MCAR 扫描**（native = 直接喂 NaN；合成任务）：
 
@@ -280,6 +286,8 @@ wine 上 aug 全面更好 0.962/0.882/0.803 vs 0.923/0.846/0.782，breast_cancer
 |---|---|---|---|---|
 | minipfn_cells · native | 0.669 | 0.638 | 0.605 | 0.568 |
 | minipfn_vanilla · native | 0.666 | 0.635 | 0.601 | 0.564 |
+| tabpfn-v2 · native（真实基线，分布外） | 0.652 | 0.609 | 0.572 | 0.539 |
+| tabpfn-v2 · mean-impute | 0.653 | 0.608 | 0.570 | 0.538 |
 | （同任务 logreg mean-impute） | 0.629 | 0.594 | 0.563 | 0.536 |
 | （同任务 logreg knn-impute） | 0.633 | 0.603 | 0.570 | 0.539 |
 
@@ -292,6 +300,12 @@ wine 上 aug 全面更好 0.962/0.882/0.803 vs 0.923/0.846/0.782，breast_cancer
 | logreg mean-impute | 0.578 | 0.578 |
 | logreg mean+indicator | 0.653 | 0.653 |
 | logreg knn-impute | 0.590 | 0.590 |
+| tabpfn-v2 native（真实基线） | 0.635 | — |
+| tabpfn-v2 mean-impute | 0.634 | — |
+
+（tabpfn-v2 行与 mini 模型无关，同一批配对任务上单独评估；真实数据上
+v2 native 为 breast_cancer 0.955/0.930/0.902/0.875、wine 0.974/0.967/0.905/0.823，
+两个数据集上都与自身 mean-impute 打平。）
 
 ### 结论（问卷场景）
 
@@ -307,6 +321,10 @@ wine 上 aug 全面更好 0.962/0.882/0.803 vs 0.923/0.846/0.782，breast_cancer
    在 0% 缺失下的 0.669**——"哪些题没答"携带的标签信息超过了被抹掉的数值信息，
    而模型学会了在 in-context 中读取它。任何"先填补再建模"的流程都会销毁该信号
    （mean-impute 崩到 0.617/0.578-0.590）。
-4. **对原版 TabPFN 的推论**：v2 先验只模拟 MCAR，因此其 MNAR 利用能力可能与
-   我们的 vanilla 类似（有 flag、但未学会充分利用）。若问卷数据的缺失是信息性的，
-   **在自研先验或微调数据中加入 MNAR 模拟是超越原版 TabPFN 的明确机会点**。
+4. **对原版 TabPFN 的推论——已实测验证**：v2 的 native（0.635）与自身
+   mean-impute（0.634）在 MNAR 下完全打平（MCAR 扫描下同样打平）——原版模型
+   确实不利用缺失模式，且在同一批任务上被 1.6M 的 MNAR 预训练模型超出 7.1pt。
+   **能力差距来自训练分布而非规模；在自研先验或微调数据中加入 MNAR 模拟是
+   超越原版 TabPFN 的明确机会点**。真实数据上 v2 展现大先验的迁移优势
+   （wine 60% 缺失 0.823 vs mini 0.746），两条结论互补：**先验的领域覆盖决定
+   基础水平，先验的缺失机制决定缺失利用能力**。

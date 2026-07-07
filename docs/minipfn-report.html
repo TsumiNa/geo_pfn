@@ -5,7 +5,7 @@
 :root{
   --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
   --grid:#e1e0d9; --baseline:#c3c2b7; --border:rgba(11,11,11,.10);
-  --c1:#2a78d6; --c2:#1baf7a; --c3:#eda100;
+  --c1:#2a78d6; --c2:#1baf7a; --c3:#eda100; --c4:#4a3aa7;
   --g1:#6f6d67; --g2:#898781; --g3:#aeaca4;
   --cell-obs:#dbe9fa; --cell-obs-ink:#2a78d6;
   --cell-miss-bg:#f3f1ec; --cell-miss-line:#c9b18a;
@@ -15,7 +15,7 @@
   :root{
     --page:#0d0d0d; --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
     --grid:#2c2c2a; --baseline:#383835; --border:rgba(255,255,255,.10);
-    --c1:#3987e5; --c2:#199e70; --c3:#c98500;
+    --c1:#3987e5; --c2:#199e70; --c3:#c98500; --c4:#9085e9;
     --g1:#b5b3aa; --g2:#898781; --g3:#75736c;
     --cell-obs:#20406b; --cell-obs-ink:#3987e5;
     --cell-miss-bg:#232320; --cell-miss-line:#6b5b3f;
@@ -25,7 +25,7 @@
 :root[data-theme="dark"]{
   --page:#0d0d0d; --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
   --grid:#2c2c2a; --baseline:#383835; --border:rgba(255,255,255,.10);
-  --c1:#3987e5; --c2:#199e70; --c3:#c98500;
+  --c1:#3987e5; --c2:#199e70; --c3:#c98500; --c4:#9085e9;
   --g1:#b5b3aa; --g2:#898781; --g3:#75736c;
   --cell-obs:#20406b; --cell-obs-ink:#3987e5;
   --cell-miss-bg:#232320; --cell-miss-line:#6b5b3f;
@@ -34,7 +34,7 @@
 :root[data-theme="light"]{
   --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
   --grid:#e1e0d9; --baseline:#c3c2b7; --border:rgba(11,11,11,.10);
-  --c1:#2a78d6; --c2:#1baf7a; --c3:#eda100;
+  --c1:#2a78d6; --c2:#1baf7a; --c3:#eda100; --c4:#4a3aa7;
   --g1:#6f6d67; --g2:#898781; --g3:#aeaca4;
   --cell-obs:#dbe9fa; --cell-obs-ink:#2a78d6;
   --cell-miss-bg:#f3f1ec; --cell-miss-line:#c9b18a;
@@ -145,7 +145,7 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--grid);
 <header>
   <div class="eyebrow">geo_pfn · mini-PFN demo · 2026-07-07</div>
   <h1>缺失特征下的表格 in-context 学习：实验报告</h1>
-  <p class="sub">三个结构完全相同的 1.6M 参数 mini-TabPFN，只改变预训练时的缺失增强分布；在两种缺失场景（整列缺失 / 问卷式逐行缺失）下与经典「填补 + 逻辑回归」流程对照，共 400 个配对合成任务 + 2 个真实数据集。</p>
+  <p class="sub">三个结构完全相同的 1.6M 参数 mini-TabPFN，只改变预训练时的缺失增强分布；在两种缺失场景（整列缺失 / 问卷式逐行缺失）下与经典「填补 + 逻辑回归」流程对照，共 400 个配对合成任务 + 2 个真实数据集；并用原版 <strong>TabPFN v2</strong> 权重在同一批任务、同样的缺失位置上跑了配对真实基线。</p>
   <div class="kpis">
     <div class="kpi">
       <div class="l">MNAR 场景：native NaN vs 最强经典基线（mean+indicator）</div>
@@ -162,6 +162,11 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--grid);
       <div class="v">0.706 <span class="up">›</span> 0.669</div>
       <div class="d">30% 信息性缺失下的准确率反超零缺失基准</div>
     </div>
+    <div class="kpi">
+      <div class="l">真实基线：TabPFN v2 在 MNAR 下 native vs mean-impute</div>
+      <div class="v">+0.1<span style="font-size:18px"> pt</span></div>
+      <div class="d">0.635 vs 0.634 · 原版 v2 不利用缺失模式（MCAR-only 先验）</div>
+    </div>
   </div>
 </header>
 
@@ -176,6 +181,7 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--grid);
     <tr><td><b>cells</b></td><td>70% 任务：任务级缺失率 u∼U[0,0.6]，每行独立缺失率 ∼U[0,2u]，作用于<em>全部行</em>；其中 30% 任务为标签相关缺失（MNAR）</td><td class="mono" style="font-size:12.5px">--augmentation cells</td></tr>
   </table></div>
   <p>评估时所有策略在<strong>完全相同的任务与相同的缺失位置</strong>上对比（配对设计，种子固定），合成结果为 400 任务均值 ± 标准误。</p>
+  <p><strong>真实基线</strong>：原版 TabPFN v2 checkpoint（7M 参数、约 1.3 亿合成数据集预训练、<code>n_estimators=8</code> 集成）通过 <code>eval_tabpfn.py</code> 重放同一随机序列参战——各表中 logreg 行数值逐位一致证明了掩码级配对。注意：合成任务采样自 mini-PFN 自己的先验，对三个 mini 模型是<em>分布内</em>、对 v2 是<em>分布外</em>（主场优势）；跨模型的横向水平请以真实数据和「native − mean-impute 差值」为准。</p>
 </section>
 
 <section>
@@ -198,6 +204,10 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--grid);
   <div class="strat model2">
     <h3>mini-PFN · mean-impute <span class="tag">消融：隐瞒缺失</span></h3>
     <p>先用 train 行的列均值把所有 NaN 填掉再喂模型，缺失 flag 恒为 0——模型被「隐瞒」了缺失事实。与 native 的差值 = 缺失指示通道的净贡献。</p>
+  </div>
+  <div class="strat" style="border-left-color:var(--c4)">
+    <h3>TabPFN v2 · native / mean-impute <span class="tag">真实基线</span></h3>
+    <p>原版 v2 权重逐任务 <code>fit(X_train, y_train)</code> → <code>predict(X_test)</code>。native 直接喂 NaN（v2 编码器自带缺失指示 + train 均值填补）；mean-impute 先填补再喂、隐藏缺失模式。两者之差 = v2 对缺失信号的利用程度。</p>
   </div>
   <div class="strat">
     <h3>logreg · mean-impute</h3>
@@ -246,10 +256,11 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--grid);
   <ul>
     <li><strong>native NaN 在每个缺失率上都是最优策略</strong>，60% 缺失时领先最强填补基线约 3 个百分点（0.568 vs 0.539）。</li>
     <li><strong>cells 与 vanilla 两条 native 曲线几乎重合</strong>（相差 ≤0.4pt）：vanilla 训练时只见过 ≤10% 的随机缺失，却能平滑外推到 60%。随机缺失（MCAR）的鲁棒性来自「见过缺失」这件事本身，不需要见过高比例。</li>
+    <li><strong>真实基线 TabPFN v2（紫色）落在 mini 模型之下、logreg 之上</strong>——这些任务对 v2 是分布外（主场劣势），横向水平不代表其真实实力；真正有效的信息是它自身的 native 与 mean-impute 全程打平（60% 时 0.539 vs 0.538）：MCAR 下缺失指示对 v2 也没有额外价值。</li>
     <li>值得注意：<strong>mean+indicator 在 MCAR 下反而是最差的经典基线</strong>——指示列在随机缺失下不含信息，只是白白稀释了 100 个训练样本的自由度。它要到 MNAR 场景才发挥作用（§6）。</li>
   </ul>
   <div class="fig" id="figReal"></div>
-  <p>真实数据上（模型纯合成预训练、零样本迁移），native 与逐任务重训的 logistic 基线大体相当：breast_cancer 上几乎重合，wine（接近线性可分、对线性模型友好）上 logistic 略占优。注意两个数据集上 native 都稳定压过「对模型隐瞒缺失」的 mean-impute——wine 60% 缺失时差距达 5.4pt。</p>
+  <p>真实数据上（对 mini 和 v2 都是分布外，比较更公平），v2 展现了大先验的价值：breast_cancer 上与 mini 打平、wine 上明显更强（60% 缺失时 0.823 vs 0.746）；两个模型的 native 都不输自己的 mean-impute。mini 模型这边，native 与逐任务重训的 logistic 基线大体相当：breast_cancer 上几乎重合，wine（接近线性可分、对线性模型友好）上 logistic 略占优。注意两个数据集上 native 都稳定压过「对模型隐瞒缺失」的 mean-impute——wine 60% 缺失时差距达 5.4pt。</p>
   <details><summary>数据表（合成 400 任务 · 真实数据 5 次重复）</summary>
   <div class="tblwrap"><table>
     <tr><th>合成 · 策略</th><th class="num">0%</th><th class="num">20%</th><th class="num">40%</th><th class="num">60%</th></tr>
@@ -259,6 +270,8 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--grid);
     <tr><td>logreg mean-impute</td><td class="num">0.629</td><td class="num">0.594</td><td class="num">0.563</td><td class="num">0.536</td></tr>
     <tr><td>logreg mean+indicator</td><td class="num">0.615</td><td class="num">0.568</td><td class="num">0.541</td><td class="num">0.516</td></tr>
     <tr><td>logreg knn-impute</td><td class="num">0.633</td><td class="num">0.603</td><td class="num">0.570</td><td class="num">0.539</td></tr>
+    <tr><td>tabpfn-v2 native</td><td class="num">0.652</td><td class="num">0.609</td><td class="num">0.572</td><td class="num">0.539</td></tr>
+    <tr><td>tabpfn-v2 mean-impute</td><td class="num">0.653</td><td class="num">0.608</td><td class="num">0.570</td><td class="num">0.538</td></tr>
   </table></div>
   <div class="tblwrap"><table>
     <tr><th>真实 · 策略</th><th class="num">bc 0%</th><th class="num">bc 30%*</th><th class="num">bc 60%</th><th class="num">wine 0%</th><th class="num">wine 30%*</th><th class="num">wine 60%</th></tr>
@@ -266,6 +279,7 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--grid);
     <tr><td>cells · mean-impute</td><td class="num">0.945</td><td class="num">0.935/0.899</td><td class="num">0.868</td><td class="num">0.936</td><td class="num">0.867/0.785</td><td class="num">0.692</td></tr>
     <tr><td>logreg mean-impute</td><td class="num">0.955</td><td class="num">0.930/0.913</td><td class="num">0.883</td><td class="num">0.974</td><td class="num">0.933/0.867</td><td class="num">0.782</td></tr>
     <tr><td>logreg knn-impute</td><td class="num">0.955</td><td class="num">0.926/0.886</td><td class="num">0.839</td><td class="num">0.974</td><td class="num">0.926/0.864</td><td class="num">0.767</td></tr>
+    <tr><td>tabpfn-v2 native</td><td class="num">0.955</td><td class="num">0.930/0.902</td><td class="num">0.875</td><td class="num">0.974</td><td class="num">0.967/0.905</td><td class="num">0.823</td></tr>
   </table></div>
   <p style="font-size:12.5px;color:var(--muted)">* 20%/40% 两档合并显示为「20%/40%」。</p>
   </details>
@@ -280,9 +294,10 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--grid);
     <li><strong>cells · native 0.706 —— 比它自己的零缺失基准 0.669 还高 3.7pt。</strong>缺失位置携带的标签信息超过了被抹掉的数值信息，且模型学会了在 in-context 中读取它。</li>
     <li><strong>结构相同的 vanilla 只有 0.620</strong>，甚至输给经典的 mean+indicator（0.653）。缺失指示通道人人都有，「会不会用」完全取决于预训练分布里有没有 MNAR 任务。</li>
     <li><strong>所有先填补再建模的流程都摧毁了信号</strong>：mean-impute 0.617/0.578、knn 0.590。填补做得越「好」，缺失痕迹越干净，MNAR 信号毁得越彻底。</li>
+    <li><strong>真实基线一锤定音：TabPFN v2 native 0.635 vs 自身 mean-impute 0.634</strong>——差 0.1pt，统计上为零。拥有约 1.3 亿数据集先验、7M 参数的原版模型完全不利用缺失模式（其先验只有 MCAR），在同一批任务上被 1.6M 的 MNAR 预训练模型超出 7.1pt。<strong>能力差距源自训练分布，而非规模。</strong></li>
   </ul>
   <div class="callout">
-    <p><strong>对原版 TabPFN 的推论：</strong>Nature v2 论文的先验只模拟了 MCAR（缺失与数据值无关），没有 MNAR。因此原版 TabPFN 在信息性缺失上很可能表现如同我们的 vanilla——有通道、但未学会充分利用。<strong>把 MNAR 模拟加进自研先验（或微调数据）是超越原版的明确机会点</strong>，本实验给出了它价值的直接证据（+8.6pt）。</p>
+    <p><strong>对原版 TabPFN 的推论——现已实测验证：</strong>Nature v2 论文的先验只模拟了 MCAR，没有 MNAR。配对实验中 v2 的 native（0.635）与 mean-impute（0.634）完全打平：原版模型确实不利用缺失模式。<strong>把 MNAR 模拟加进自研先验（或微调数据）是超越原版的明确机会点</strong>——1.6M 的 cells 模型（0.706）在同一批任务上超出 v2 达 7.1pt。</p>
   </div>
 </section>
 
@@ -311,8 +326,8 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--grid);
   <h2>四条可执行的结论</h2>
   <ol>
     <li><strong>问卷式逐行缺失对 TabPFN 家族是原生输入。</strong>把所有问卷对齐到统一问题全集、没答的填 NaN 即可；不要预先填补——mean/KNN 填补在所有实验里都劣于 native NaN。</li>
-    <li><strong>随机缺失（MCAR）不需要专门训练。</strong>只见过 ≤10% 缺失的模型平滑泛化到 60% 缺失。原版 TabPFN 处理高比例 MCAR 大概率够用。</li>
-    <li><strong>信息性缺失（MNAR）需要专门的先验。</strong>这是问卷数据最现实的情形，也是本实验最大的增量发现：预训练先验含 MNAR → 缺失模式从噪声变成特征（0.706 &gt; 0.669），并同时击败经典 indicator 方法与未见过 MNAR 的同结构模型。</li>
+    <li><strong>随机缺失（MCAR）不需要专门训练。</strong>只见过 ≤10% 缺失的模型平滑泛化到 60% 缺失；实测原版 TabPFN v2 同样平滑退化、native 与 mean-impute 打平——处理高比例 MCAR 直接用即可。</li>
+    <li><strong>信息性缺失（MNAR）需要专门的先验。</strong>这是问卷数据最现实的情形，也是本实验最大的增量发现：预训练先验含 MNAR → 缺失模式从噪声变成特征（0.706 &gt; 0.669），并同时击败经典 indicator 方法与未见过 MNAR 的同结构模型；实测原版 v2 完全不利用缺失模式（0.635 ≈ 0.634），被 1.6M 的 MNAR 预训练模型超出 7.1pt——差距来自训练分布而非规模。</li>
     <li><strong>结构上不需要发明新东西。</strong>缺失指示通道（≈ 每个 cell token 的可学习 mask 分量）是 v2 已有且历史悠久的设计；投资应放在<em>训练分布</em>——先验里的缺失机制设计——而非架构。</li>
   </ol>
   <h3 style="margin-top:20px">复现</h3>
@@ -323,6 +338,9 @@ uv run python -m geo_pfn.minipfn.train --steps 12000 --augmentation none  --out 
 # 评估（问卷场景：MCAR 扫描 + MNAR 表 + 真实数据）
 uv run python -m geo_pfn.minipfn.eval --checkpoint checkpoints/minipfn_cells.pt --scenario cells
 
+# 真实基线：原版 TabPFN v2（重放同一随机序列，MPS 约 2 小时）
+uv run python -m geo_pfn.minipfn.eval_tabpfn
+
 # 场景一（整列缺失）
 uv run python -m geo_pfn.minipfn.eval --checkpoint checkpoints/minipfn.pt --scenario columns</code></pre>
 </section>
@@ -331,7 +349,7 @@ uv run python -m geo_pfn.minipfn.eval --checkpoint checkpoints/minipfn.pt --scen
   代码：<span class="mono">geo_pfn/src/geo_pfn/minipfn/</span>（prior / model / train / eval，23 个 pytest 全部通过）·
   分析文档：<span class="mono">geo_pfn/docs/tabpfn-missing-features-analysis.md</span><br>
   合成评估 = 25 批 × 16 任务 = 400 个配对任务，误差线为 ±1 SEM；真实数据 = sklearn breast_cancer / wine，100 行上下文、随机 10 列、5 次缺失重采样。
-  模型为 1.6M 参数的演示规模，结论应视为方向性证据而非上限。
+  TabPFN v2 基线：官方 PyPI 包 + ModelVersion.V2 权重（无需登录），n_estimators=8，MPS 上 4,000 次 fit/predict 约 111 分钟。mini 模型为 1.6M 参数的演示规模，合成任务对 v2 为分布外，结论应视为方向性证据而非上限。
 </footer>
 </div>
 
@@ -495,7 +513,7 @@ function dotPlot(host, cfg){
 }
 
 /* ---------- data ---------- */
-const C1="var(--c1)", C2="var(--c2)", C3="var(--c3)", G1="var(--g1)", G2="var(--g2)", G3="var(--g3)";
+const C1="var(--c1)", C2="var(--c2)", C3="var(--c3)", C4="var(--c4)", G1="var(--g1)", G2="var(--g2)", G3="var(--g3)";
 const semRow = [0.010,0.009,0.009,0.008];
 
 lineChart("#figCols", {
@@ -526,9 +544,9 @@ lineChart("#figMcar", {
     {name:"mini-PFN mean-impute", shortName:"mean-impute", v:[0.659,0.615,0.579,0.544], sem:semRow, c:C2, w:2},
     {name:"logreg mean-impute", v:[0.629,0.594,0.563,0.536], sem:[0.009,0.009,0.009,0.008], c:G1, w:2, endLabel:false},
     {name:"logreg knn-impute", v:[0.633,0.603,0.570,0.539], sem:[0.010,0.009,0.009,0.008], c:G2, w:2, endLabel:false},
-    {name:"logreg mean+indicator", v:[0.615,0.568,0.541,0.516], sem:[0.009,0.009,0.009,0.008], c:G3, w:2, endLabel:false},
+    {name:"TabPFN v2 native（真实基线）", shortName:"tabpfn-v2", v:[0.652,0.609,0.572,0.539], sem:[0.010,0.009,0.009,0.008], c:C4, w:2},
   ],
-  note:"两条蓝色 native 曲线（实线 = cells、虚线 = vanilla）几乎重合：MCAR 鲁棒性从 ≤10% 的训练缺失率外推到 60% 不需要专门增强。"
+  note:"两条蓝色 native 曲线（实线 = cells、虚线 = vanilla）几乎重合：MCAR 鲁棒性从 ≤10% 的训练缺失率外推到 60% 不需要专门增强。紫色为原版 TabPFN v2（这些任务对它是分布外）；其 mean-impute 变体与 native 几乎重合（0.653/0.608/0.570/0.538，见数据表）。logreg mean+indicator 移至数据表。"
 });
 
 /* real data small multiples */
@@ -542,6 +560,7 @@ lineChart("#figMcar", {
        <span class="it"><span class="sw" style="border-top-color:var(--c2)"></span>mini-PFN mean-impute</span>
        <span class="it"><span class="sw" style="border-top-color:var(--g1)"></span>logreg mean-impute</span>
        <span class="it"><span class="sw" style="border-top-color:var(--g2)"></span>logreg knn-impute</span>
+       <span class="it"><span class="sw" style="border-top-color:var(--c4)"></span>TabPFN v2 native</span>
      </div>
      <div class="grid2" id="realpanels"></div>`);
   const panels = $("#realpanels");
@@ -557,15 +576,18 @@ lineChart("#figMcar", {
         {name:"mini-PFN mean-impute", v:data.mimp, c:C2, w:2},
         {name:"logreg mean-impute", v:data.lr, c:G1, w:2},
         {name:"logreg knn-impute", v:data.knn, c:G2, w:2},
+        {name:"TabPFN v2 native", v:data.v2, c:C4, w:2},
       ]});
   };
   mk("breast_cancer（二分类）",
      {native:[0.945,0.935,0.903,0.878], mimp:[0.945,0.935,0.899,0.868],
-      lr:[0.955,0.930,0.913,0.883], knn:[0.955,0.926,0.886,0.839]},
+      lr:[0.955,0.930,0.913,0.883], knn:[0.955,0.926,0.886,0.839],
+      v2:[0.955,0.930,0.902,0.875]},
      0.80, 0.98, [0.80,0.85,0.90,0.95]);
   mk("wine（三分类）",
      {native:[0.936,0.877,0.823,0.746], mimp:[0.936,0.867,0.785,0.692],
-      lr:[0.974,0.933,0.867,0.782], knn:[0.974,0.926,0.864,0.767]},
+      lr:[0.974,0.933,0.867,0.782], knn:[0.974,0.926,0.864,0.767],
+      v2:[0.974,0.967,0.905,0.823]},
      0.65, 1.00, [0.70,0.80,0.90,1.00]);
 })();
 
@@ -577,12 +599,14 @@ dotPlot("#figMnar", {
   rows:[
     {name:"native · cells（见过 MNAR）", v:0.706, sem:0.009, c:C1, emph:true},
     {name:"logreg mean+indicator", v:0.653, sem:0.010, c:G1},
+    {name:"TabPFN v2 native（真实基线）", v:0.635, sem:0.010, c:C4},
+    {name:"TabPFN v2 mean-impute", v:0.634, sem:0.010, c:C4},
     {name:"native · vanilla（没见过 MNAR）", v:0.620, sem:0.009, c:C1},
     {name:"mini-PFN mean-impute", v:0.617, sem:0.009, c:C2},
     {name:"logreg knn-impute", v:0.590, sem:0.009, c:G2},
     {name:"logreg mean-impute", v:0.578, sem:0.009, c:G3},
   ],
-  note:"唯一越过零缺失基准线的是预训练见过 MNAR 的 native 策略——缺失模式从噪声变成了特征。横线为 ±1 SEM。"
+  note:"唯一越过零缺失基准线的是预训练见过 MNAR 的 native 策略——缺失模式从噪声变成了特征。TabPFN v2 的两行几乎重合（Δ=0.001）：原版模型不利用缺失模式。横线为 ±1 SEM。"
 });
 
 /* training curves */
