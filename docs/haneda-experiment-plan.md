@@ -54,7 +54,7 @@
 | mini-vanilla | miniPFN `checkpoints/minipfn_vanilla.pt`（无增强） | 分类 | cells vs vanilla = MNAR 增强在真实数据上的增益 |
 | hgbt | HistGradientBoosting（原生 NaN 支持） | 回归+分类 | 经典强基线，树模型的 native-NaN 对照 |
 | linear | Ridge / LogisticRegression（mean-impute + 标准化） | 回归+分类 | 线性基线 |
-| depth | 仅 depth_m 的线性回归 / 分箱多数类 | 回归+分类 | 必须超越的门槛（in-sample R²≈0.63） |
+| depth | 仅 depth_m 的线性回归 / 逻辑回归 | 回归+分类 | 必须超越的门槛（in-sample R²≈0.63） |
 | dummy | 全局均值 / 多数类 | 回归+分类 | 零信息下界 |
 
 ### miniPFN 的上下文协议（3.5k 行 ≫ 训练分布 60–160 行）
@@ -62,7 +62,7 @@
 - **主协议**：每折做 E=16 次集成——每次从训练折按类分层随机抽
   128 行作上下文，对全部测试行前向，平均 softmax 概率。
   （128 行在训练分布内；分层保证 4 类都在上下文中出现。）
-- **上下文规模扫描**（附加）：ctx ∈ {128×16, 512×4, 2048×1}，
+- **上下文规模扫描**（附加）：ctx ∈ {128×16, 512×4, 1024×2}，
   观察行数外推能力。测试行分块（≤512/块）控制注意力内存。
 
 ## 4. Imputation 对比（Q3）

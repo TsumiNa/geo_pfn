@@ -84,7 +84,7 @@ def physics_e(df: pd.DataFrame) -> np.ndarray:
 
 def load_haneda(path: str) -> pd.DataFrame:
     """Load the pilot CSV and attach the encoded soil column."""
-    df = pd.read_csv(path, dtype={"soil_B02N": str, SOIL_COLUMN: str})
+    df = pd.read_csv(path, dtype={SOIL_COLUMN: str})
     required = {
         TARGET,
         GROUP,

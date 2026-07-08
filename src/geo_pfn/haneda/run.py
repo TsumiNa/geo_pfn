@@ -334,7 +334,9 @@ def main() -> None:
     config = RunConfig(
         **{
             **vars(args),
-            "experiments": tuple(e for e in args.experiments.split(",") if e),
+            "experiments": tuple(
+                t for e in args.experiments.split(",") if (t := e.strip())
+            ),
         }
     )
     run(config)
