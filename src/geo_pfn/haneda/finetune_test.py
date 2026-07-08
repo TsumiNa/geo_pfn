@@ -29,6 +29,7 @@ def test_config_coerces_strings() -> None:
         ({"learning_rate": 0.0}, "learning_rate"),
         ({"n_folds": 1}, "n_folds"),
         ({"folds_subset": (5,)}, "folds_subset"),
+        ({"grouped_val_frac": 0.6}, "grouped_val_frac"),
     ],
 )
 def test_config_rejects_invalid(kwargs: dict, match: str) -> None:

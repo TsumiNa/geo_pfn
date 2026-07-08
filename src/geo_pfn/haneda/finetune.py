@@ -26,6 +26,9 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+from sklearn.model_selection import GroupShuffleSplit
+
 from geo_pfn.haneda.data import (
     GROUP,
     TARGET,
@@ -79,6 +82,8 @@ class FinetuneConfig:
     n_estimators_finetune: int = 2
     n_estimators_final_inference: int = 8
     folds_subset: tuple[int, ...] | None = None  # e.g. (0,) for a smoke run
+    grouped_val: bool = True  # early-stopping val = held-out boreholes
+    grouped_val_frac: float = 0.1
 
     def __post_init__(self) -> None:
         self.feature_set = FeatureSet(self.feature_set)
@@ -93,6 +98,8 @@ class FinetuneConfig:
             bad = [f for f in self.folds_subset if not 0 <= f < self.n_folds]
             if bad:
                 raise ValueError(f"folds_subset out of range: {bad}")
+        if not 0.0 < self.grouped_val_frac < 0.5:
+            raise ValueError("grouped_val_frac must be in (0, 0.5)")
 
 
 def run(config: FinetuneConfig) -> None:
@@ -118,17 +125,35 @@ def run(config: FinetuneConfig) -> None:
             x_train, x_test = prepare_fold(
                 df, config.feature_set, imputation, train_idx, test_idx
             )
+            su_train = su[train_idx]
+            if config.grouped_val:
+                # early-stopping validation on held-out boreholes, so it
+                # measures the spatial generalization the test folds measure
+                splitter = GroupShuffleSplit(
+                    n_splits=1,
+                    test_size=config.grouped_val_frac,
+                    random_state=config.seed,
+                )
+                rel_tr, rel_val = next(
+                    splitter.split(su_train, groups=df[GROUP].to_numpy()[train_idx])
+                )
+                fit_args = (x_train[rel_tr], su_train[rel_tr])
+                fit_kwargs = {"X_val": x_train[rel_val], "y_val": su_train[rel_val]}
+            else:
+                rel_tr = np.arange(len(train_idx))
+                fit_args = (x_train, su_train)
+                fit_kwargs = {}
             model = make_finetuned_v2(
                 device=config.device,
                 epochs=config.epochs,
                 learning_rate=config.learning_rate,
                 random_state=config.seed,
-                n_finetune_ctx_plus_query_samples=len(train_idx),
+                n_finetune_ctx_plus_query_samples=len(rel_tr),
                 n_estimators_finetune=config.n_estimators_finetune,
                 n_estimators_final_inference=config.n_estimators_final_inference,
             )
             fit_start = time.monotonic()
-            model.fit(x_train, su[train_idx])
+            model.fit(*fit_args, **fit_kwargs)
             y_pred = model.predict(x_test)
             metrics = regression_metrics(su[test_idx], y_pred)
             records.append(
@@ -139,8 +164,10 @@ def run(config: FinetuneConfig) -> None:
                     "feature_set": config.feature_set.value,
                     "imputation": imputation.value,
                     "context": None,
+                    "val": "grouped" if config.grouped_val else "row-random",
                     "fold": fold,
                     "n_train": len(train_idx),
+                    "n_finetune_train": len(rel_tr),
                     "n_test": len(test_idx),
                     "fit_seconds": round(time.monotonic() - fit_start, 1),
                     **metrics,
@@ -182,10 +209,11 @@ def _write_outputs(
         },
         "records": records,
     }
-    (out_dir / "finetune.json").write_text(json.dumps(payload, indent=1))
+    name = f"finetune-{'grouped' if config.grouped_val else 'rowrand'}"
+    (out_dir / f"{name}.json").write_text(json.dumps(payload, indent=1))
     pred_dir = out_dir / "predictions"
     pred_dir.mkdir(exist_ok=True)
-    (pred_dir / "finetune.json").write_text(json.dumps(predictions))
+    (pred_dir / f"{name}.json").write_text(json.dumps(predictions))
 
 
 def main() -> None:
@@ -207,6 +235,11 @@ def main() -> None:
     parser.add_argument(
         "--folds-subset", type=str, default="", help="e.g. '0' or '0,1' for smoke runs"
     )
+    parser.add_argument(
+        "--grouped-val",
+        action=argparse.BooleanOptionalAction,
+        default=defaults.grouped_val,
+    )
     args = parser.parse_args()
     config = FinetuneConfig(
         data_path=args.data_path,
@@ -220,6 +253,7 @@ def main() -> None:
         ),
         epochs=args.epochs,
         learning_rate=args.learning_rate,
+        grouped_val=args.grouped_val,
         folds_subset=tuple(
             int(t) for f in args.folds_subset.split(",") if (t := f.strip())
         )
