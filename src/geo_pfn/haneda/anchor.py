@@ -39,10 +39,9 @@ from geo_pfn.haneda.data import (
     GROUP,
     TARGET,
     FeatureSet,
-    Imputation,
     borehole_folds,
+    feature_columns,
     load_haneda,
-    prepare_fold,
 )
 from geo_pfn.haneda.runners import make_baseline, make_tabpfn_v2, regression_metrics
 from geo_pfn.minipfn.train import resolve_device
@@ -58,6 +57,7 @@ class AnchorConfig:
     out_path: str = "results/haneda/anchor.json"
     device: str = "auto"
     feature_set: FeatureSet = FeatureSet.LCSG
+    target_col: str = TARGET
     models: tuple[str, ...] = CORE_MODELS
     n_folds: int = 5
     seed: int = 42
@@ -123,7 +123,9 @@ def _predict(
 def run(config: AnchorConfig) -> None:
     t0 = time.monotonic()
     df = load_haneda(config.data_path)
-    su = df[TARGET].to_numpy(dtype=np.float64)
+    target = df[config.target_col].to_numpy(dtype=np.float64)
+    feats = [c for c in feature_columns(config.feature_set) if c != config.target_col]
+    x_full = df[feats].to_numpy(dtype=np.float64)  # native NaN, target excluded
     folds = borehole_folds(df[GROUP].to_numpy(), config.n_folds, config.seed)
     device = str(resolve_device(config.device))
 
@@ -137,14 +139,17 @@ def run(config: AnchorConfig) -> None:
                 ("anchor", np.concatenate([train_idx, anchor_idx])),
             )
             for arm, fit_idx in arms:
-                x_fit, x_query = prepare_fold(
-                    df, config.feature_set, Imputation.NATIVE, fit_idx, query_idx
-                )
+                x_fit, x_query = x_full[fit_idx], x_full[query_idx]
                 for model in config.models:
                     pred = _predict(
-                        model, x_fit, su[fit_idx], x_query, device, config.n_estimators
+                        model,
+                        x_fit,
+                        target[fit_idx],
+                        x_query,
+                        device,
+                        config.n_estimators,
                     )
-                    metrics = regression_metrics(su[query_idx], pred)
+                    metrics = regression_metrics(target[query_idx], pred)
                     records.append(
                         {
                             "experiment": "anchor",
@@ -152,6 +157,7 @@ def run(config: AnchorConfig) -> None:
                             "arm": arm,
                             "k_anchors": k,
                             "feature_set": config.feature_set.value,
+                            "target": config.target_col,
                             "fold": fold,
                             "n_anchor": len(anchor_idx),
                             "n_query": len(query_idx),
@@ -209,6 +215,7 @@ def main() -> None:
     parser.add_argument("--out", type=str, default=defaults.out_path)
     parser.add_argument("--device", type=str, default=defaults.device)
     parser.add_argument("--feature-set", type=str, default=defaults.feature_set.value)
+    parser.add_argument("--target", type=str, default=defaults.target_col)
     parser.add_argument(
         "--models",
         type=str,
@@ -229,6 +236,7 @@ def main() -> None:
         out_path=args.out,
         device=args.device,
         feature_set=FeatureSet(args.feature_set),
+        target_col=args.target,
         models=tuple(t for m in args.models.split(",") if (t := m.strip())),
         n_folds=args.n_folds,
         seed=args.seed,

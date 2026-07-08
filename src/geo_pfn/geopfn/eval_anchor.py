@@ -50,6 +50,8 @@ def run(
     data_path: str,
     out_path: str,
     device_name: str,
+    feature_set: FeatureSet,
+    target_col: str,
     k_anchors: tuple[int, ...],
     n_folds: int,
     seed: int,
@@ -58,13 +60,12 @@ def run(
     device = resolve_device(device_name)
     model = load_geopfn(checkpoint, device)
     df = load_haneda(data_path)
-    su = df[TARGET].to_numpy(dtype=np.float64)
+    target = df[target_col].to_numpy(dtype=np.float64)
     bores = df[GROUP].to_numpy()
     folds = borehole_folds(bores, n_folds, seed)
 
-    x_full = df[feature_columns(FeatureSet.LCSG)].to_numpy(
-        dtype=np.float64
-    )  # native NaN
+    feats = [c for c in feature_columns(feature_set) if c != target_col]
+    x_full = df[feats].to_numpy(dtype=np.float64)  # native NaN
     t0 = time.monotonic()
     records = []
     for k in k_anchors:
@@ -84,7 +85,7 @@ def run(
                     pred = predict_geopfn(
                         model,
                         x_full[ctx_rows],
-                        su[ctx_rows],
+                        target[ctx_rows],
                         x_full[q],
                         ens,
                         seed + int(bore),
@@ -92,7 +93,7 @@ def run(
                         keep_context=keep,
                     )
                     preds.append(pred)
-                    truths.append(su[q])
+                    truths.append(target[q])
                 metrics = regression_metrics(
                     np.concatenate(truths), np.concatenate(preds)
                 )
@@ -100,6 +101,8 @@ def run(
                     {
                         "model": "geopfn",
                         "arm": arm,
+                        "feature_set": feature_set.value,
+                        "target": target_col,
                         "k_anchors": k,
                         "fold": fold,
                         "n_query": len(query_idx),
@@ -145,6 +148,8 @@ def main() -> None:
     )
     parser.add_argument("--out", type=str, default="results/haneda/anchor_geopfn.json")
     parser.add_argument("--device", type=str, default="auto")
+    parser.add_argument("--feature-set", type=str, default=FeatureSet.LCSG.value)
+    parser.add_argument("--target", type=str, default=TARGET)
     parser.add_argument("--k-anchors", type=str, default="1,2,3,5")
     parser.add_argument("--n-folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=42)
@@ -156,6 +161,8 @@ def main() -> None:
         data_path=args.data_path,
         out_path=args.out,
         device_name=args.device,
+        feature_set=FeatureSet(args.feature_set),
+        target_col=args.target,
         k_anchors=tuple(int(t) for k in args.k_anchors.split(",") if (t := k.strip())),
         n_folds=args.n_folds,
         seed=args.seed,
