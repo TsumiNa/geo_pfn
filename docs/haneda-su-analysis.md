@@ -152,13 +152,63 @@ v2-reg @ LCSG 的逐折配对差（vs native NaN；负 = 比 native 好）：
    大致 1–1.5 RMSE 的空间；相对地，把 mini 拉到 v2 水平需要跨越
    ~2.4 RMSE 等价的能力差距——微调 v2 仍是性价比更高的下一步。
 
-## 8. 复现
+## 8. 后续实验一：方案 C——微调 TabPFN v2（负结果，已关闭）
+
+用官方 `tabpfn.finetuning` 在每折训练孔上微调 v2 回归器（强制 v2 权重规避
+v2.5 许可问题；`geo_pfn.haneda.finetune`），逐折与零微调配对（LCSG）：
+
+| 验证方式 | native 配对差 | mean+ind 配对差 |
+|---|---|---|
+| 行随机（官方默认） | +0.07 ± 0.17（5 折） | +0.18 ± 0.16（5 折） |
+| 钻孔分组（修复版） | +0.07 ± 0.08（5 折） | +0.19 ± 0.20（4 折，提前终止） |
+
+**判定：两种验证方式下微调均无收益**（正 = 比零微调差）。行随机验证还
+引入大幅折间波动（fold 0 曾 +0.66）——训练孔的行泄漏进验证集使早停失灵、
+产生对训练钻孔的空间过拟合；钻孔分组验证消除了波动但也只是回到打平。
+预期的 1–1.5 RMSE 微调空间在 2.8k 行单场地数据上不能兑现，方案 C 关闭，
+资源转向 TabICL 路线与自研先验（方案 D）。
+
+## 9. 后续实验二：TabICLv2 基线（新的最优，权重可商用）
+
+TabICLv2（soda-inria，代码与权重均 BSD-3）在相同折上配对评估
+（`results/haneda/tabicl.json`，CPU 即可，~90 s/fit）：
+
+| 任务 | TabICLv2 | TabPFN v2 | 配对差 |
+|---|---|---|---|
+| 回归 RMSE（native） | **13.86±0.68** | 14.25±0.76 | −0.39±0.20（5 折全胜） |
+| 回归 R²（native） | **0.797** | 0.786 | +0.011±0.005 |
+| 分类 acc（native） | **0.707±0.012** | 0.688±0.016 | +1.9±0.6 pt |
+| 分类 acc（mean+ind） | 0.708 | 0.687 | +2.1±0.4 pt |
+
+指示列对 TabICL 无增益（回归 +0.011±0.088）——其行压缩表征已隐式覆盖
+缺失模式携带的批次信息。**新的推荐配方：TabICLv2 + 原始 NaN 输入
+（RMSE 13.86 / R² 0.80），许可无任何商用限制。**
+
+## 10. 残差结构分析（A5/i.i.d. 假设的量化，指向下一步）
+
+对 v2-reg 残差的分解（详见 session 记录，2026-07-09）：
+
+- 钻孔级 ICC = 0.195，孔偏差 ±8.6 kPa；oracle 消除后 RMSE 14.36→12.44
+  （**−1.9，大于此前一切干预之和**）；孔内 lag-1 残差自相关 0.256;
+- 孔偏差与残差剖面形状的**空间相关均为零**（邻孔 <150 m 亦然），
+  即空间平滑信号已被模型经 X/Y 特征吃尽；岩性序列本身空间相干
+  （邻孔一致率 0.374 vs 远孔 0.24），但其可转移内容已包含在输入特征中;
+- **推论**：新钻孔场景（本报告协议）的孔偏差不可收割；
+  **孔内补全（infill）场景可全额收割 −1.9**——上下文放入同孔已测行即可，
+  零训练成本。infill 评估是下一步性价比最高的实验；层序 warping 对齐
+  （DTW 检验）是场景 A 残存的最后假设。
+
+## 11. 复现
 
 ```bash
-uv run pytest src/geo_pfn/haneda/            # 23 个测试
+uv run pytest src/geo_pfn/haneda/            # 31 个测试
 uv run python -m geo_pfn.haneda.run          # 全矩阵，MPS ~95 min
 # 子集示例：只跑消融、不落逐行预测
 uv run python -m geo_pfn.haneda.run --experiments ablation --no-save-predictions
+# 方案 C 微调（默认钻孔分组验证；--no-grouped-val 复现官方默认行为）
+uv run python -m geo_pfn.haneda.finetune     # MPS，~2.5 h/臂
+# TabICL 基线（tabicl 非项目依赖，用临时覆盖环境运行）
+uv run --with tabicl python -m geo_pfn.haneda.eval_tabicl
 ```
 
 数据文件 `data/pilot_Su_domain_block_mod4Liu.csv` 不入库，需向数据整理人索取。
