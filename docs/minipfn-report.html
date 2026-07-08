@@ -346,21 +346,21 @@ uv run python -m geo_pfn.minipfn.eval --checkpoint checkpoints/minipfn.pt --scen
 </section>
 
 <section>
-  <div class="sec-eyebrow">&sect;9 &middot; 总体评价</div>
+  <div class="sec-eyebrow">§9 · 总体评价</div>
   <h2>mini demo 的价值不在于「比 v2 好」</h2>
-  <p>综合能力上 <strong>v2 明显更强</strong>；本 demo 的贡献是用严格配对的实验证明了两件事：<strong>自研 PFN 路线端到端可行且便宜</strong>（笔记本 1 小时、1.6M 参数、真实数据零样本 0.94&ndash;0.96），以及 <strong>v2 存在一个可以靠「改训练分布」补上的真实能力缺口（MNAR）</strong>。生产上不应把 mini 当通用分类器；研究上它的方法论与发现成立。</p>
+  <p>综合能力上 <strong>v2 明显更强</strong>；本 demo 的贡献是用严格配对的实验证明了两件事：<strong>自研 PFN 路线端到端可行且便宜</strong>（笔记本 1 小时、1.6M 参数、真实数据零样本 0.94–0.96），以及 <strong>v2 存在一个可以靠「改训练分布」补上的真实能力缺口（MNAR）</strong>。生产上不应把 mini 当通用分类器；研究上它的方法论与发现成立。</p>
   <div class="tblwrap"><table>
     <tr><th>场景</th><th>谁强</th><th>证据</th><th>该信几分</th></tr>
     <tr><td>通用表格分类（真实数据）</td><td><b>v2 明显强</b></td><td class="num">wine 60% 缺失 0.823 vs 0.746</td><td>可信——双方都分布外的公平场地，大先验的价值所在</td></tr>
     <tr><td>合成任务</td><td>mini 略高</td><td class="num">0.669 vs 0.652</td><td><b>不算数</b>——任务采自 mini 自己的先验，纯主场优势</td></tr>
-    <tr><td>MCAR 缺失鲁棒性</td><td>打平</td><td class="num">双方 native &asymp; mean-impute</td><td>可信，v2 官方宣称得到独立复核</td></tr>
+    <tr><td>MCAR 缺失鲁棒性</td><td>打平</td><td class="num">双方 native ≈ mean-impute</td><td>可信，v2 官方宣称得到独立复核</td></tr>
     <tr><td><b>MNAR（信息性缺失）</b></td><td><b>mini 显著强</b></td><td class="num">0.706 vs 0.635（+7.1pt）</td><td>可信但有保留（见注意点 2）</td></tr>
   </table></div>
   <h3 style="margin-top:20px">实际价值</h3>
   <ol>
     <li><strong>De-risk 了自研路线（方案 D）</strong>：全套可复用脚手架已就绪——先验、双轴注意力模型、训练/评估/配对基线 harness，领域专用 PFN 可直接继承。</li>
-    <li><strong>找到论文级缺口并给出因果证据</strong>：v2 在 MNAR 下 native 与自身 mean-impute 打平 &rarr; 确实不利用缺失模式；同结构消融 &rarr; 差距完全来自训练分布。</li>
-    <li><strong>给出工程决策依据</strong>：缺失是随机的 &rarr; 直接 v2 + NaN 填充；缺失是信息性的 &rarr; 才值得微调或自研。</li>
+    <li><strong>找到论文级缺口并给出因果证据</strong>：v2 在 MNAR 下 native 与自身 mean-impute 打平 → 确实不利用缺失模式；同结构消融 → 差距完全来自训练分布。</li>
+    <li><strong>给出工程决策依据</strong>：缺失是随机的 → 直接 v2 + NaN 填充；缺失是信息性的 → 才值得微调或自研。</li>
   </ol>
   <h3 style="margin-top:20px">注意点（诚实清单）</h3>
   <ol>
@@ -368,13 +368,13 @@ uv run python -m geo_pfn.minipfn.eval --checkpoint checkpoints/minipfn.pt --scen
     <li><strong>MNAR 增益有机制匹配成分</strong>：cells 模型训练与评估用同一族 MNAR 机制；对真实问卷的任意跳题模式不保证同样幅度，需在先验里针对性建模。</li>
     <li><strong>利用缺失模式是双刃剑</strong>：缺失机制漂移（问卷改版、跳题逻辑变化）会让学到的关联失效甚至反向；生产中应监控缺失分布稳定性。</li>
     <li><strong>有一个未测的廉价方案</strong>：给 v2 输入手动拼接 0/1 缺失指示列（logreg+indicator 的技巧用在 TabPFN 上），零训练成本，值得先试。</li>
-    <li>规模保留：mini 先验很窄（&le;10 特征、&le;4 类、&le;160 行、纯数值）；MCAR 下 cells 与 vanilla 的 ~0.3pt 差异在噪声内。</li>
+    <li>规模保留：mini 先验很窄（≤10 特征、≤4 类、≤160 行、纯数值）；MCAR 下 cells 与 vanilla 的 ~0.3pt 差异在噪声内。</li>
     <li>许可红线：商用相关的生成/蒸馏/对比发布只能用 v2 权重。</li>
   </ol>
   <h3 style="margin-top:20px">下一步（按性价比排序）</h3>
   <ol>
     <li>在真实问卷数据上跑 v2 + NaN 填充与 v2 + 手动指示列，判断真实缺失是否信息性；</li>
-    <li>若信息性且指示列不够 &rarr; 官方 <code>finetuning/</code> 模块 + 缺失机制模拟做轻量微调（方案 C）；</li>
+    <li>若信息性且指示列不够 → 官方 <code>finetuning/</code> 模块 + 缺失机制模拟做轻量微调（方案 C）；</li>
     <li>领域结构超出 v2 先验覆盖时才升级到完整自研（方案 D）——基础设施已在 <code>minipfn/</code> 中。</li>
   </ol>
 </section>
