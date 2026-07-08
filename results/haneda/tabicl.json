@@ -1,0 +1,152 @@
+[
+ {
+  "task": "regression",
+  "imputation": "native",
+  "fold": 0,
+  "rmse": 15.137066460031429,
+  "mae": 10.027532194952206,
+  "r2": 0.7518747671076069
+ },
+ {
+  "task": "classification",
+  "imputation": "native",
+  "fold": 0,
+  "accuracy": 0.6814285714285714,
+  "macro_f1": 0.6828595255319394
+ },
+ {
+  "task": "regression",
+  "imputation": "native",
+  "fold": 1,
+  "rmse": 13.184091664282453,
+  "mae": 9.49801946480776,
+  "r2": 0.8299129073207562
+ },
+ {
+  "task": "classification",
+  "imputation": "native",
+  "fold": 1,
+  "accuracy": 0.7189873417721518,
+  "macro_f1": 0.7055547273627163
+ },
+ {
+  "task": "regression",
+  "imputation": "native",
+  "fold": 2,
+  "rmse": 11.904707078740659,
+  "mae": 8.52955720011618,
+  "r2": 0.8265775417612796
+ },
+ {
+  "task": "classification",
+  "imputation": "native",
+  "fold": 2,
+  "accuracy": 0.7297709923664122,
+  "macro_f1": 0.7322407073784739
+ },
+ {
+  "task": "regression",
+  "imputation": "native",
+  "fold": 3,
+  "rmse": 13.423732083987508,
+  "mae": 9.663399882579803,
+  "r2": 0.8461921297598698
+ },
+ {
+  "task": "classification",
+  "imputation": "native",
+  "fold": 3,
+  "accuracy": 0.7325408618127786,
+  "macro_f1": 0.7130900728838345
+ },
+ {
+  "task": "regression",
+  "imputation": "native",
+  "fold": 4,
+  "rmse": 15.667281029193786,
+  "mae": 9.553089429812303,
+  "r2": 0.7290095909446268
+ },
+ {
+  "task": "classification",
+  "imputation": "native",
+  "fold": 4,
+  "accuracy": 0.6742532005689901,
+  "macro_f1": 0.6888886504662706
+ },
+ {
+  "task": "regression",
+  "imputation": "mean+ind",
+  "fold": 0,
+  "rmse": 15.34679796150456,
+  "mae": 10.107119826854515,
+  "r2": 0.744951339050806
+ },
+ {
+  "task": "classification",
+  "imputation": "mean+ind",
+  "fold": 0,
+  "accuracy": 0.68,
+  "macro_f1": 0.6809812110519934
+ },
+ {
+  "task": "regression",
+  "imputation": "mean+ind",
+  "fold": 1,
+  "rmse": 13.289919397230191,
+  "mae": 9.55645154002902,
+  "r2": 0.8271713952099288
+ },
+ {
+  "task": "classification",
+  "imputation": "mean+ind",
+  "fold": 1,
+  "accuracy": 0.7164556962025317,
+  "macro_f1": 0.7031040572532099
+ },
+ {
+  "task": "regression",
+  "imputation": "mean+ind",
+  "fold": 2,
+  "rmse": 11.691970337061148,
+  "mae": 8.364810687891808,
+  "r2": 0.8327202695319376
+ },
+ {
+  "task": "classification",
+  "imputation": "mean+ind",
+  "fold": 2,
+  "accuracy": 0.7251908396946565,
+  "macro_f1": 0.727929194547777
+ },
+ {
+  "task": "regression",
+  "imputation": "mean+ind",
+  "fold": 3,
+  "rmse": 13.234116002022574,
+  "mae": 9.450969808063755,
+  "r2": 0.8505066475524782
+ },
+ {
+  "task": "classification",
+  "imputation": "mean+ind",
+  "fold": 3,
+  "accuracy": 0.7414561664190193,
+  "macro_f1": 0.7204936711190089
+ },
+ {
+  "task": "regression",
+  "imputation": "mean+ind",
+  "fold": 4,
+  "rmse": 15.810056642549709,
+  "mae": 9.66979145228947,
+  "r2": 0.7240480259953046
+ },
+ {
+  "task": "classification",
+  "imputation": "mean+ind",
+  "fold": 4,
+  "accuracy": 0.6785206258890469,
+  "macro_f1": 0.6933058167568213
+ }
+]
