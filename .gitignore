@@ -11,3 +11,9 @@ wheels/
 
 # Model checkpoints (retrain with geo_pfn.minipfn.train)
 checkpoints/
+
+# Real datasets (obtain from the data curator; see docs/haneda-su-dataset.md)
+data/
+
+# Per-row prediction dumps (regenerate with geo_pfn.haneda.run)
+results/haneda/predictions/
