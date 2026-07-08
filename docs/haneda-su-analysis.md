@@ -207,7 +207,8 @@ uv run python -m geo_pfn.haneda.run          # 全矩阵，MPS ~95 min
 uv run python -m geo_pfn.haneda.run --experiments ablation --no-save-predictions
 # 方案 C 微调（默认钻孔分组验证；--no-grouped-val 复现官方默认行为）
 uv run python -m geo_pfn.haneda.finetune     # MPS，~2.5 h/臂
-# TabICL 基线（临时环境即可）：uv run --with tabicl python <eval脚本>
+# TabICL 基线（tabicl 非项目依赖，用临时覆盖环境运行）
+uv run --with tabicl python -m geo_pfn.haneda.eval_tabicl
 ```
 
 数据文件 `data/pilot_Su_domain_block_mod4Liu.csv` 不入库，需向数据整理人索取。
