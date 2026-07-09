@@ -79,11 +79,16 @@ footer{margin-top:52px;padding-top:16px;border-top:1px solid var(--line);color:v
 </figure>
 <div class="callout warn"><span data-i18n="b_call"></span></div>
 
-<h2><span class="n">4</span><span data-i18n="t_h"></span></h2>
+<h2><span class="n">4</span><span data-i18n="hg_h"></span></h2>
+<p data-i18n="hg_p"></p>
+<ul><li data-i18n="hg1"></li><li data-i18n="hg2"></li><li data-i18n="hg3"></li><li data-i18n="hg4"></li></ul>
+<div class="callout"><span data-i18n="hg_take"></span></div>
+
+<h2><span class="n">5</span><span data-i18n="t_h"></span></h2>
 <p data-i18n="t_p"></p>
 <table id="tbl"></table>
 
-<h2><span class="n">5</span><span data-i18n="v_h"></span></h2>
+<h2><span class="n">6</span><span data-i18n="v_h"></span></h2>
 <ul><li data-i18n="v1"></li><li data-i18n="v2"></li><li data-i18n="v3"></li></ul>
 
 <footer>geo_pfn · docs/sparse-context-results.html · <span data-i18n="foot"></span></footer>
@@ -182,6 +187,13 @@ const I18N={
   v1:"<b>相似性假设成立(机制层面):</b>geo-PFN 在中等稀疏区反超 TabICL 4–6 RMSE,并随上下文单调平稳——尽管更小更欠训。",
   v2:"<b>廉价地质是真杠杆:</b>对 TabICL/hgbt 每档 +2~6;geo-PFN 暂时用不上,待真实性先验修复。",
   v3:"<b>下一步:</b>真实性先验重训完成后,重跑 geo-PFN 的 L 与 LSG 臂,验证 LSG 惩罚是否消失、稀疏区优势是否保持。",
+  hg_h:"读懂 hgbt:为什么这个「笨」基线这么强",
+  hg_p:"hgbt(在 depth+X+Y 上的梯度提升树)在多数 N 下与 ICL 模型持平甚至更好,尤其稠密端。原因并不玄:",
+  hg1:"<b>任务本质是低维空间回归,GBT 是强基线:</b>L 只有 3 列,Su 由深度主导(单深度 R²=0.56、简单单调),梯度树对这种低维平滑趋势拟合稳、方差低,不需多少数据。",
+  hg2:"<b>它每次都全局重训:</b>把 N 口孔的所有行当一个数据集直接拟合;深度这条主信号在所有孔里相同,几口孔就能钉死。ICL 是带固定先验的在线推理,上下文一少就对「采到哪几口孔」敏感、方差大。",
+  hg3:"<b>极稀疏(N=3)它最差——树不能外推:</b>3 口孔只有 3 个 (X,Y),分段常数的树离样本点一远就崩(29.1)。ICL 的平滑先验此时反而没那么糟。",
+  hg4:"<b>稠密(N=192)它最好——问题退化成纯插值:</b>覆盖足够密时 Su 场可直接插值,GBT 是插值利器,相似性迁移无额外可赚。",
+  hg_take:"<b>它划出了 geo-PFN 的价值边界:</b>极稀疏谁都没戏、稠密 hgbt 赢在插值,唯有<b>中等稀疏(N=25–50)</b>——相似性迁移最值钱的区间——geo-PFN 同时压过 hgbt 与 TabICL。geo-PFN 的意义不在稠密插值上打败树,而在稀疏 + 跨孔迁移的区间。",
   foot:"证据 results/haneda/sparse_context.{json,txt} · 当前 checkpoint geopfn2stage.pt"
  },
  ja:{
@@ -205,6 +217,13 @@ const I18N={
   v1:"<b>類似性仮説は成立(機構レベル):</b>geo-PFN は中程度の疎領域で TabICL を 4–6 RMSE 上回り、文脈に対し単調で安定——より小さく学習も少ないのに。",
   v2:"<b>安価な地質は真のレバー:</b>TabICL/hgbt を各段で +2〜6。geo-PFN は今は活かせず、事前分布の現実性修正待ち。",
   v3:"<b>次:</b>現実性事前分布の再学習後、geo-PFN の L と LSG を再走し、LSG ペナルティ消失と疎領域の優位維持を検証する。",
+  hg_h:"hgbt を読み解く:なぜこの「素朴な」基準がこれほど強いのか",
+  hg_p:"hgbt(depth+X+Y 上の勾配ブースティング木)は多くの N で ICL モデルと同等かそれ以上、特に稠密側で強い。理由は難しくない:",
+  hg1:"<b>課題は本質的に低次元の空間回帰で、GBT は強い基準:</b>L は3列のみ、Su は深度が支配(深度単独で R²=0.56、単純な単調)。勾配木はこの低次元の滑らかな傾向を安定・低分散に当て、多くのデータを要しない。",
+  hg2:"<b>毎回グローバルに再学習する:</b>N 孔の全行を1つのデータとして直接当てる;深度という主信号は全孔で共通なので、数孔で固定できる。ICL は固定事前分布の推論で、文脈が少ないと「どの孔を引くか」に敏感で分散が大きい。",
+  hg3:"<b>極疎(N=3)で最悪——木は外挿できない:</b>3孔では (X,Y) が3点のみ。区分的定数の木は標本点から離れると崩れる(29.1)。ICL の滑らかな事前分布はこの時むしろ悪くない。",
+  hg4:"<b>稠密(N=192)で最良——問題が純粋な内挿に退化:</b>被覆が十分なら Su 場は直接内挿でき、GBT は内挿の得意技、類似性転移に上積みの余地はない。",
+  hg_take:"<b>これが geo-PFN の価値の境界を描く:</b>極疎では誰も勝てず、稠密では hgbt が内挿で勝ち、<b>中程度の疎(N=25–50)</b>——類似性転移が最も効く区間——でのみ geo-PFN が hgbt と TabICL を同時に上回る。geo-PFN の意義は稠密な内挿で木に勝つことではなく、疎 + 孔間転移の区間にある。",
   foot:"証拠 results/haneda/sparse_context.{json,txt} · 現 checkpoint geopfn2stage.pt"
  },
  en:{
@@ -228,6 +247,13 @@ const I18N={
   v1:"<b>Similarity hypothesis holds (at the mechanism level):</b> geo-PFN beats TabICL by 4–6 RMSE in the mid-sparse regime and is monotone/stable in context — despite being smaller and under-trained.",
   v2:"<b>Cheap geology is a real lever:</b> +2–6 for TabICL/hgbt at every size; geo-PFN can't use it yet, pending the prior-realism fix.",
   v3:"<b>Next:</b> after the realistic-prior retrain, re-run geo-PFN's L and LSG arms to check whether the LSG penalty disappears and the sparse-regime edge holds.",
+  hg_h:"Reading hgbt: why this 'plain' baseline is so strong",
+  hg_p:"hgbt (a gradient-boosted tree on depth+X+Y) matches or beats the ICL models at most N, especially when dense. The reasons aren't mysterious:",
+  hg1:"<b>The task is essentially low-dimensional spatial regression, and GBT is a strong baseline:</b> L has only 3 columns, Su is depth-dominated (depth alone R²=0.56, simple and monotone), and boosted trees fit such a low-dimensional smooth trend stably and with low variance, needing little data.",
+  hg2:"<b>It refits globally every time:</b> it fits all rows of the N holes directly as one dataset; the depth signal is shared across holes, so a few holes pin it down. ICL is inference with a fixed prior, sensitive to which holes are drawn when context is small — higher variance.",
+  hg3:"<b>Worst at extreme sparsity (N=3) — trees can't extrapolate:</b> 3 holes give only 3 (X,Y) points; a piecewise-constant tree collapses away from the samples (29.1). The ICL models' smooth prior is actually less bad here.",
+  hg4:"<b>Best when dense (N=192) — the problem degenerates to pure interpolation:</b> with enough coverage the Su field is directly interpolable, GBT's forte, with no extra to gain from similarity transfer.",
+  hg_take:"<b>It draws geo-PFN's value boundary:</b> at extreme sparsity nobody wins, when dense hgbt wins on interpolation, and only in the <b>mid-sparse regime (N=25–50)</b> — where similarity transfer is most valuable — does geo-PFN beat both hgbt and TabICL. geo-PFN's point is not to beat trees at dense interpolation, but to win in the sparse + cross-hole-transfer regime.",
   foot:"evidence results/haneda/sparse_context.{json,txt} · current checkpoint geopfn2stage.pt"
  }
 };
