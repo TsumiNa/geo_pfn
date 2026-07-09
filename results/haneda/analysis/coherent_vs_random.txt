@@ -1,0 +1,19 @@
+geo-PFN inference: random-row context vs coherent (nearest whole boreholes)
+holdout / anchor / gain @ k=5 (RMSE, kN/m2 for Su; %-w for Wn)
+
+setting   random(hold/anch/gain)    coherent(hold/anch/gain)
+Su-LCSG   22.67 / 20.60 / -2.07      23.23 / 20.52 / -2.70
+Su-L      18.37 / 15.84 / -2.53      19.33 / 15.45 / -3.88
+Wn-LCSG    8.29 /  7.46 / -0.83       8.35 /  7.01 / -1.33
+
+Baselines @ Su-L k=5: v2 gain -3.70 (anch 14.10), TabICL -4.57 (anch 13.79).
+
+Conclusion:
+- Coherent context improves the anchor/transfer mechanism in EVERY setting
+  (bigger gain, better anchor absolute). Su-L anchor gain -3.88 is now
+  competitive with v2/TabICL -> validates the two-stage row-metric architecture.
+- Cold-start holdout slightly worse under coherent (fewer boreholes -> noisier
+  depth trend); broad sampling favors the pure depth-trend, coherent favors
+  similarity transfer.
+- LCSG absolute floor (~22, worse than L's ~18) is UNCHANGED by context =
+  prior-realism (model mis-reads real cheap-geotech features), not adapter.
