@@ -176,6 +176,48 @@ def _scm_map(
     return feats, target
 
 
+def _generic_features(
+    cfg: GeoPriorConfig,
+    scm_input: torch.Tensor,
+    n_scm_feat: int,
+    g: torch.Generator,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Random-MLP-SCM features with a per-column affine + observation noise."""
+    b, r, _ = scm_input.shape
+    feats, target = _scm_map(cfg, scm_input, n_scm_feat, g)
+    scale = torch.exp(torch.randn(b, 1, n_scm_feat, generator=g) * 0.6)
+    shift = torch.randn(b, 1, n_scm_feat, generator=g)
+    feats = feats * scale + shift
+    feats = feats + cfg.obs_noise * scale * torch.randn(b, r, n_scm_feat, generator=g)
+    return feats, target
+
+
+def sample_features(
+    cfg: GeoPriorConfig,
+    scm_input: torch.Tensor,
+    n_scm_feat: int,
+    g: torch.Generator,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Draw the feature block + target, mixing the generic and geo-realistic priors.
+
+    ``scm_input`` is ``[latent s | depth_norm | location]`` along the last axis.
+    With probability ``cfg.p_geo_realistic`` the whole table uses the realistic
+    cheap-feature block (latent dims 0/1 as the soft/signal factors); otherwise it
+    uses the generic random-MLP branch over the full ``scm_input``. Deciding per
+    table keeps each element internally coherent while the batch spans both
+    families.
+    """
+    from geo_pfn.geoprior.realistic import realistic_block
+
+    if float(torch.rand(1, generator=g).item()) < cfg.p_geo_realistic:
+        sig = 1 if cfg.latent_dim > 1 else 0
+        depth_norm = scm_input[:, :, cfg.latent_dim]
+        return realistic_block(
+            cfg, scm_input[:, :, 0], scm_input[:, :, sig], depth_norm, n_scm_feat, g
+        )
+    return _generic_features(cfg, scm_input, n_scm_feat, g)
+
+
 def sample_geo_batch(
     cfg: GeoPriorConfig, batch_size: int, generator: torch.Generator
 ) -> GeoBatch:
@@ -199,13 +241,7 @@ def sample_geo_batch(
     )
     # reserve 4 structural columns (depth, X, Y, soil code); rest are SCM features
     n_scm_feat = max(1, n_feat - 4)
-    feats, target = _scm_map(cfg, scm_input, n_scm_feat, g)
-
-    # per-column affine + observation noise
-    scale = torch.exp(torch.randn(b, 1, n_scm_feat, generator=g) * 0.6)
-    shift = torch.randn(b, 1, n_scm_feat, generator=g)
-    feats = feats * scale + shift
-    feats = feats + cfg.obs_noise * scale * torch.randn(b, r, n_scm_feat, generator=g)
+    feats, target = sample_features(cfg, scm_input, n_scm_feat, g)
 
     coords = u[:, :2].unsqueeze(1).expand(b, r, 2)
     x = torch.cat(
