@@ -1,0 +1,202 @@
+[
+ {
+  "experiment": "anchor_soil",
+  "model": "v2-clf",
+  "arm": "holdout",
+  "k_anchors": 3,
+  "fold": 0,
+  "n_query": 555,
+  "accuracy": 0.42702702702702705,
+  "macro_f1": 0.19234979803597277
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "hgbt",
+  "arm": "holdout",
+  "k_anchors": 3,
+  "fold": 0,
+  "n_query": 555,
+  "accuracy": 0.4954954954954955,
+  "macro_f1": 0.22814787774640463
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "v2-clf",
+  "arm": "anchor",
+  "k_anchors": 3,
+  "fold": 0,
+  "n_query": 555,
+  "accuracy": 0.7927927927927928,
+  "macro_f1": 0.5784344378258159
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "hgbt",
+  "arm": "anchor",
+  "k_anchors": 3,
+  "fold": 0,
+  "n_query": 555,
+  "accuracy": 0.7081081081081081,
+  "macro_f1": 0.4129994118115544
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "v2-clf",
+  "arm": "holdout",
+  "k_anchors": 3,
+  "fold": 1,
+  "n_query": 642,
+  "accuracy": 0.5389408099688473,
+  "macro_f1": 0.2704682903364674
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "hgbt",
+  "arm": "holdout",
+  "k_anchors": 3,
+  "fold": 1,
+  "n_query": 642,
+  "accuracy": 0.4501557632398754,
+  "macro_f1": 0.30796941557207924
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "v2-clf",
+  "arm": "anchor",
+  "k_anchors": 3,
+  "fold": 1,
+  "n_query": 642,
+  "accuracy": 0.8302180685358256,
+  "macro_f1": 0.5978241188191354
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "hgbt",
+  "arm": "anchor",
+  "k_anchors": 3,
+  "fold": 1,
+  "n_query": 642,
+  "accuracy": 0.719626168224299,
+  "macro_f1": 0.45266521276551097
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "v2-clf",
+  "arm": "holdout",
+  "k_anchors": 3,
+  "fold": 2,
+  "n_query": 509,
+  "accuracy": 0.49901768172888017,
+  "macro_f1": 0.2457218204672558
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "hgbt",
+  "arm": "holdout",
+  "k_anchors": 3,
+  "fold": 2,
+  "n_query": 509,
+  "accuracy": 0.5166994106090373,
+  "macro_f1": 0.2844311050631723
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "v2-clf",
+  "arm": "anchor",
+  "k_anchors": 3,
+  "fold": 2,
+  "n_query": 509,
+  "accuracy": 0.8899803536345776,
+  "macro_f1": 0.5140107597030507
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "hgbt",
+  "arm": "anchor",
+  "k_anchors": 3,
+  "fold": 2,
+  "n_query": 509,
+  "accuracy": 0.8212180746561886,
+  "macro_f1": 0.4573350174029789
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "v2-clf",
+  "arm": "holdout",
+  "k_anchors": 3,
+  "fold": 3,
+  "n_query": 524,
+  "accuracy": 0.4847328244274809,
+  "macro_f1": 0.2977161518903299
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "hgbt",
+  "arm": "holdout",
+  "k_anchors": 3,
+  "fold": 3,
+  "n_query": 524,
+  "accuracy": 0.5381679389312977,
+  "macro_f1": 0.32860134520566103
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "v2-clf",
+  "arm": "anchor",
+  "k_anchors": 3,
+  "fold": 3,
+  "n_query": 524,
+  "accuracy": 0.8377862595419847,
+  "macro_f1": 0.5296425558362261
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "hgbt",
+  "arm": "anchor",
+  "k_anchors": 3,
+  "fold": 3,
+  "n_query": 524,
+  "accuracy": 0.7977099236641222,
+  "macro_f1": 0.4356248586034557
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "v2-clf",
+  "arm": "holdout",
+  "k_anchors": 3,
+  "fold": 4,
+  "n_query": 552,
+  "accuracy": 0.45652173913043476,
+  "macro_f1": 0.23560202860448437
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "hgbt",
+  "arm": "holdout",
+  "k_anchors": 3,
+  "fold": 4,
+  "n_query": 552,
+  "accuracy": 0.4528985507246377,
+  "macro_f1": 0.24360203075456469
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "v2-clf",
+  "arm": "anchor",
+  "k_anchors": 3,
+  "fold": 4,
+  "n_query": 552,
+  "accuracy": 0.822463768115942,
+  "macro_f1": 0.5080523837855995
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "hgbt",
+  "arm": "anchor",
+  "k_anchors": 3,
+  "fold": 4,
+  "n_query": 552,
+  "accuracy": 0.6884057971014492,
+  "macro_f1": 0.3775427550012235
+ }
+]

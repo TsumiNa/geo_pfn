@@ -1,0 +1,169 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>模型对比：TabICL 替代 v2 · geo-PFN 现状</title>
+<style>
+:root{
+  --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --baseline:#c3c2b7; --border:rgba(11,11,11,.10);
+  --v2:#2a78d6; --tab:#1baf7a; --gp:#eb6834; --hg:#898781; --good:#006300;
+}
+@media (prefers-color-scheme:dark){:root{
+  --page:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --baseline:#383835; --border:rgba(255,255,255,.10);
+  --v2:#3987e5; --tab:#199e70; --gp:#eb6834; --hg:#898781; --good:#0ca30c; }}
+:root[data-theme="dark"]{--page:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --baseline:#383835; --border:rgba(255,255,255,.10);
+  --v2:#3987e5; --tab:#199e70; --gp:#eb6834; --hg:#898781; --good:#0ca30c;}
+:root[data-theme="light"]{--page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --baseline:#c3c2b7; --border:rgba(11,11,11,.10);
+  --v2:#2a78d6; --tab:#1baf7a; --gp:#eb6834; --hg:#898781; --good:#006300;}
+*{box-sizing:border-box;margin:0}
+body{background:var(--page);color:var(--ink);
+  font:16px/1.7 system-ui,-apple-system,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;padding:0 20px 80px}
+.wrap{max-width:940px;margin:0 auto}
+header{padding:48px 0 8px}
+.eyebrow{font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h1{font-size:clamp(23px,3.4vw,32px);line-height:1.25;font-weight:700;text-wrap:balance;margin:8px 0 6px}
+.sub{color:var(--ink2);max-width:66ch}
+h2{font-size:19px;font-weight:700;margin:0 0 2px}
+section{margin-top:44px}
+.sec-eyebrow{font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.1em;color:var(--tab);margin-bottom:4px}
+p{max-width:70ch;color:var(--ink2);margin:8px 0}
+p strong{color:var(--ink)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:22px 0 0}
+.tile{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.tile .k{font-size:12px;color:var(--muted)} .tile .v{font-size:22px;font-weight:700;margin-top:2px}
+.tile .d{font-size:12px;color:var(--ink2);margin-top:2px}.tile .d b{color:var(--good)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:6px 0 10px;font-size:13px;color:var(--ink2)}
+.legend .it{display:flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:50%;flex:none}.sw.line{width:16px;height:0;border-top:2.5px solid;border-radius:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:780px){.row2{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.card h3{font-size:14.5px;font-weight:650;margin:0 0 6px}
+svg{display:block;width:100%;height:auto}svg text{font-family:system-ui,-apple-system,"PingFang SC",sans-serif}
+.take{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-top:16px}.take b{color:var(--ink)}
+footer{margin-top:44px;color:var(--muted);font-size:12.5px}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">geo_pfn · 模型对比 · 2026-07-09</div>
+  <h1>TabICL 全面替代 TabPFN v2；geo-PFN 机制成立、精度待补</h1>
+  <p class="sub">真实羽田钻孔数据（240 孔 / 3,521 试样），整孔留出评估。因 v2 权重禁商用、
+  TabICL 权重 BSD-3，确认 TabICL 可替代后 v2 退场；自研 geo-PFN 验证钻孔相似性度量的架构猜想。</p>
+  <div class="tiles">
+    <div class="tile" style="border-left:3px solid var(--tab)"><div class="k">TabICL vs v2 · 整孔冷启动</div><div class="v">13.86 vs 14.25</div><div class="d">RMSE，<b>TabICL 更好</b></div></div>
+    <div class="tile" style="border-left:3px solid var(--gp)"><div class="k">geo-PFN · 零信息冷启动</div><div class="v">17.4 ≈ 17.1</div><div class="d">追平 v2（仅坐标+深度）</div></div>
+    <div class="tile" style="border-left:3px solid var(--gp)"><div class="k">geo-PFN · 锚点增益 k=5</div><div class="v">−2.70</div><div class="d">Su-LCSG，全场最大（coherent）</div></div>
+    <div class="tile"><div class="k">土层分类 · 3 锚点</div><div class="v">48% → 84%</div><div class="d">岩性分段可内插</div></div>
+  </div>
+</header>
+
+<section>
+  <div class="sec-eyebrow">§1 TabICL 能否替代 v2</div>
+  <h2>整孔冷启动：TabICL 在每个指标追平或超过 v2</h2>
+  <div id="ch-replace"></div>
+  <p><strong>结论</strong>：回归 RMSE 13.86 vs 14.25、R² 0.797 vs 0.786、分类 +1.9pt——TabICL 全面 ≥ v2。
+  加上许可（v2 禁商用、TabICL BSD-3），<strong>v2 已移除，TabICL 成为唯一参考基线</strong>。</p>
+</section>
+
+<section>
+  <div class="sec-eyebrow">§2 锚点迁移</div>
+  <h2>稀疏锚点的价值：增益随 k 增长（负=有帮助）</h2>
+  <div class="legend">
+    <span class="it"><span class="sw" style="background:var(--v2)"></span>v2</span>
+    <span class="it"><span class="sw" style="background:var(--tab)"></span>TabICL</span>
+    <span class="it"><span class="sw" style="background:var(--gp)"></span>geo-PFN</span>
+    <span class="it"><span class="sw" style="background:var(--hg)"></span>HGBT</span>
+  </div>
+  <div class="row2">
+    <div class="card"><h3>Su · LCSG（含土工）</h3><div id="ch-lcsg"></div></div>
+    <div class="card"><h3>Su · L（零信息：坐标+深度）</h3><div id="ch-l"></div></div>
+  </div>
+  <p><strong>看点</strong>：geo-PFN（coherent 上下文）的锚点增益 competitive——LCSG k=5 −2.70（全场最大）、Su-L −3.88（与 v2/TabICL 同档）；
+  但绝对 RMSE 仍落后（LCSG 冷启动 22 vs v2/TabICL 14）。零信息(L)下 geo-PFN 冷启动追平 v2/TabICL。</p>
+</section>
+
+<section>
+  <div class="sec-eyebrow">§3 土层分类</div>
+  <h2>岩性可预测性：几个锚点即大幅内插</h2>
+  <div class="legend">
+    <span class="it"><span class="sw" style="background:var(--baseline)"></span>冷启动</span>
+    <span class="it"><span class="sw" style="background:var(--tab)"></span>+3 锚点</span>
+  </div>
+  <div id="ch-soil"></div>
+  <p>冷启动 ~48%（土型难从物性反推），给 3 个散布深度的土型标签后跳到 ~84%。因为岩性在深度上
+  <strong>分段常数（层状）</strong>，锚点之间几乎是内插填空——这印证了 geo-SCM 先验的分层设计假设。</p>
+</section>
+
+<div class="take">
+  <b>一句话</b>：TabICL 全面替代 v2（性能 ≥ 且许可可商用）；geo-PFN 验证了"两段式度量利用钻孔相似性"
+  的机制（锚点增益最优、零信息冷启动追平），但绝对精度受限于合成先验的真实度——这是明确、可修的下一步。
+</div>
+
+<footer>详细数据与实验描述：<span style="font-family:ui-monospace,monospace">docs/model-comparison.md</span> ·
+geo-PFN 假设检验：<span style="font-family:ui-monospace,monospace">docs/geopfn-hypothesis-results.md</span> ·
+预测剖面可视化：<span style="font-family:ui-monospace,monospace">docs/geopfn-viz.html</span></footer>
+</div>
+
+<script>
+"use strict";
+const NS="http://www.w3.org/2000/svg";
+const el=(t,a,p)=>{const n=document.createElementNS(NS,t);for(const k in a)n.setAttribute(k,a[k]);if(p)p.appendChild(n);return n;};
+const txt=(s,x,y,o={})=>{const t=el("text",{x,y,"font-size":o.s||11,fill:o.f||"var(--muted)","text-anchor":o.a||"start","font-weight":o.w||400},o.p);t.textContent=s;return t;};
+function mk(id,w,h){const host=document.getElementById(id);const s=el("svg",{viewBox:`0 0 ${w} ${h}`,role:"img"});s.style.maxWidth=w+"px";host.appendChild(s);return s;}
+
+// §1 replace: grouped bars, three metrics, v2 vs TabICL (normalized display)
+(function(){
+  const W=880,H=210,m={l:120,r:20,t:10,b:28};
+  const svg=mk("ch-replace",W,H);
+  const metrics=[["回归 RMSE↓","",14.25,13.86,10,16],["回归 R²↑","",0.786,0.797,0.6,0.85],["分类 acc↑","",0.688,0.707,0.5,0.75]];
+  const rowH=(H-m.t-m.b)/3;
+  metrics.forEach(([name,_,v2,tab,lo,hi],i)=>{
+    const y=m.t+i*rowH; const X=v=>m.l+(v-lo)/(hi-lo)*(W-m.l-m.r);
+    txt(name,m.l-10,y+rowH/2+4,{a:"end",f:"var(--ink2)",s:12.5,w:600,p:svg});
+    el("rect",{x:m.l,y:y+8,width:X(v2)-m.l,height:12,rx:3,fill:"var(--v2)"},svg);
+    el("rect",{x:m.l,y:y+24,width:X(tab)-m.l,height:12,rx:3,fill:"var(--tab)"},svg);
+    txt("v2 "+v2,X(v2)+5,y+18,{s:11,f:"var(--v2)",p:svg});
+    txt("TabICL "+tab,X(tab)+5,y+34,{s:11,f:"var(--tab)",w:600,p:svg});
+  });
+})();
+
+// §2 anchor gain curves
+function curves(id,data){
+  const W=420,H=260,m={l:44,r:14,t:12,b:34};
+  const svg=mk(id,W,H);
+  const ks=[1,2,3,5]; const all=Object.values(data).flat(); const lo=Math.min(...all,-0.2),hi=0.2;
+  const X=i=>m.l+i/(ks.length-1)*(W-m.l-m.r), Y=v=>m.t+(hi-v)/(hi-lo)*(H-m.t-m.b);
+  for(const g of [0,-1,-2,-3,-4]){if(g<lo-0.1)continue;el("line",{x1:m.l,y1:Y(g),x2:W-m.r,y2:Y(g),stroke:"var(--grid)"},svg);txt(g,m.l-6,Y(g)+4,{a:"end",p:svg});}
+  el("line",{x1:m.l,y1:Y(0),x2:W-m.r,y2:Y(0),stroke:"var(--baseline)","stroke-width":1.3},svg);
+  ks.forEach((k,i)=>txt("k="+k,X(i),H-m.b+15,{a:"middle",p:svg}));
+  txt("锚点增益 RMSE（负=有帮助）",m.l,m.t-2,{s:10,p:svg});
+  const cols={v2:"var(--v2)",tabicl:"var(--tab)",geopfn:"var(--gp)",hgbt:"var(--hg)"};
+  for(const [name,vals] of Object.entries(data)){
+    const pts=vals.map((v,i)=>`${X(i)},${Y(v)}`).join(" ");
+    el("polyline",{points:pts,fill:"none",stroke:cols[name],"stroke-width":2.2},svg);
+    vals.forEach((v,i)=>el("circle",{cx:X(i),cy:Y(v),r:3,fill:cols[name]},svg));
+  }
+}
+curves("ch-lcsg",{v2:[-0.57,-0.83,-1.57,-1.92],tabicl:[-0.11,-0.60,-0.94,-1.43],geopfn:[-0.72,-1.11,-2.05,-2.70],hgbt:[-0.33,-0.51,-0.73,-1.31]});
+curves("ch-l",{v2:[-1.07,-1.94,-3.11,-3.70],tabicl:[-1.53,-2.48,-3.85,-4.57],geopfn:[-1.20,-1.89,-3.50,-3.88],hgbt:[-0.81,-1.36,-2.02,-2.75]});
+
+// §3 soil bars
+(function(){
+  const W=880,H=170,m={l:80,r:20,t:10,b:28};
+  const svg=mk("ch-soil",W,H);
+  const rows=[["TabICL",0.471,0.843],["TabPFN v2",0.481,0.835],["HGBT",0.491,0.747]];
+  const rowH=(H-m.t-m.b)/3; const X=v=>m.l+v/1.0*(W-m.l-m.r);
+  for(const g of [0,0.25,0.5,0.75,1.0]){el("line",{x1:X(g),y1:m.t,x2:X(g),y2:H-m.b,stroke:"var(--grid)"},svg);txt(g,X(g),H-m.b+14,{a:"middle",p:svg});}
+  rows.forEach(([name,hold,anch],i)=>{
+    const y=m.t+i*rowH;
+    txt(name,m.l-8,y+rowH/2+4,{a:"end",f:"var(--ink2)",s:12,w:600,p:svg});
+    el("rect",{x:m.l,y:y+7,width:X(hold)-m.l,height:11,rx:3,fill:"var(--baseline)"},svg);
+    el("rect",{x:m.l,y:y+22,width:X(anch)-m.l,height:11,rx:3,fill:"var(--tab)"},svg);
+    txt(hold.toFixed(2),X(hold)+4,y+16,{s:10,p:svg});
+    txt(anch.toFixed(2),X(anch)+4,y+31,{s:10,f:"var(--tab)",w:600,p:svg});
+  });
+  txt("accuracy",(m.l+W-m.r)/2,H-4,{a:"middle",p:svg});
+})();
+</script>
