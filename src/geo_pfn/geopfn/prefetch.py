@@ -26,7 +26,14 @@ from geo_pfn.geoprior.site import sample_geo_site_batch
 def _worker(
     prior_cfg: GeoPriorConfig, batch_size: int, seed: int, queue: mp.Queue
 ) -> None:
-    """Endlessly sample batches into ``queue`` (blocks when the queue is full)."""
+    """Endlessly sample batches into ``queue`` (blocks when the queue is full).
+
+    Each worker is pinned to a single intra-op thread: sampling parallelism comes
+    from having many worker *processes*, so letting each also open a full OpenMP
+    threadpool would oversubscribe the CPU (N_workers x N_cores threads) and thrash
+    any concurrent CPU work. Keeps the box usable while the GPU stays fed.
+    """
+    torch.set_num_threads(1)
     generator = torch.Generator().manual_seed(seed)
     while True:
         queue.put(sample_geo_site_batch(prior_cfg, batch_size, generator))

@@ -195,6 +195,7 @@ def main() -> None:
     parser.add_argument("--row-layers", type=int, default=4)
     parser.add_argument("--feature-emb-dim", type=int, default=48)
     parser.add_argument("--num-workers", type=int, default=0)
+    parser.add_argument("--p-geo-realistic", type=float, default=None)
     args = parser.parse_args()
 
     train_cfg = GeoPFNTrainConfig(
@@ -216,7 +217,10 @@ def main() -> None:
         row_layers=args.row_layers,
         feature_emb_dim=args.feature_emb_dim,
     )
-    train(train_cfg, model_cfg, GeoPriorConfig())
+    prior_cfg = GeoPriorConfig()
+    if args.p_geo_realistic is not None:
+        prior_cfg = GeoPriorConfig(p_geo_realistic=args.p_geo_realistic)
+    train(train_cfg, model_cfg, prior_cfg)
 
 
 if __name__ == "__main__":
