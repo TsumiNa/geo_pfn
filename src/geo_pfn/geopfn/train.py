@@ -17,6 +17,7 @@ from dataclasses import dataclass
 import torch
 
 from geo_pfn.geopfn.model import GeoPFN, GeoPFNConfig
+from geo_pfn.geopfn.prefetch import BatchPrefetcher
 from geo_pfn.geoprior.config import GeoPriorConfig
 from geo_pfn.geoprior.site import sample_geo_site_batch
 from geo_pfn.util import resolve_device, save_checkpoint
@@ -35,6 +36,7 @@ class GeoPFNTrainConfig:
     log_every: int = 100
     checkpoint_every: int = 2_000
     out_path: str = "checkpoints/geopfn2stage.pt"
+    num_workers: int = 0  # >0 spawns background sampler processes (GPU stays fed)
 
     def __post_init__(self) -> None:
         if self.steps < 1:
@@ -63,14 +65,8 @@ def normalize_target(
     return z, mean, std
 
 
-def _step_loss(
-    model: GeoPFN,
-    prior_cfg: GeoPriorConfig,
-    batch_size: int,
-    g: torch.Generator,
-    device,
-) -> tuple[torch.Tensor, float]:
-    batch = sample_geo_site_batch(prior_cfg, batch_size, g)
+def _forward_loss(model: GeoPFN, batch, device) -> tuple[torch.Tensor, float]:
+    """Bar-distribution loss (+ normalized RMSE) for one already-sampled batch."""
     x = batch.x.to(device)
     ctx = batch.context_mask.to(device)
     z, _, _ = normalize_target(batch.y.to(device), ctx)
@@ -82,6 +78,18 @@ def _step_loss(
         pred, _ = model.bar.mean_std(logits_q)
         rmse_norm = ((pred - z_q) ** 2).mean().sqrt().item()
     return loss, rmse_norm
+
+
+def _step_loss(
+    model: GeoPFN,
+    prior_cfg: GeoPriorConfig,
+    batch_size: int,
+    g: torch.Generator,
+    device,
+) -> tuple[torch.Tensor, float]:
+    """Sample one batch and compute its loss (single-process convenience path)."""
+    batch = sample_geo_site_batch(prior_cfg, batch_size, g)
+    return _forward_loss(model, batch, device)
 
 
 def train(
@@ -109,15 +117,28 @@ def train(
 
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
 
+    prefetcher = (
+        BatchPrefetcher(
+            prior_cfg, train_cfg.batch_size, train_cfg.seed, train_cfg.num_workers
+        )
+        if train_cfg.num_workers > 0
+        else None
+    )
+    if prefetcher is not None:
+        print(f"prefetch: {train_cfg.num_workers} sampler workers")
+
     history: list[dict[str, float]] = []
     win_loss = win_rmse = 0.0
     win_n = 0
     t_start = time.time()
     model.train()
     for step in range(train_cfg.steps):
-        loss, rmse_norm = _step_loss(
-            model, prior_cfg, train_cfg.batch_size, sampler, device
-        )
+        if prefetcher is not None:
+            loss, rmse_norm = _forward_loss(model, prefetcher.get(), device)
+        else:
+            loss, rmse_norm = _step_loss(
+                model, prior_cfg, train_cfg.batch_size, sampler, device
+            )
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), train_cfg.grad_clip)
@@ -153,6 +174,8 @@ def train(
         train_cfg.out_path, model, prior_cfg, train_cfg, train_cfg.steps, history
     )
     print(f"saved {train_cfg.out_path}", flush=True)
+    if prefetcher is not None:
+        prefetcher.close()
     return model, history
 
 
@@ -171,6 +194,7 @@ def main() -> None:
     parser.add_argument("--col-layers", type=int, default=2)
     parser.add_argument("--row-layers", type=int, default=4)
     parser.add_argument("--feature-emb-dim", type=int, default=48)
+    parser.add_argument("--num-workers", type=int, default=0)
     args = parser.parse_args()
 
     train_cfg = GeoPFNTrainConfig(
@@ -182,6 +206,7 @@ def main() -> None:
         device=args.device,
         out_path=args.out,
         log_every=args.log_every,
+        num_workers=args.num_workers,
     )
     model_cfg = GeoPFNConfig(
         d_model=args.d_model,
