@@ -5,9 +5,8 @@ TabICL is not a project dependency; run in an ephemeral overlay environment:
     uv run --with tabicl python -m geo_pfn.haneda.eval_tabicl
 
 Evaluates TabICLRegressor (raw Su) and TabICLClassifier (train-fold quantile
-bins) on the same borehole-grouped folds and feature matrices as the TabPFN v2
-arms in ``geo_pfn.haneda.run``, so results in ``results/haneda/tabicl.json``
-are fold-paired with ``results/haneda/imputation.json``.
+bins) on the borehole-grouped folds and feature matrices from ``geo_pfn.haneda``,
+writing results to ``results/haneda/tabicl.json``.
 """
 
 from __future__ import annotations

@@ -7,6 +7,7 @@ authors = [{ name = "TsumiNa", email = "liu.chang.1865@gmail.com" }]
 requires-python = ">=3.11, <3.15"
 dependencies = [
     "numpy>=2.4.6",
+    "pandas>=3.0.3",
     "scikit-learn>=1.9.0",
     "torch>=2.12.1",
 ]
@@ -21,5 +22,4 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
-    "tabpfn>=8.0.8",
 ]
