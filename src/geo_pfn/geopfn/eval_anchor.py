@@ -115,7 +115,21 @@ def run(
                     flush=True,
                 )
                 Path(out_path).parent.mkdir(parents=True, exist_ok=True)
-                Path(out_path).write_text(json.dumps(records, indent=1))
+                payload = {
+                    "config": {
+                        "checkpoint": checkpoint,
+                        "feature_set": feature_set.value,
+                        "target": target_col,
+                        "k_anchors": list(k_anchors),
+                        "split": f"GroupKFold(borehole, n_splits={n_folds}, seed={seed})",
+                        "ensemble": {
+                            "ctx_size": ens.ctx_size,
+                            "n_ensembles": ens.n_ensembles,
+                        },
+                    },
+                    "records": records,
+                }
+                Path(out_path).write_text(json.dumps(payload, indent=1))
     _summary(records)
     print(f"done in {time.monotonic() - t0:.1f}s -> {out_path}", flush=True)
 
