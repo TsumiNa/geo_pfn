@@ -1,4 +1,4 @@
-<title>Su 场·地质消融对比 — TabICL</title>
+<title>Su 场·地质消融对比 / Su場·地質アブレーション / Su-field geology ablation — TabICL</title>
 <style>
 :root{
   --bg:#f4f2ee; --panel:#fbfaf8; --ink:#1c1b19; --ink2:#55514a; --muted:#8a847a;
@@ -48,64 +48,49 @@ td:first-child,th:first-child{text-align:left}
 .takeaway b{color:var(--ink)}
 footer{margin-top:46px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font:500 11.5px var(--mono)}
 a{color:var(--accent)}
+.langbar{position:fixed;top:14px;right:16px;z-index:20;display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px}
+.langbar button{border:0;background:transparent;color:var(--ink2);font:600 12px var(--sans);padding:5px 11px;border-radius:999px;cursor:pointer}
+.langbar button.on{background:var(--accent);color:#fff}
 </style>
+
+<div class="langbar"><button data-lang="zh">中</button><button data-lang="ja">日</button><button data-lang="en">EN</button></div>
 
 <div class="wrap">
 <header>
-  <div class="kick">TabICL · Haneda 羽田 · 虚拟 Su 场</div>
-  <h1>大尺度地质数据能否改变 Su 预测场?</h1>
-  <p class="sub">同一张 100×100 x-y × 深度 5–70m 的虚拟网格上,用 TabICL 预测无侧限抗剪强度 Su(kN/m²),
-  对比三种特征集:<b>仅位置</b>(L)、<b>位置+地质</b>(LSG:土质+粒径)、<b>位置+廉价土工</b>(LC:去地质)。</p>
+  <div class="kick" data-i18n="kick"></div>
+  <h1 data-i18n="h1"></h1>
+  <p class="sub" data-i18n="sub"></p>
 </header>
 
-<div class="caveat">
-  <b>先读这里——为什么这是"视觉参考"而非真正的消融。</b>虚拟网格点上没有实测地质/土工,
-  三种特征都得先从 (x,y,深度) <b>空间插值</b>出来再预测 Su。插值出的地质是坐标的确定函数,
-  <b>不含超出坐标的独立信息</b>。所以两张地质图与位置图的差异,反映的是"带地质训练的 TabICL
-  学到了不同的映射并用插值地质作非线性基",<b>不能证明地质在网格点上提供了局部新信息</b>。
-  地质是否真的提升精度,只能在<b>实测钻孔</b>上判断(见稀疏上下文实验 Test B)。
-</div>
+<div class="caveat" data-i18n="caveat"></div>
 
-<h2><span class="n">1</span>三种特征集的 Su 场(逐深度切片)</h2>
+<h2><span class="n">1</span><span data-i18n="s1h"></span></h2>
 <div class="guide">
   <canvas class="mini" id="minimap" width="120" height="114" style="border:1px solid var(--line2);border-radius:5px"></canvas>
-  <div>
-  <b>怎么读这张图。</b>每个小方块是一张<b>俯视地图</b>(不是曲线):把工地从上往下看,
-  横轴 x(东西 ≈ 2.0 km)、纵轴 y(南北 ≈ 1.9 km,上北)。<b>在某个固定深度</b>的水平切片上,
-  每个像素的<b>颜色 = 该 (x,y) 处 TabICL 预测的 Su</b>——越亮(黄)越硬,越暗(紫)越软。
-  白色小圈 <span class="dot"></span> = 240 口<b>真实钻孔</b>的平面位置(模型的"锚")。
-  三列 = 三种特征集;四行 = 四个深度。<b>颜色每行单独标定</b>(Su 随深度增大,不然深层会全黄)。
-  左侧迷你图是深度 30m 的 L 场示意。
-  </div>
+  <div data-i18n="guide"></div>
 </div>
 <div class="legwrap">
-  <div class="leg"><span>软(低 Su)</span><canvas id="seqbar" class="bar" width="150" height="11"></canvas><span>硬(高 Su)</span></div>
-  <div class="leg"><span class="dot"></span><span>钻孔位置</span></div>
+  <div class="leg"><span data-i18n="leg_soft"></span><canvas id="seqbar" class="bar" width="150" height="11"></canvas><span data-i18n="leg_hard"></span></div>
+  <div class="leg"><span class="dot"></span><span data-i18n="leg_bore"></span></div>
 </div>
 <div class="matrix" id="fields"></div>
-<div class="axhint">每张图:← 东西 x 0–<span id="xm"></span> m → ,纵向 南北 y 0–<span id="ym"></span> m(上=北)</div>
+<div class="axhint" data-i18n="axhint"></div>
 
-<h2><span class="n">2</span>差异图:地质模型偏离位置基线多少</h2>
-<p class="note">Δ = (含地质预测) − (仅位置预测),同样是俯视地图。发散色阶:蓝=地质模型把 Su 调低,
-红=调高,灰=几乎无差异。看差异<b>集中在哪里</b>、幅度多大。</p>
+<h2><span class="n">2</span><span data-i18n="s2h"></span></h2>
+<p class="note" data-i18n="note2"></p>
 <div class="legwrap">
-  <div class="leg"><span>蓝 −Δ(调低)</span><canvas id="divbar" class="bar" width="150" height="11"></canvas><span>红 +Δ(调高)</span></div>
+  <div class="leg"><span data-i18n="leg_blue"></span><canvas id="divbar" class="bar" width="150" height="11"></canvas><span data-i18n="leg_red"></span></div>
   <div class="leg" id="divscale" style="color:var(--muted)"></div>
 </div>
 <div class="matrix" id="diffs"></div>
 
-<h2><span class="n">3</span>逐深度差异幅度(全 14 层)</h2>
-<p class="note">整层平均 |Δ|(kN/m²)。差异随深度增大——深部软土/水状态的地质签名对 Su 影响更明显。</p>
+<h2><span class="n">3</span><span data-i18n="s3h"></span></h2>
+<p class="note" data-i18n="note3"></p>
 <table id="summary"></table>
 
-<div class="takeaway">
-  <b>结论(诚实版):</b>含地质的 TabICL 确实画出<b>不同的</b> Su 场(整层平均偏离位置基线约 5–9 kN/m²,
-  深部更大),说明它在真实数据上学到了地质↔Su 的关系并投射到空间。但因为网格上的地质是坐标插值来的,
-  这张图<b>不能</b>说明"给局部摊洞加地质就更准"。真正的问题——<i>珍贵的稀疏钻孔 + 廉价大尺度地质,
-  能否提升局部 Su 精度</i>——由实测钻孔上的稀疏上下文实验(Test B: L vs LSG)回答。
-</div>
+<div class="takeaway" data-i18n="takeaway"></div>
 
-<footer>geo_pfn · docs/su-grid-geology-ablation.html · 数据 results/haneda/su_grid_tabicl_{,geology,nogeology}.parquet(未提交)</footer>
+<footer data-i18n="foot"></footer>
 </div>
 
 <div class="tip" id="tip"></div>
@@ -145,8 +130,11 @@ function mkCell(grid,valfn,cap){
 function fillBar(id,fn){const c=document.getElementById(id).getContext('2d');
   for(let x=0;x<150;x++){const [r,g,b]=fn(x/149);c.fillStyle=`rgb(${r|0},${g|0},${b|0})`;c.fillRect(x,0,1,11);}}
 fillBar('seqbar',seq);fillBar('divbar',t=>div(t*2-1));
-document.getElementById('xm').textContent=D.extent.x_m;
-document.getElementById('ym').textContent=D.extent.y_m;
+function fillExtent(){
+  const xm=document.getElementById('xm'),ym=document.getElementById('ym');
+  if(xm)xm.textContent=D.extent.x_m;
+  if(ym)ym.textContent=D.extent.y_m;
+}
 
 // mini explainer map: depth-30 L field
 (function(){const sl=D.slices.find(s=>s.depth===30)||D.slices[0];
@@ -161,37 +149,45 @@ document.getElementById('ym').textContent=D.extent.y_m;
 })();
 
 // §1
-const COLS=[['L','仅位置','loc'],['LSG','+地质 soil·粒径','geo'],['LC','+廉价土工·去地质','nogeo']];
-const fields=document.getElementById('fields');
-fields.style.gridTemplateColumns=`auto repeat(${COLS.length},1fr)`;
-fields.appendChild(document.createElement('div'));
-for(const [t,s] of COLS){const h=document.createElement('div');h.className='colhead';h.innerHTML=`${t}<small>${s}</small>`;fields.appendChild(h);}
-for(const sl of D.slices){
-  const lab=document.createElement('div');lab.className='rowlab';lab.textContent=sl.depth+' m';fields.appendChild(lab);
-  const lo=sl.su_min,hi=sl.su_max,rng=Math.max(1e-6,hi-lo);
-  for(const [,,key] of COLS)fields.appendChild(mkCell(sl[key],v=>seq((v-lo)/rng),`${lo}–${hi}`));
+function renderFields(T){
+  const COLS=[['L',T.col_L,'loc'],['LSG',T.col_LSG,'geo'],['LC',T.col_LC,'nogeo']];
+  const fields=document.getElementById('fields');
+  fields.replaceChildren();
+  fields.style.gridTemplateColumns=`auto repeat(${COLS.length},1fr)`;
+  fields.appendChild(document.createElement('div'));
+  for(const [t,s] of COLS){const h=document.createElement('div');h.className='colhead';h.innerHTML=`${t}<small>${s}</small>`;fields.appendChild(h);}
+  for(const sl of D.slices){
+    const lab=document.createElement('div');lab.className='rowlab';lab.textContent=sl.depth+' m';fields.appendChild(lab);
+    const lo=sl.su_min,hi=sl.su_max,rng=Math.max(1e-6,hi-lo);
+    for(const [,,key] of COLS)fields.appendChild(mkCell(sl[key],v=>seq((v-lo)/rng),`${lo}–${hi}`));
+  }
 }
 
 // §2
-const DCOLS=[['Δ LSG−L','含地质 − 位置','dgeo'],['Δ LC−L','去地质集 − 位置','dnogeo']];
-const diffs=document.getElementById('diffs');
-diffs.style.gridTemplateColumns=`auto repeat(${DCOLS.length},1fr)`;
-diffs.appendChild(document.createElement('div'));
-for(const [t,s] of DCOLS){const h=document.createElement('div');h.className='colhead';h.innerHTML=`${t}<small>${s}</small>`;diffs.appendChild(h);}
-let gmax=0;for(const sl of D.slices)gmax=Math.max(gmax,sl.diff_abs);
-document.getElementById('divscale').textContent=`±${gmax.toFixed(0)} kN/m² 满量程 · 每图共用`;
-for(const sl of D.slices){
-  const lab=document.createElement('div');lab.className='rowlab';lab.textContent=sl.depth+' m';diffs.appendChild(lab);
-  for(const [,,key] of DCOLS){const mean=key==='dgeo'?sl.mean_dgeo:sl.mean_dnogeo;
-    diffs.appendChild(mkCell(sl[key],v=>div(Math.max(-1,Math.min(1,v/gmax))),`|Δ|=${mean}`));}
+function renderDiffs(T){
+  const DCOLS=[['Δ LSG−L',T.dcol_geo,'dgeo'],['Δ LC−L',T.dcol_nogeo,'dnogeo']];
+  const diffs=document.getElementById('diffs');
+  diffs.replaceChildren();
+  diffs.style.gridTemplateColumns=`auto repeat(${DCOLS.length},1fr)`;
+  diffs.appendChild(document.createElement('div'));
+  for(const [t,s] of DCOLS){const h=document.createElement('div');h.className='colhead';h.innerHTML=`${t}<small>${s}</small>`;diffs.appendChild(h);}
+  let gmax=0;for(const sl of D.slices)gmax=Math.max(gmax,sl.diff_abs);
+  document.getElementById('divscale').textContent=`±${gmax.toFixed(0)} kN/m² ${T.divscale_suffix}`;
+  for(const sl of D.slices){
+    const lab=document.createElement('div');lab.className='rowlab';lab.textContent=sl.depth+' m';diffs.appendChild(lab);
+    for(const [,,key] of DCOLS){const mean=key==='dgeo'?sl.mean_dgeo:sl.mean_dnogeo;
+      diffs.appendChild(mkCell(sl[key],v=>div(Math.max(-1,Math.min(1,v/gmax))),`|Δ|=${mean}`));}
+  }
 }
 
 // §3
-const rows=D.summary,maxd=Math.max(...rows.map(r=>Math.max(r.mean_dgeo,r.mean_dnogeo)));
-let html=`<tr><th>深度 m</th><th>L 均值</th><th>LSG 均值</th><th>LC 均值</th><th>|Δ地质|</th><th>|Δ去地质|</th><th style="text-align:left;width:130px">差异幅度</th></tr>`;
-for(const r of rows){const w1=100*r.mean_dgeo/maxd;
-  html+=`<tr><td>${r.depth}</td><td>${r.loc_mean}</td><td>${r.geo_mean}</td><td>${r.nogeo_mean}</td><td>${r.mean_dgeo}</td><td>${r.mean_dnogeo}</td><td style="text-align:left"><span style="display:inline-block;height:8px;width:${w1}%;background:#eb6834;border-radius:2px;max-width:100%"></span></td></tr>`;}
-document.getElementById('summary').innerHTML=html;
+function renderSummary(T){
+  const rows=D.summary,maxd=Math.max(...rows.map(r=>Math.max(r.mean_dgeo,r.mean_dnogeo)));
+  let html=`<tr><th>${T.th_depth}</th><th>${T.th_lmean}</th><th>${T.th_lsgmean}</th><th>${T.th_lcmean}</th><th>${T.th_dgeo}</th><th>${T.th_dnogeo}</th><th style="text-align:left;width:130px">${T.th_diffmag}</th></tr>`;
+  for(const r of rows){const w1=100*r.mean_dgeo/maxd;
+    html+=`<tr><td>${r.depth}</td><td>${r.loc_mean}</td><td>${r.geo_mean}</td><td>${r.nogeo_mean}</td><td>${r.mean_dgeo}</td><td>${r.mean_dnogeo}</td><td style="text-align:left"><span style="display:inline-block;height:8px;width:${w1}%;background:#eb6834;border-radius:2px;max-width:100%"></span></td></tr>`;}
+  document.getElementById('summary').innerHTML=html;
+}
 
 // hover
 const tip=document.getElementById('tip');
@@ -202,4 +198,85 @@ function hover(cv){
     tip.textContent=`${cv._grid[i][j]} kN/m²`;tip.style.left=(e.clientX+12)+'px';tip.style.top=(e.clientY+12)+'px';tip.style.opacity=1;});
   cv.addEventListener('mouseleave',()=>tip.style.opacity=0);
 }
+
+// i18n
+const I18N={
+ zh:{
+  kick:"TabICL · Haneda 羽田 · 虚拟 Su 场",
+  h1:"大尺度地质数据能否改变 Su 预测场?",
+  sub:"同一张 100×100 x-y × 深度 5–70m 的虚拟网格上,用 TabICL 预测无侧限抗剪强度 Su(kN/m²),对比三种特征集:<b>仅位置</b>(L)、<b>位置+地质</b>(LSG:土质+粒径)、<b>位置+廉价土工</b>(LC:去地质)。",
+  caveat:"<b>先读这里——为什么这是“视觉参考”而非真正的消融。</b>虚拟网格点上没有实测地质/土工,三种特征都得先从 (x,y,深度) <b>空间插值</b>出来再预测 Su。插值出的地质是坐标的确定函数,<b>不含超出坐标的独立信息</b>。所以两张地质图与位置图的差异,反映的是“带地质训练的 TabICL 学到了不同的映射并用插值地质作非线性基”,<b>不能证明地质在网格点上提供了局部新信息</b>。地质是否真的提升精度,只能在<b>实测钻孔</b>上判断(见稀疏上下文实验 Test B)。",
+  s1h:"三种特征集的 Su 场(逐深度切片)",
+  guide:"<b>怎么读这张图。</b>每个小方块是一张<b>俯视地图</b>(不是曲线):把工地从上往下看,横轴 x(东西 ≈ 2.0 km)、纵轴 y(南北 ≈ 1.9 km,上北)。<b>在某个固定深度</b>的水平切片上,每个像素的<b>颜色 = 该 (x,y) 处 TabICL 预测的 Su</b>——越亮(黄)越硬,越暗(紫)越软。白色小圈 <span class='dot'></span> = 240 口<b>真实钻孔</b>的平面位置(模型的“锚”)。三列 = 三种特征集;四行 = 四个深度。<b>颜色每行单独标定</b>(Su 随深度增大,不然深层会全黄)。左侧迷你图是深度 30m 的 L 场示意。",
+  leg_soft:"软(低 Su)",leg_hard:"硬(高 Su)",leg_bore:"钻孔位置",
+  axhint:"每张图:← 东西 x 0–<span id='xm'></span> m → ,纵向 南北 y 0–<span id='ym'></span> m(上=北)",
+  s2h:"差异图:地质模型偏离位置基线多少",
+  note2:"Δ = (含地质预测) − (仅位置预测),同样是俯视地图。发散色阶:蓝=地质模型把 Su 调低,红=调高,灰=几乎无差异。看差异<b>集中在哪里</b>、幅度多大。",
+  leg_blue:"蓝 −Δ(调低)",leg_red:"红 +Δ(调高)",
+  s3h:"逐深度差异幅度(全 14 层)",
+  note3:"整层平均 |Δ|(kN/m²)。差异随深度增大——深部软土/水状态的地质签名对 Su 影响更明显。",
+  takeaway:"<b>结论(诚实版):</b>含地质的 TabICL 确实画出<b>不同的</b> Su 场(整层平均偏离位置基线约 5–9 kN/m²,深部更大),说明它在真实数据上学到了地质↔Su 的关系并投射到空间。但因为网格上的地质是坐标插值来的,这张图<b>不能</b>说明“给局部摊洞加地质就更准”。真正的问题——<i>珍贵的稀疏钻孔 + 廉价大尺度地质,能否提升局部 Su 精度</i>——由实测钻孔上的稀疏上下文实验(Test B: L vs LSG)回答。",
+  foot:"geo_pfn · docs/su-grid-geology-ablation.html · 数据 results/haneda/su_grid_tabicl_{,geology,nogeology}.parquet(未提交)",
+  col_L:"仅位置",col_LSG:"+地质 soil·粒径",col_LC:"+廉价土工·去地质",
+  dcol_geo:"含地质 − 位置",dcol_nogeo:"去地质集 − 位置",
+  divscale_suffix:"满量程 · 每图共用",
+  th_depth:"深度 m",th_lmean:"L 均值",th_lsgmean:"LSG 均值",th_lcmean:"LC 均值",th_dgeo:"|Δ地质|",th_dnogeo:"|Δ去地质|",th_diffmag:"差异幅度"
+ },
+ ja:{
+  kick:"TabICL · Haneda 羽田 · 仮想 Su 場",
+  h1:"大スケールの地質データは Su 予測場を変えられるか?",
+  sub:"同一の 100×100 x-y × 深度 5–70m の仮想グリッド上で、TabICL により非排水せん断強度 Su(kN/m²)を予測し、3 つの特徴量セットを比較:<b>座標のみ</b>(L)、<b>座標+地質</b>(LSG:土質+粒径)、<b>座標+安価な土質</b>(LC:地質除去)。",
+  caveat:"<b>まず読む——なぜこれは真のアブレーションではなく「視覚的な参考」なのか。</b>仮想グリッド点には実測の地質/土質がなく、3 つの特徴量はいずれも先に (x,y,深度) から<b>空間内挿</b>してから Su を予測する。内挿された地質は座標の確定的な関数であり、<b>座標を超える独立情報を含まない</b>。したがって 2 枚の地質図と座標図の差は、「地質込みで学習した TabICL が異なる写像を学び、内挿地質を非線形基底として用いた」ことを反映するにすぎず、<b>地質がグリッド点で局所的な新情報を与えた証拠にはならない</b>。地質が本当に精度を上げるかは、<b>実測ボーリング</b>でのみ判断できる(疎な文脈実験 Test B を参照)。",
+  s1h:"3 つの特徴量セットの Su 場(深度スライスごと)",
+  guide:"<b>この図の読み方。</b>各小さな四角は<b>平面図(俯瞰)</b>(曲線ではない):現場を上から見下ろし、横軸 x(東西 ≈ 2.0 km)、縦軸 y(南北 ≈ 1.9 km、上が北)。<b>ある固定深度</b>の水平スライス上で、各ピクセルの<b>色 = その (x,y) で TabICL が予測した Su</b>——明るい(黄)ほど硬く、暗い(紫)ほど軟らかい。白い小丸 <span class='dot'></span> = 240 本の<b>実ボーリング</b>の平面位置(モデルの「アンカー」)。3 列 = 3 つの特徴量セット、4 行 = 4 つの深度。<b>色は行ごとに個別に正規化</b>(Su は深度とともに増大するため、そうしないと深部が全て黄になる)。左のミニ図は深度 30m の L 場の概略。",
+  leg_soft:"軟(低 Su)",leg_hard:"硬(高 Su)",leg_bore:"ボーリング位置",
+  axhint:"各図:← 東西 x 0–<span id='xm'></span> m → 、縦 南北 y 0–<span id='ym'></span> m(上=北)",
+  s2h:"差分図:地質モデルは座標基準からどれだけ外れるか",
+  note2:"Δ =(地質込み予測)−(座標のみ予測)、同じく平面図(俯瞰)。発散カラースケール:青=地質モデルが Su を下げる、赤=上げる、灰=ほぼ差なし。差が<b>どこに集中するか</b>、振幅の大きさを見る。",
+  leg_blue:"青 −Δ(下げる)",leg_red:"赤 +Δ(上げる)",
+  s3h:"深度ごとの差分の大きさ(全 14 層)",
+  note3:"各層平均 |Δ|(kN/m²)。差は深度とともに増大——深部の軟土/含水状態の地質シグネチャが Su により強く影響する。",
+  takeaway:"<b>結論(正直版):</b>地質込みの TabICL は確かに<b>異なる</b> Su 場を描く(各層平均で座標基準から約 5–9 kN/m² ずれ、深部ほど大きい)。実データ上で地質↔Su の関係を学び、それを空間へ投影していることを示す。ただしグリッド上の地質は座標から内挿したものなので、この図は「局所点に地質を足せばより正確になる」ことを<b>示せない</b>。本当の問い——<i>貴重な疎ボーリング + 安価な大スケール地質が、局所の Su 精度を上げられるか</i>——は、実測ボーリングでの疎な文脈実験(Test B: L vs LSG)が答える。",
+  foot:"geo_pfn · docs/su-grid-geology-ablation.html · データ results/haneda/su_grid_tabicl_{,geology,nogeology}.parquet(未コミット)",
+  col_L:"座標のみ",col_LSG:"+地質 soil·粒径",col_LC:"+安価な土質·地質除去",
+  dcol_geo:"地質込み − 座標",dcol_nogeo:"地質除去セット − 座標",
+  divscale_suffix:"フルスケール · 全図共通",
+  th_depth:"深度 m",th_lmean:"L 平均",th_lsgmean:"LSG 平均",th_lcmean:"LC 平均",th_dgeo:"|Δ地質|",th_dnogeo:"|Δ地質除去|",th_diffmag:"差分の大きさ"
+ },
+ en:{
+  kick:"TabICL · Haneda · virtual Su field",
+  h1:"Can large-scale geology data change the predicted Su field?",
+  sub:"On the same 100×100 x-y × depth 5–70m virtual grid, TabICL predicts undrained shear strength Su (kN/m²), comparing three feature sets: <b>location only</b> (L), <b>location + geology</b> (LSG: soil type + grain size), <b>location + cheap geotech</b> (LC: geology removed).",
+  caveat:"<b>Read this first — why this is a \"visual reference,\" not a true ablation.</b> The virtual grid points have no measured geology/geotech; all three feature sets must first be <b>spatially imputed</b> from (x,y,depth) before predicting Su. The imputed geology is a deterministic function of the coordinates and <b>carries no information beyond the coordinates</b>. So the difference between the two geology maps and the location map reflects that \"the geology-trained TabICL learned a different mapping and used the imputed geology as a nonlinear basis\" — it <b>does not prove that geology supplies new local information at the grid points</b>. Whether geology truly improves accuracy can only be judged on <b>real boreholes</b> (see the sparse-context experiment, Test B).",
+  s1h:"Su fields for the three feature sets (per depth slice)",
+  guide:"<b>How to read this.</b> Each small square is a <b>plan-view map</b> (not a curve): look down on the site from above, horizontal axis x (east–west ≈ 2.0 km), vertical axis y (north–south ≈ 1.9 km, north up). On a horizontal slice <b>at a fixed depth</b>, each pixel's <b>color = the Su predicted by TabICL at that (x,y)</b> — brighter (yellow) = harder, darker (purple) = softer. The small white circle <span class='dot'></span> = the plan positions of the 240 <b>real boreholes</b> (the model's \"anchors\"). Three columns = three feature sets; four rows = four depths. <b>Color is calibrated per row</b> (Su grows with depth, otherwise deep layers would be all yellow). The mini map on the left sketches the L field at 30m depth.",
+  leg_soft:"soft (low Su)",leg_hard:"hard (high Su)",leg_bore:"borehole locations",
+  axhint:"Each map: ← east–west x 0–<span id='xm'></span> m → , vertical north–south y 0–<span id='ym'></span> m (up = north)",
+  s2h:"Difference maps: how much the geology model departs from the location baseline",
+  note2:"Δ = (geology-included prediction) − (location-only prediction), also a plan-view map. Diverging color scale: blue = the geology model lowers Su, red = raises it, gray = almost no difference. Look at <b>where the difference concentrates</b> and how large it is.",
+  leg_blue:"blue −Δ (lowers)",leg_red:"red +Δ (raises)",
+  s3h:"Difference magnitude by depth (all 14 layers)",
+  note3:"Layer-averaged |Δ| (kN/m²). The difference grows with depth — the geological signature of deep soft soil / water state affects Su more strongly.",
+  takeaway:"<b>Conclusion (honest version):</b> The geology-included TabICL does draw a <b>different</b> Su field (layer-averaged departure from the location baseline of about 5–9 kN/m², larger at depth), showing that on real data it learned the geology↔Su relationship and projected it into space. But because the grid's geology is imputed from coordinates, this figure <b>cannot</b> show that \"adding geology to a local point makes it more accurate.\" The real question — <i>whether precious sparse boreholes + cheap large-scale geology can improve local Su accuracy</i> — is answered by the sparse-context experiment on real boreholes (Test B: L vs LSG).",
+  foot:"geo_pfn · docs/su-grid-geology-ablation.html · data results/haneda/su_grid_tabicl_{,geology,nogeology}.parquet (uncommitted)",
+  col_L:"location only",col_LSG:"+geology soil·grain",col_LC:"+cheap geotech·no geology",
+  dcol_geo:"with geology − location",dcol_nogeo:"no-geology set − location",
+  divscale_suffix:"full scale · shared across maps",
+  th_depth:"depth m",th_lmean:"L mean",th_lsgmean:"LSG mean",th_lcmean:"LC mean",th_dgeo:"|Δ geology|",th_dnogeo:"|Δ no-geology|",th_diffmag:"diff. magnitude"
+ }
+};
+function setLang(l){
+  document.documentElement.lang=l==='zh'?'zh-CN':l==='ja'?'ja':'en';
+  try{localStorage.setItem('geopfn_lang',l);}catch(e){}
+  const d=I18N[l]||I18N.zh;
+  document.querySelectorAll('[data-i18n]').forEach(e=>{const v=d[e.dataset.i18n];if(v!=null)e.innerHTML=v;});
+  document.querySelectorAll('.langbar button').forEach(b=>b.classList.toggle('on',b.dataset.lang===l));
+  fillExtent();
+  renderFields(d);
+  renderDiffs(d);
+  renderSummary(d);
+}
+document.querySelectorAll('.langbar button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+let init='zh';try{init=localStorage.getItem('geopfn_lang')||'zh';}catch(e){}
+setLang(['zh','ja','en'].includes(init)?init:'zh');
 </script>
