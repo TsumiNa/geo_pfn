@@ -19,7 +19,7 @@ import torch
 from geo_pfn.geopfn.model import GeoPFN, GeoPFNConfig
 from geo_pfn.geoprior.config import GeoPriorConfig
 from geo_pfn.geoprior.site import sample_geo_site_batch
-from geo_pfn.minipfn.train import resolve_device, save_checkpoint
+from geo_pfn.util import resolve_device, save_checkpoint
 
 
 @dataclass(kw_only=True)

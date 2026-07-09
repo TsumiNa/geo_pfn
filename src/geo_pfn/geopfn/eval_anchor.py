@@ -35,7 +35,7 @@ from geo_pfn.haneda.data import (
     load_haneda,
 )
 from geo_pfn.haneda.runners import regression_metrics
-from geo_pfn.minipfn.train import resolve_device
+from geo_pfn.util import resolve_device
 
 
 def load_geopfn(path: str, device: torch.device) -> GeoPFN:

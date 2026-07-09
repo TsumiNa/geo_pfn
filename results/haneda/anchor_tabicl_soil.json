@@ -1,0 +1,102 @@
+[
+ {
+  "experiment": "anchor_soil",
+  "model": "tabicl",
+  "arm": "holdout",
+  "k_anchors": 3,
+  "fold": 0,
+  "n_query": 555,
+  "accuracy": 0.45225225225225224,
+  "macro_f1": 0.2760933281489309
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "tabicl",
+  "arm": "anchor",
+  "k_anchors": 3,
+  "fold": 0,
+  "n_query": 555,
+  "accuracy": 0.8036036036036036,
+  "macro_f1": 0.58654398874161
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "tabicl",
+  "arm": "holdout",
+  "k_anchors": 3,
+  "fold": 1,
+  "n_query": 642,
+  "accuracy": 0.4735202492211838,
+  "macro_f1": 0.23810953254762982
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "tabicl",
+  "arm": "anchor",
+  "k_anchors": 3,
+  "fold": 1,
+  "n_query": 642,
+  "accuracy": 0.8302180685358256,
+  "macro_f1": 0.6306993514571912
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "tabicl",
+  "arm": "holdout",
+  "k_anchors": 3,
+  "fold": 2,
+  "n_query": 509,
+  "accuracy": 0.5245579567779961,
+  "macro_f1": 0.2441693444419751
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "tabicl",
+  "arm": "anchor",
+  "k_anchors": 3,
+  "fold": 2,
+  "n_query": 509,
+  "accuracy": 0.899803536345776,
+  "macro_f1": 0.5143594500826345
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "tabicl",
+  "arm": "holdout",
+  "k_anchors": 3,
+  "fold": 3,
+  "n_query": 524,
+  "accuracy": 0.4618320610687023,
+  "macro_f1": 0.29095860243743016
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "tabicl",
+  "arm": "anchor",
+  "k_anchors": 3,
+  "fold": 3,
+  "n_query": 524,
+  "accuracy": 0.8435114503816794,
+  "macro_f1": 0.5074402461404286
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "tabicl",
+  "arm": "holdout",
+  "k_anchors": 3,
+  "fold": 4,
+  "n_query": 552,
+  "accuracy": 0.4420289855072464,
+  "macro_f1": 0.2618747722768172
+ },
+ {
+  "experiment": "anchor_soil",
+  "model": "tabicl",
+  "arm": "anchor",
+  "k_anchors": 3,
+  "fold": 4,
+  "n_query": 552,
+  "accuracy": 0.8369565217391305,
+  "macro_f1": 0.5418545288927119
+ }
+]

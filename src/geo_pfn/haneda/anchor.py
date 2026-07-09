@@ -1,7 +1,7 @@
 """Sparse-anchor cross-borehole transfer: ``python -m geo_pfn.haneda.anchor``.
 
 The realistic prognosis question is *not* shallow->deep extrapolation within a
-borehole (see ``infill.py``, which found that barely helps). It is: a target
+borehole It is: a target
 borehole is sparsely sampled, but its few measured specimens — spread across
 depth — pin down which of its densely-sampled neighbours it resembles, so the
 unmeasured depths can borrow that neighbour's profile. Similarity travels
@@ -18,7 +18,7 @@ rows:
   boreholes.
 
 Because anchors are interspersed with the query in depth (unlike infill's
-shallow->deep split), a query row is never far from an anchor. In-context
+shallow->deep split), a query row is never far from an anchor.
 models (v2, TabICL) can attend to the specific matching neighbour; the retrain
 baseline (hgbt) only gets k more rows in a global fit and cannot personalise
 per target borehole — so ``anchor - holdout`` for ICL beyond hgbt is the
@@ -43,10 +43,10 @@ from geo_pfn.haneda.data import (
     feature_columns,
     load_haneda,
 )
-from geo_pfn.haneda.runners import make_baseline, make_tabpfn_v2, regression_metrics
-from geo_pfn.minipfn.train import resolve_device
+from geo_pfn.haneda.runners import make_baseline, regression_metrics
+from geo_pfn.util import resolve_device
 
-CORE_MODELS = ("v2-reg", "hgbt")
+CORE_MODELS = ("hgbt",)  # add "tabicl" via --models (needs `uv run --with tabicl`)
 
 
 @dataclass(kw_only=True)
@@ -108,9 +108,7 @@ def _predict(
     device: str,
     n_estimators: int | None,
 ) -> np.ndarray:
-    if model == "v2-reg":
-        est = make_tabpfn_v2("regression", device, n_estimators)
-    elif model == "tabicl":
+    if model == "tabicl":
         from tabicl import TabICLRegressor  # ephemeral overlay dependency
 
         est = TabICLRegressor(device=None if device == "auto" else device)
@@ -220,7 +218,7 @@ def main() -> None:
         "--models",
         type=str,
         default=",".join(defaults.models),
-        help="comma-separated: v2-reg, hgbt, linear, tabicl",
+        help="comma-separated: hgbt, linear, tabicl",
     )
     parser.add_argument("--n-folds", type=int, default=defaults.n_folds)
     parser.add_argument("--seed", type=int, default=defaults.seed)

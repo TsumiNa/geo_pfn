@@ -4,8 +4,8 @@ Companion to ``anchor.py`` (regression). Asks how well the *lithology*
 (soil_B02) at unmeasured depths can be predicted from location + cheap geotech
 (+ neighbours), with and without a few depth-spread anchors from the target
 borehole. The geo-PFN is regression-only, so this uses the classification-
-capable models (TabPFN v2, TabICL, HistGradientBoosting); a geo-PFN soil head
-is documented future work (docs/geo-scm-design.md §9.1).
+capable models (TabICL, HistGradientBoosting); a geo-PFN soil head is
+documented future work (docs/geo-scm-design.md §9.1).
 
 Target is the grouped soil code (n>=30 classes + "other", from data.encode_soil);
 features are location + cheap geotech + grain size (soil excluded).
@@ -30,20 +30,14 @@ from geo_pfn.haneda.data import (
     encode_soil,
     load_haneda,
 )
-from geo_pfn.haneda.runners import (
-    classification_metrics,
-    make_baseline,
-    make_tabpfn_v2,
-)
-from geo_pfn.minipfn.train import resolve_device
+from geo_pfn.haneda.runners import classification_metrics, make_baseline
+from geo_pfn.util import resolve_device
 
 FEATURES = list(LOCATION_COLUMNS) + list(CHEAP_COLUMNS) + list(GRAIN_COLUMNS)
 
 
 def _predict(model: str, x_fit, y_fit, x_query, device):
-    if model == "v2-clf":
-        est = make_tabpfn_v2("classification", device, None)
-    elif model == "tabicl":
+    if model == "tabicl":
         from tabicl import TabICLClassifier
 
         est = TabICLClassifier(device=None if device == "auto" else device)
@@ -131,7 +125,8 @@ def main() -> None:
     )
     parser.add_argument("--out", type=str, default="results/haneda/anchor_soil.json")
     parser.add_argument("--device", type=str, default="auto")
-    parser.add_argument("--models", type=str, default="v2-clf,hgbt")
+    # add "tabicl" via --models (needs `uv run --with tabicl`)
+    parser.add_argument("--models", type=str, default="hgbt")
     parser.add_argument("--k-anchors", type=str, default="0,3")
     parser.add_argument("--n-folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=42)
