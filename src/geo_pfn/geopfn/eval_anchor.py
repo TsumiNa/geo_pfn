@@ -24,7 +24,7 @@ import numpy as np
 import torch
 
 from geo_pfn.geopfn.model import GeoPFN, GeoPFNConfig
-from geo_pfn.geopfn.predict import EnsembleConfig, predict_geopfn
+from geo_pfn.geopfn.predict import CoherentConfig, predict_geopfn_coherent
 from geo_pfn.haneda.anchor import select_anchors
 from geo_pfn.haneda.data import (
     GROUP,
@@ -55,7 +55,7 @@ def run(
     k_anchors: tuple[int, ...],
     n_folds: int,
     seed: int,
-    ens: EnsembleConfig,
+    coh: CoherentConfig,
 ) -> None:
     device = resolve_device(device_name)
     model = load_geopfn(checkpoint, device)
@@ -76,21 +76,21 @@ def run(
                 preds, truths = [], []
                 for bore in np.unique(bores[query_idx]):
                     q = query_idx[bores[query_idx] == bore]
+                    ax = ay = None
                     if arm == "anchor":
                         a = anchor_idx[bores[anchor_idx] == bore]
-                        ctx_rows = np.concatenate([train_idx, a])
-                        keep = np.arange(len(train_idx), len(ctx_rows))
-                    else:
-                        ctx_rows, keep = train_idx, None
-                    pred = predict_geopfn(
+                        ax, ay = x_full[a], target[a]
+                    pred = predict_geopfn_coherent(
                         model,
-                        x_full[ctx_rows],
-                        target[ctx_rows],
+                        x_full[train_idx],
+                        target[train_idx],
+                        bores[train_idx],
                         x_full[q],
-                        ens,
+                        coh,
                         seed + int(bore),
                         device,
-                        keep_context=keep,
+                        anchor_x=ax,
+                        anchor_y=ay,
                     )
                     preds.append(pred)
                     truths.append(target[q])
@@ -122,9 +122,11 @@ def run(
                         "target": target_col,
                         "k_anchors": list(k_anchors),
                         "split": f"GroupKFold(borehole, n_splits={n_folds}, seed={seed})",
+                        "context": "coherent (nearest whole boreholes)",
                         "ensemble": {
-                            "ctx_size": ens.ctx_size,
-                            "n_ensembles": ens.n_ensembles,
+                            "n_holes": coh.n_holes,
+                            "n_candidates": coh.n_candidates,
+                            "n_ensembles": coh.n_ensembles,
                         },
                     },
                     "records": records,
@@ -167,7 +169,8 @@ def main() -> None:
     parser.add_argument("--k-anchors", type=str, default="1,2,3,5")
     parser.add_argument("--n-folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--ctx-size", type=int, default=256)
+    parser.add_argument("--n-holes", type=int, default=8)
+    parser.add_argument("--n-candidates", type=int, default=24)
     parser.add_argument("--n-ensembles", type=int, default=8)
     args = parser.parse_args()
     run(
@@ -180,7 +183,11 @@ def main() -> None:
         k_anchors=tuple(int(t) for k in args.k_anchors.split(",") if (t := k.strip())),
         n_folds=args.n_folds,
         seed=args.seed,
-        ens=EnsembleConfig(ctx_size=args.ctx_size, n_ensembles=args.n_ensembles),
+        coh=CoherentConfig(
+            n_holes=args.n_holes,
+            n_candidates=args.n_candidates,
+            n_ensembles=args.n_ensembles,
+        ),
     )
 
 
