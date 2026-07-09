@@ -167,6 +167,10 @@ def main() -> None:
     parser.add_argument("--log-every", type=int, default=100)
     parser.add_argument("--d-model", type=int, default=160)
     parser.add_argument("--n-bins", type=int, default=64)
+    parser.add_argument("--n-heads", type=int, default=8)
+    parser.add_argument("--col-layers", type=int, default=2)
+    parser.add_argument("--row-layers", type=int, default=4)
+    parser.add_argument("--feature-emb-dim", type=int, default=48)
     args = parser.parse_args()
 
     train_cfg = GeoPFNTrainConfig(
@@ -179,7 +183,14 @@ def main() -> None:
         out_path=args.out,
         log_every=args.log_every,
     )
-    model_cfg = GeoPFNConfig(d_model=args.d_model, n_bins=args.n_bins)
+    model_cfg = GeoPFNConfig(
+        d_model=args.d_model,
+        n_bins=args.n_bins,
+        n_heads=args.n_heads,
+        col_layers=args.col_layers,
+        row_layers=args.row_layers,
+        feature_emb_dim=args.feature_emb_dim,
+    )
     train(train_cfg, model_cfg, GeoPriorConfig())
 
 
