@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Su 预测对比：TabPFN v2 · TabICL · geo-PFN</title>
+<title>Su 预测对比 / Su 予測比較 / Su prediction comparison</title>
 <style>
 :root{
   --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
@@ -21,6 +21,9 @@
 body{background:var(--page);color:var(--ink);
   font:16px/1.7 system-ui,-apple-system,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;padding:0 20px 80px}
 .wrap{max-width:980px;margin:0 auto}
+.langbar{position:fixed;top:14px;right:16px;z-index:20;display:flex;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:3px}
+.langbar button{border:0;background:transparent;color:var(--ink2);font:600 12px system-ui,sans-serif;padding:5px 11px;border-radius:999px;cursor:pointer}
+.langbar button.on{background:var(--gp);color:#fff}
 header{padding:48px 0 8px}
 .eyebrow{font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 h1{font-size:clamp(23px,3.4vw,32px);line-height:1.25;font-weight:700;text-wrap:balance;margin:8px 0 6px}
@@ -47,64 +50,55 @@ svg{display:block;width:100%;height:auto}svg text{font-family:system-ui,-apple-s
 footer{margin-top:46px;color:var(--muted);font-size:12.5px}
 </style>
 
+<div class="langbar"><button data-lang="zh">中</button><button data-lang="ja">日</button><button data-lang="en">EN</button></div>
+
 <div class="wrap">
 <header>
-  <div class="eyebrow">geo_pfn · 三模型对比 · 2026-07-09</div>
-  <h1>Su 预测对比：TabPFN v2 · TabICL · geo-PFN</h1>
-  <p class="sub">真实羽田钻孔数据，整孔留出（预测一口完全未知的钻孔）。左=仅坐标+深度，
-  右=加上廉价土工特征。看散点离对角线多远、看预测曲线贴不贴真实剖面。
-  <strong>TabPFN v2 已从代码库移除（许可原因），此处仅作历史对比。</strong></p>
+  <div class="eyebrow" data-i18n="eyebrow"></div>
+  <h1 data-i18n="h1"></h1>
+  <p class="sub" data-i18n="sub"></p>
   <div class="tiles">
-    <div class="tile v2"><div class="k">TabPFN v2 · +土工</div><div class="v" id="t_lcsg_v2"></div></div>
-    <div class="tile tab"><div class="k">TabICL · +土工</div><div class="v" id="t_lcsg_tab"></div></div>
-    <div class="tile gp"><div class="k">geo-PFN · +土工</div><div class="v" id="t_lcsg_gp"></div></div>
-    <div class="tile v2"><div class="k">TabPFN v2 · 仅位置</div><div class="v" id="t_l_v2"></div></div>
-    <div class="tile tab"><div class="k">TabICL · 仅位置</div><div class="v" id="t_l_tab"></div></div>
-    <div class="tile gp"><div class="k">geo-PFN · 仅位置</div><div class="v" id="t_l_gp"></div></div>
+    <div class="tile v2"><div class="k" data-i18n="tile_lcsg_v2"></div><div class="v" id="t_lcsg_v2"></div></div>
+    <div class="tile tab"><div class="k" data-i18n="tile_lcsg_tab"></div><div class="v" id="t_lcsg_tab"></div></div>
+    <div class="tile gp"><div class="k" data-i18n="tile_lcsg_gp"></div><div class="v" id="t_lcsg_gp"></div></div>
+    <div class="tile v2"><div class="k" data-i18n="tile_l_v2"></div><div class="v" id="t_l_v2"></div></div>
+    <div class="tile tab"><div class="k" data-i18n="tile_l_tab"></div><div class="v" id="t_l_tab"></div></div>
+    <div class="tile gp"><div class="k" data-i18n="tile_l_gp"></div><div class="v" id="t_l_gp"></div></div>
   </div>
 </header>
 
 <section>
-  <div class="sec-eyebrow">§1 校准散点</div>
-  <h2>预测值 vs 真实值（越贴近对角线越准）</h2>
+  <div class="sec-eyebrow" data-i18n="s1eye"></div>
+  <h2 data-i18n="s1h"></h2>
   <div class="legend">
     <span class="it"><span class="sw" style="background:var(--v2)"></span>TabPFN v2</span>
     <span class="it"><span class="sw" style="background:var(--tab)"></span>TabICL</span>
-    <span class="it"><span class="sw" style="background:var(--gp)"></span>geo-PFN（自研）</span>
-    <span class="it"><span class="sw diag"></span>完美预测 y=x</span>
+    <span class="it"><span class="sw" style="background:var(--gp)"></span><span data-i18n="leg_gp"></span></span>
+    <span class="it"><span class="sw diag"></span><span data-i18n="leg_diag"></span></span>
   </div>
   <div class="row2">
-    <div class="card"><h3>仅坐标 + 深度（零信息）</h3><div class="note" id="n_l"></div><div id="sc_l"></div></div>
-    <div class="card"><h3>+ 廉价土工特征（LCSG）</h3><div class="note" id="n_lcsg"></div><div id="sc_lcsg"></div></div>
+    <div class="card"><h3 data-i18n="card_l"></h3><div class="note" id="n_l"></div><div id="sc_l"></div></div>
+    <div class="card"><h3 data-i18n="card_lcsg"></h3><div class="note" id="n_lcsg"></div><div id="sc_lcsg"></div></div>
   </div>
-  <p><strong>看点</strong>：仅位置时（左）三个模型的散点云宽度接近——geo-PFN 与 v2/TabICL 相当；
-  加上真实土工特征（右）后，TabICL 与 v2 都收紧贴对角线（TabICL 最紧），而 geo-PFN 反而更散
-  ——它的合成先验没学会真实土工特征之间的关系。</p>
+  <p data-i18n="s1p"></p>
 </section>
 
 <section>
-  <div class="sec-eyebrow">§2 钻孔剖面</div>
-  <h2>四口示例钻孔：Su 随深度的真实剖面 vs 三模型预测（LCSG）</h2>
+  <div class="sec-eyebrow" data-i18n="s2eye"></div>
+  <h2 data-i18n="s2h"></h2>
   <div class="legend">
-    <span class="it"><span class="sw" style="background:var(--true)"></span>真实 Su</span>
+    <span class="it"><span class="sw" style="background:var(--true)"></span><span data-i18n="leg_true"></span></span>
     <span class="it"><span class="sw line" style="border-color:var(--v2)"></span>v2</span>
     <span class="it"><span class="sw line" style="border-color:var(--tab)"></span>TabICL</span>
     <span class="it"><span class="sw line" style="border-color:var(--gp)"></span>geo-PFN</span>
   </div>
   <div class="row4" id="profiles"></div>
-  <p><strong>看点</strong>：深度向下。v2 与 TabICL 的线紧贴真实点、连拐折都跟得上（TabICL 常更贴）；
-  geo-PFN 抓住了"随深度增强"的大趋势，但局部偏差明显更大——这就是 ~23 vs ~14 kN/m² 的
-  RMSE 差距在一口孔上的样子。</p>
+  <p data-i18n="s2p"></p>
 </section>
 
-<div class="take">
-  <b>一句话</b>：<b>TabICL ≈ 或略优于 TabPFN v2</b>（且许可可商用，已取代 v2）；自研 <b>geo-PFN</b>
-  在"仅坐标+深度"的零信息场景已与两者相当，但一旦引入真实廉价土工特征，v2/TabICL 明显更准——
-  差距不在架构（两段式度量已验证），而在合成先验没覆盖真实土工特征的物理耦合，这是可修的下一步。
-</div>
+<div class="take" data-i18n="take"></div>
 
-<footer>整孔留出（GroupKFold seed 42）。v2 取自历史结果（代码已移除），TabICL/geo-PFN 现场推理
-（geo-PFN 用 coherent 上下文）。详见 docs/model-comparison.md。</footer>
+<footer data-i18n="foot"></footer>
 </div>
 
 <div style="position:fixed;pointer-events:none;opacity:0"></div>
@@ -120,10 +114,11 @@ for(const k of ["lcsg_v2","lcsg_tab","lcsg_gp","l_v2","l_tab","l_gp"])
 document.getElementById("n_l").textContent = "RMSE  v2 "+D.stats.l_v2+"  ·  TabICL "+D.stats.l_tab+"  ·  geo-PFN "+D.stats.l_gp;
 document.getElementById("n_lcsg").textContent = "RMSE  v2 "+D.stats.lcsg_v2+"  ·  TabICL "+D.stats.lcsg_tab+"  ·  geo-PFN "+D.stats.lcsg_gp;
 
-function scatter(id, v2, tab, gp){
+function scatter(id, v2, tab, gp, T){
   const W=430,H=390,m={l:44,r:10,t:10,b:36},MX=300;
-  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":"预测 Su 对真实 Su 的校准散点图，叠加 TabPFN v2、TabICL、geo-PFN 三个模型与 y=x 对角线"});svg.style.maxWidth=W+"px";
-  document.getElementById(id).appendChild(svg);
+  const hostDiv=document.getElementById(id);hostDiv.replaceChildren();
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":T.sc_aria});svg.style.maxWidth=W+"px";
+  hostDiv.appendChild(svg);
   const X=v=>m.l+v/MX*(W-m.l-m.r), Y=v=>H-m.b-v/MX*(H-m.t-m.b);
   for(const g of [0,100,200,300]){
     el("line",{x1:X(g),y1:m.t,x2:X(g),y2:H-m.b,stroke:"var(--grid)"},svg);
@@ -131,31 +126,110 @@ function scatter(id, v2, tab, gp){
     txt(g,X(g),H-m.b+15,{a:"middle",p:svg}); txt(g,m.l-6,Y(g)+4,{a:"end",p:svg});
   }
   el("line",{x1:X(0),y1:Y(0),x2:X(MX),y2:Y(MX),stroke:"var(--diag)","stroke-width":2,"stroke-dasharray":"5 4"},svg);
-  txt("真实 Su →",(m.l+W-m.r)/2,H-4,{a:"middle",p:svg});
-  const yl=txt("← 预测 Su",0,0,{a:"middle",p:svg});yl.setAttribute("transform",`translate(13,${(H-m.b+m.t)/2}) rotate(-90)`);
+  txt(T.sc_xaxis,(m.l+W-m.r)/2,H-4,{a:"middle",p:svg});
+  const yl=txt(T.sc_yaxis,0,0,{a:"middle",p:svg});yl.setAttribute("transform",`translate(13,${(H-m.b+m.t)/2}) rotate(-90)`);
   for(const [pts,c] of [[gp,"var(--gp)"],[tab,"var(--tab)"],[v2,"var(--v2)"]])
     for(const [t,p] of pts) el("circle",{cx:X(t),cy:Y(p),r:2.2,fill:c,"fill-opacity":.4},svg);
 }
-scatter("sc_l",D.scatter.l_v2,D.scatter.l_tab,D.scatter.l_gp);
-scatter("sc_lcsg",D.scatter.lcsg_v2,D.scatter.lcsg_tab,D.scatter.lcsg_gp);
 
-const host=document.getElementById("profiles");
+function drawProfiles(T){
+const host=document.getElementById("profiles");host.replaceChildren();
 for(const pr of D.profiles){
   const card=document.createElement("div");card.className="card";
   const zmax=Math.max(...pr.pts.map(p=>p[0]));
   const smax=Math.min(300,Math.max(...pr.pts.map(p=>Math.max(p[1],p[2],p[3],p[4])))*1.1);
-  card.innerHTML=`<h3>钻孔 #${pr.bore}</h3><div class="note">${pr.pts.length} 试样 · 深度 0–${Math.ceil(zmax)} m</div>`;
+  card.innerHTML=`<h3>${T.prof_hole}${pr.bore}</h3><div class="note">${pr.pts.length} ${T.prof_samples} · ${T.prof_depth} 0–${Math.ceil(zmax)} m</div>`;
   const W=234,H=300,m={l:34,r:8,t:6,b:26};
-  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":`钻孔 #${pr.bore} 的 Su-深度剖面：真实值点与 TabPFN v2、TabICL、geo-PFN 三条预测线`});svg.style.maxWidth=W+"px";
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":T.prof_hole+pr.bore+T.prof_aria});svg.style.maxWidth=W+"px";
   const X=v=>m.l+v/smax*(W-m.l-m.r), Y=z=>m.t+z/zmax*(H-m.t-m.b);
   for(let g=0;g<=smax;g+=100){el("line",{x1:X(g),y1:m.t,x2:X(g),y2:H-m.b,stroke:"var(--grid)"},svg);txt(g,X(g),H-m.b+14,{a:"middle",s:10,p:svg});}
   for(let z=0;z<=zmax;z+=20){el("line",{x1:m.l,y1:Y(z),x2:W-m.r,y2:Y(z),stroke:"var(--grid)"},svg);txt(z,m.l-5,Y(z)+3,{a:"end",s:10,p:svg});}
   txt("Su",(m.l+W-m.r)/2,H-3,{a:"middle",s:10,p:svg});
-  txt("深度 m",0,0,{a:"middle",s:10,p:svg}).setAttribute("transform",`translate(11,${(H-m.b)/2}) rotate(-90)`);
+  txt(T.prof_yaxis,0,0,{a:"middle",s:10,p:svg}).setAttribute("transform",`translate(11,${(H-m.b)/2}) rotate(-90)`);
   const line=(idx,c)=>{const pts=pr.pts.map(p=>`${X(Math.min(p[idx],300))},${Y(p[0])}`).join(" ");
     el("polyline",{points:pts,fill:"none",stroke:c,"stroke-width":1.8,"stroke-opacity":.9},svg);};
   line(2,"var(--v2)"); line(3,"var(--tab)"); line(4,"var(--gp)");
   for(const p of pr.pts) el("circle",{cx:X(Math.min(p[1],300)),cy:Y(p[0]),r:2.6,fill:"var(--true)"},svg);
   card.appendChild(svg);host.appendChild(card);
 }
+}
+function drawAll(T){
+  scatter("sc_l",D.scatter.l_v2,D.scatter.l_tab,D.scatter.l_gp,T);
+  scatter("sc_lcsg",D.scatter.lcsg_v2,D.scatter.lcsg_tab,D.scatter.lcsg_gp,T);
+  drawProfiles(T);
+}
+
+const I18N={
+ zh:{
+  eyebrow:"geo_pfn · 三模型对比 · 2026-07-09",
+  h1:"Su 预测对比：TabPFN v2 · TabICL · geo-PFN",
+  sub:"真实羽田钻孔数据，整孔留出（预测一口完全未知的钻孔）。左=仅坐标+深度，右=加上廉价土工特征。看散点离对角线多远、看预测曲线贴不贴真实剖面。<strong>TabPFN v2 已从代码库移除（许可原因），此处仅作历史对比。</strong>",
+  tile_lcsg_v2:"TabPFN v2 · +土工",tile_lcsg_tab:"TabICL · +土工",tile_lcsg_gp:"geo-PFN · +土工",
+  tile_l_v2:"TabPFN v2 · 仅位置",tile_l_tab:"TabICL · 仅位置",tile_l_gp:"geo-PFN · 仅位置",
+  s1eye:"§1 校准散点",s1h:"预测值 vs 真实值（越贴近对角线越准）",
+  leg_gp:"geo-PFN（自研）",leg_diag:"完美预测 y=x",
+  card_l:"仅坐标 + 深度（零信息）",card_lcsg:"+ 廉价土工特征（LCSG）",
+  s1p:"<strong>看点</strong>：仅位置时（左）三个模型的散点云宽度接近——geo-PFN 与 v2/TabICL 相当；加上真实土工特征（右）后，TabICL 与 v2 都收紧贴对角线（TabICL 最紧），而 geo-PFN 反而更散——它的合成先验没学会真实土工特征之间的关系。",
+  s2eye:"§2 钻孔剖面",s2h:"四口示例钻孔：Su 随深度的真实剖面 vs 三模型预测（LCSG）",
+  leg_true:"真实 Su",
+  s2p:"<strong>看点</strong>：深度向下。v2 与 TabICL 的线紧贴真实点、连拐折都跟得上（TabICL 常更贴）；geo-PFN 抓住了「随深度增强」的大趋势，但局部偏差明显更大——这就是 ~23 vs ~14 kN/m² 的 RMSE 差距在一口孔上的样子。",
+  take:"<b>一句话</b>：<b>TabICL ≈ 或略优于 TabPFN v2</b>（且许可可商用，已取代 v2）；自研 <b>geo-PFN</b> 在「仅坐标+深度」的零信息场景已与两者相当，但一旦引入真实廉价土工特征，v2/TabICL 明显更准——差距不在架构（两段式度量已验证），而在合成先验没覆盖真实土工特征的物理耦合，这是可修的下一步。",
+  foot:"整孔留出（GroupKFold seed 42）。v2 取自历史结果（代码已移除），TabICL/geo-PFN 现场推理（geo-PFN 用 coherent 上下文）。详见 docs/model-comparison.md。",
+  sc_aria:"预测 Su 对真实 Su 的校准散点图，叠加 TabPFN v2、TabICL、geo-PFN 三个模型与 y=x 对角线",
+  sc_xaxis:"真实 Su →",sc_yaxis:"← 预测 Su",
+  prof_hole:"钻孔 #",prof_samples:"试样",prof_depth:"深度",prof_yaxis:"深度 m",
+  prof_aria:" 的 Su-深度剖面：真实值点与 TabPFN v2、TabICL、geo-PFN 三条预测线"
+ },
+ ja:{
+  eyebrow:"geo_pfn · 3モデル比較 · 2026-07-09",
+  h1:"Su 予測比較：TabPFN v2 · TabICL · geo-PFN",
+  sub:"実羽田ボーリングデータ、全孔ホールドアウト（完全に未知の1孔を予測）。左=座標+深度のみ、右=安価な土質特徴を追加。散布点が対角線からどれだけ離れるか、予測曲線が実断面にどれだけ沿うかを見る。<strong>TabPFN v2 はライセンスの理由でコードベースから削除済み、ここでは歴史的比較のみ。</strong>",
+  tile_lcsg_v2:"TabPFN v2 · +土質",tile_lcsg_tab:"TabICL · +土質",tile_lcsg_gp:"geo-PFN · +土質",
+  tile_l_v2:"TabPFN v2 · 位置のみ",tile_l_tab:"TabICL · 位置のみ",tile_l_gp:"geo-PFN · 位置のみ",
+  s1eye:"§1 キャリブレーション散布図",s1h:"予測値 vs 実測値（対角線に近いほど正確）",
+  leg_gp:"geo-PFN（自作）",leg_diag:"完全予測 y=x",
+  card_l:"座標 + 深度のみ（無情報）",card_lcsg:"+ 安価な土質特徴（LCSG）",
+  s1p:"<strong>要点</strong>：位置のみ（左）では3モデルの散布点群の幅が近い——geo-PFN は v2/TabICL と同等；実土質特徴を加える（右）と TabICL と v2 は対角線に密着（TabICL が最も密）、一方 geo-PFN はむしろ広がる——合成事前分布が実土質特徴間の関係を学べていない。",
+  s2eye:"§2 ボーリング断面",s2h:"例示4孔：Su の深度に沿う実断面 vs 3モデル予測（LCSG）",
+  leg_true:"実測 Su",
+  s2p:"<strong>要点</strong>：深度は下向き。v2 と TabICL の線は実点に密着し、折れ曲がりまで追従（TabICL がしばしばより密着）；geo-PFN は「深度とともに増加」という大きな傾向は捉えるが、局所的なずれは明らかに大きい——これが ~23 対 ~14 kN/m² の RMSE 差が1孔上に現れた姿。",
+  take:"<b>一言</b>：<b>TabICL ≈ もしくは TabPFN v2 をやや上回る</b>（かつ商用可、v2 を置換済み）；自作 <b>geo-PFN</b> は「座標+深度のみ」の無情報シナリオで両者と同等だが、実際の安価な土質特徴を導入すると v2/TabICL が明らかに正確——差は構造（2段の距離は検証済み）ではなく、合成事前分布が実土質特徴の物理的結合をカバーしていない点にある。これは修正可能な次の一手。",
+  foot:"全孔ホールドアウト（GroupKFold seed 42）。v2 は歴史的結果から採用（コードは削除済み）、TabICL/geo-PFN はその場で推論（geo-PFN は coherent 文脈を使用）。詳細は docs/model-comparison.md。",
+  sc_aria:"予測 Su と実測 Su のキャリブレーション散布図。TabPFN v2、TabICL、geo-PFN の3モデルと y=x 対角線を重ねて表示",
+  sc_xaxis:"実測 Su →",sc_yaxis:"← 予測 Su",
+  prof_hole:"ボーリング #",prof_samples:"試料",prof_depth:"深度",prof_yaxis:"深度 m",
+  prof_aria:" の Su-深度断面：実測点と TabPFN v2、TabICL、geo-PFN の3本の予測線"
+ },
+ en:{
+  eyebrow:"geo_pfn · three-model comparison · 2026-07-09",
+  h1:"Su prediction comparison: TabPFN v2 · TabICL · geo-PFN",
+  sub:"Real Haneda borehole data, whole-hole holdout (predicting one entirely unseen borehole). Left = coordinates + depth only, right = plus cheap geotech features. Watch how far the scatter sits from the diagonal, and how well the predicted curve hugs the true profile. <strong>TabPFN v2 has been removed from the codebase (licensing reasons); shown here for historical comparison only.</strong>",
+  tile_lcsg_v2:"TabPFN v2 · +geotech",tile_lcsg_tab:"TabICL · +geotech",tile_lcsg_gp:"geo-PFN · +geotech",
+  tile_l_v2:"TabPFN v2 · location only",tile_l_tab:"TabICL · location only",tile_l_gp:"geo-PFN · location only",
+  s1eye:"§1 Calibration scatter",s1h:"Predicted vs true (closer to the diagonal = more accurate)",
+  leg_gp:"geo-PFN (in-house)",leg_diag:"perfect prediction y=x",
+  card_l:"coordinates + depth only (zero-info)",card_lcsg:"+ cheap geotech features (LCSG)",
+  s1p:"<strong>Highlight</strong>: with location only (left) the three models' scatter clouds are of similar width — geo-PFN is on par with v2/TabICL; adding real geotech features (right), TabICL and v2 both tighten onto the diagonal (TabICL tightest), while geo-PFN actually spreads out — its synthetic prior never learned the relationships among real geotech features.",
+  s2eye:"§2 Borehole profiles",s2h:"Four example boreholes: true Su-vs-depth profile vs three-model prediction (LCSG)",
+  leg_true:"true Su",
+  s2p:"<strong>Highlight</strong>: depth increases downward. The v2 and TabICL lines hug the true points, tracking even the kinks (TabICL often closer); geo-PFN captures the broad \"strengthening with depth\" trend, but its local deviations are clearly larger — this is what a ~23 vs ~14 kN/m² RMSE gap looks like on a single hole.",
+  take:"<b>In one line</b>: <b>TabICL ≈ or slightly beats TabPFN v2</b> (and is commercially usable, already replacing v2); the in-house <b>geo-PFN</b> already matches both in the zero-info 'coordinates+depth only' scenario, but once real cheap geotech features are introduced, v2/TabICL are clearly more accurate — the gap is not in the architecture (the two-stage metric is validated) but in the synthetic prior not covering the physical coupling among real geotech features. That is a fixable next step.",
+  foot:"Whole-hole holdout (GroupKFold seed 42). v2 taken from historical results (code removed); TabICL/geo-PFN inferred live (geo-PFN uses coherent context). See docs/model-comparison.md.",
+  sc_aria:"Calibration scatter of predicted Su vs true Su, overlaying the TabPFN v2, TabICL and geo-PFN models with the y=x diagonal",
+  sc_xaxis:"true Su →",sc_yaxis:"← predicted Su",
+  prof_hole:"borehole #",prof_samples:"samples",prof_depth:"depth",prof_yaxis:"depth m",
+  prof_aria:" Su-vs-depth profile: true points with the TabPFN v2, TabICL and geo-PFN prediction lines"
+ }
+};
+function setLang(l){
+  document.documentElement.lang=l==='zh'?'zh-CN':l==='ja'?'ja':'en';
+  try{localStorage.setItem('geopfn_lang',l);}catch(e){}
+  const d=I18N[l]||I18N.zh;
+  document.querySelectorAll('[data-i18n]').forEach(e=>{const v=d[e.dataset.i18n];if(v!=null)e.innerHTML=v;});
+  document.querySelectorAll('.langbar button').forEach(b=>b.classList.toggle('on',b.dataset.lang===l));
+  drawAll(d);
+}
+document.querySelectorAll('.langbar button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+let init='zh';try{init=localStorage.getItem('geopfn_lang')||'zh';}catch(e){}
+setLang(['zh','ja','en'].includes(init)?init:'zh');
 </script>
