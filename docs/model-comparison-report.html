@@ -54,7 +54,7 @@ footer{margin-top:44px;color:var(--muted);font-size:12.5px}
   <div class="tiles">
     <div class="tile" style="border-left:3px solid var(--tab)"><div class="k">TabICL vs v2 · 整孔冷启动</div><div class="v">13.86 vs 14.25</div><div class="d">RMSE，<b>TabICL 更好</b></div></div>
     <div class="tile" style="border-left:3px solid var(--gp)"><div class="k">geo-PFN · 零信息冷启动</div><div class="v">17.4 ≈ 17.1</div><div class="d">追平 v2（仅坐标+深度）</div></div>
-    <div class="tile" style="border-left:3px solid var(--gp)"><div class="k">geo-PFN · 锚点增益 k=5</div><div class="v">−2.07</div><div class="d">Su-LCSG，全场最大</div></div>
+    <div class="tile" style="border-left:3px solid var(--gp)"><div class="k">geo-PFN · 锚点增益 k=5</div><div class="v">−2.70</div><div class="d">Su-LCSG，全场最大（coherent）</div></div>
     <div class="tile"><div class="k">土层分类 · 3 锚点</div><div class="v">48% → 84%</div><div class="d">岩性分段可内插</div></div>
   </div>
 </header>
@@ -80,7 +80,7 @@ footer{margin-top:44px;color:var(--muted);font-size:12.5px}
     <div class="card"><h3>Su · LCSG（含土工）</h3><div id="ch-lcsg"></div></div>
     <div class="card"><h3>Su · L（零信息：坐标+深度）</h3><div id="ch-l"></div></div>
   </div>
-  <p><strong>看点</strong>：geo-PFN 的锚点增益 competitive——LCSG 上 k=5 达 −2.07（全场最大）；
+  <p><strong>看点</strong>：geo-PFN（coherent 上下文）的锚点增益 competitive——LCSG k=5 −2.70（全场最大）、Su-L −3.88（与 v2/TabICL 同档）；
   但绝对 RMSE 仍落后（LCSG 冷启动 22 vs v2/TabICL 14）。零信息(L)下 geo-PFN 冷启动追平 v2/TabICL。</p>
 </section>
 
@@ -146,8 +146,8 @@ function curves(id,data){
     vals.forEach((v,i)=>el("circle",{cx:X(i),cy:Y(v),r:3,fill:cols[name]},svg));
   }
 }
-curves("ch-lcsg",{v2:[-0.57,-0.83,-1.57,-1.92],tabicl:[-0.11,-0.60,-0.94,-1.43],geopfn:[-0.50,-0.91,-1.40,-2.07],hgbt:[-0.33,-0.51,-0.73,-1.31]});
-curves("ch-l",{v2:[-1.07,-1.94,-3.11,-3.70],tabicl:[-1.53,-2.48,-3.85,-4.57],geopfn:[-0.82,-1.37,-2.05,-2.53],hgbt:[-0.81,-1.36,-2.02,-2.75]});
+curves("ch-lcsg",{v2:[-0.57,-0.83,-1.57,-1.92],tabicl:[-0.11,-0.60,-0.94,-1.43],geopfn:[-0.72,-1.11,-2.05,-2.70],hgbt:[-0.33,-0.51,-0.73,-1.31]});
+curves("ch-l",{v2:[-1.07,-1.94,-3.11,-3.70],tabicl:[-1.53,-2.48,-3.85,-4.57],geopfn:[-1.20,-1.89,-3.50,-3.88],hgbt:[-0.81,-1.36,-2.02,-2.75]});
 
 // §3 soil bars
 (function(){
