@@ -165,13 +165,13 @@ anchor / 增益）：
 四口钻孔的 Su-深度剖面）：仅位置时两模型散点云等宽（打平），加土工后 v2 贴对角线、
 geo-PFN 更散；剖面图上 v2 蓝线几乎重合真实点，geo-PFN 橙线只跟大趋势。
 
-## 9. 复现
+## 11. 复现
 
 ```bash
-uv run pytest src/geo_pfn/geopfn/ src/geo_pfn/geoprior/   # 38 测试
+uv run pytest src/geo_pfn/geopfn/ src/geo_pfn/geoprior/   # 测试
 uv run python -m geo_pfn.geopfn.train --steps 8000        # MPS ~5-6h
-uv run python -m geo_pfn.geopfn.eval_anchor --feature-set LCSG --target Su
-uv run python -m geo_pfn.geopfn.eval_anchor --feature-set L --target Su
+uv run python -m geo_pfn.geopfn.eval_anchor --feature-set LCSG --target Su --n-holes 8
+uv run python -m geo_pfn.geopfn.eval_anchor --feature-set L --target Su --n-holes 8
 uv run python -m geo_pfn.haneda.anchor --feature-set L --target Su   # 基线
 uv run python -m geo_pfn.haneda.anchor_soil --k-anchors 3            # 土层分类
 ```
