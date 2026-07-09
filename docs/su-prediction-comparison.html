@@ -122,7 +122,7 @@ document.getElementById("n_lcsg").textContent = "RMSE  v2 "+D.stats.lcsg_v2+"  �
 
 function scatter(id, v2, tab, gp){
   const W=430,H=390,m={l:44,r:10,t:10,b:36},MX=300;
-  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img"});svg.style.maxWidth=W+"px";
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":"预测 Su 对真实 Su 的校准散点图，叠加 TabPFN v2、TabICL、geo-PFN 三个模型与 y=x 对角线"});svg.style.maxWidth=W+"px";
   document.getElementById(id).appendChild(svg);
   const X=v=>m.l+v/MX*(W-m.l-m.r), Y=v=>H-m.b-v/MX*(H-m.t-m.b);
   for(const g of [0,100,200,300]){
@@ -146,7 +146,7 @@ for(const pr of D.profiles){
   const smax=Math.min(300,Math.max(...pr.pts.map(p=>Math.max(p[1],p[2],p[3],p[4])))*1.1);
   card.innerHTML=`<h3>钻孔 #${pr.bore}</h3><div class="note">${pr.pts.length} 试样 · 深度 0–${Math.ceil(zmax)} m</div>`;
   const W=234,H=300,m={l:34,r:8,t:6,b:26};
-  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img"});svg.style.maxWidth=W+"px";
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":`钻孔 #${pr.bore} 的 Su-深度剖面：真实值点与 TabPFN v2、TabICL、geo-PFN 三条预测线`});svg.style.maxWidth=W+"px";
   const X=v=>m.l+v/smax*(W-m.l-m.r), Y=z=>m.t+z/zmax*(H-m.t-m.b);
   for(let g=0;g<=smax;g+=100){el("line",{x1:X(g),y1:m.t,x2:X(g),y2:H-m.b,stroke:"var(--grid)"},svg);txt(g,X(g),H-m.b+14,{a:"middle",s:10,p:svg});}
   for(let z=0;z<=zmax;z+=20){el("line",{x1:m.l,y1:Y(z),x2:W-m.r,y2:Y(z),stroke:"var(--grid)"},svg);txt(z,m.l-5,Y(z)+3,{a:"end",s:10,p:svg});}
