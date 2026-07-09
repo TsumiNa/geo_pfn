@@ -127,20 +127,20 @@ def main() -> None:
     parser.add_argument("--device", type=str, default="auto")
     # add "tabicl" via --models (needs `uv run --with tabicl`)
     parser.add_argument("--models", type=str, default="hgbt")
-    parser.add_argument("--k-anchors", type=str, default="0,3")
+    # each k runs both arms (holdout + anchor); k >= 1 (holdout is the k-arm's baseline)
+    parser.add_argument("--k-anchors", type=str, default="3")
     parser.add_argument("--n-folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
-    # k=0 means holdout only (no anchors); select_anchors needs k>=1, so map 0 -> skip
-    ks = tuple(
-        int(t) for k in args.k_anchors.split(",") if (t := k.strip()) and int(t) > 0
-    )
+    ks = tuple(int(t) for k in args.k_anchors.split(",") if (t := k.strip()))
+    if any(k < 1 for k in ks):
+        raise ValueError("k_anchors must be >= 1")
     run(
         data_path=args.data_path,
         out_path=args.out,
         device_name=args.device,
         models=tuple(t for m in args.models.split(",") if (t := m.strip())),
-        k_anchors=ks or (3,),
+        k_anchors=ks,
         n_folds=args.n_folds,
         seed=args.seed,
     )

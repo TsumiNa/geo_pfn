@@ -17,3 +17,6 @@ data/
 
 # Per-row prediction dumps (regenerate with geo_pfn.haneda.run)
 results/haneda/predictions/
+
+# Large prediction grids (regenerate with geo_pfn.haneda.su_grid)
+results/haneda/*.parquet

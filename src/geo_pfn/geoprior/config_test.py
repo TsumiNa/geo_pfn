@@ -20,7 +20,6 @@ def test_defaults() -> None:
         ({"spacing_mean": 0.0}, "spacing_mean"),
         ({"depth_trend_scale": -1.0}, "depth_trend_scale"),
         ({"n_soil_types": 1}, "n_soil_types"),
-        ({"target_mask_prob": 0.0}, "target_mask_prob"),
         ({"min_train_frac": 0.9, "max_train_frac": 0.5}, "train fractions"),
     ],
 )

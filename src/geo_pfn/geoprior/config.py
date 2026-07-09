@@ -48,7 +48,6 @@ class GeoPriorConfig:
     # observation layer
     n_soil_types: int = 10
     block_missing_prob: float = 0.3  # prob a droppable column is absent per hole
-    target_mask_prob: float = 0.7  # fraction of rows whose target is a query
     min_train_frac: float = 0.3
     max_train_frac: float = 0.8
 
@@ -87,8 +86,6 @@ class GeoPriorConfig:
             raise ValueError("n_soil_types must be >= 2")
         if not 0.0 <= self.block_missing_prob < 1.0:
             raise ValueError("block_missing_prob must be in [0, 1)")
-        if not 0.0 < self.target_mask_prob <= 1.0:
-            raise ValueError("target_mask_prob must be in (0, 1]")
         if not 0.0 < self.min_train_frac <= self.max_train_frac < 1.0:
             raise ValueError("train fractions must satisfy 0 < min <= max < 1")
         if not 0.0 <= self.p_single <= 1.0:

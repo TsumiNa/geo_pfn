@@ -95,8 +95,9 @@ def select_anchors(
         order = rows[np.argsort(depth[rows])]
         bins = np.array_split(order, k)
         picked = [int(generator.choice(b)) for b in bins if len(b)]
+        picked_set = set(picked)
         anchors.extend(picked)
-        query.extend(r for r in order if r not in set(picked))
+        query.extend(r for r in order if r not in picked_set)
     return np.array(anchors, dtype=int), np.array(query, dtype=int)
 
 

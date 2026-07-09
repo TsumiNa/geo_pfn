@@ -155,7 +155,9 @@ def sample_geo_site_batch(
         depth=depth,
         layer_id=torch.zeros_like(hole_id),  # per-site layer ids are hole-local; unused
         soil_code=soil.long(),
-        train_size=int(context_mask[0].sum()),
+        # site batches use the per-row context_mask, not train_size (context count
+        # varies per element); -1 marks it inapplicable so nothing relies on it.
+        train_size=-1,
         hole_id=hole_id,
         context_mask=context_mask,
     )

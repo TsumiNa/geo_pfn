@@ -54,7 +54,7 @@ def _forward_context(
     device: torch.device,
 ) -> torch.Tensor:
     """One ensemble member: context (cx, cy) + query -> predictions in y units."""
-    mean, std = cy.mean(), cy.std().clamp(min=1e-6)
+    mean, std = cy.mean(), cy.std(unbiased=False).clamp(min=1e-6)
     z_ctx = (cy - mean) / std
     n_c = len(cx)
     preds = []
@@ -150,7 +150,7 @@ def predict_geopfn(
         perm = torch.randperm(len(pool), generator=gen)[:n_extra].numpy()
         idx = np.concatenate([keep, pool[perm]]).astype(int)
         cx, cy = ctx_x_all[idx], ctx_y_all[idx]
-        mean, std = cy.mean(), cy.std().clamp(min=1e-6)
+        mean, std = cy.mean(), cy.std(unbiased=False).clamp(min=1e-6)
         z_ctx = (cy - mean) / std
 
         preds = []
