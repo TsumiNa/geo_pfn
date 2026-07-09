@@ -161,9 +161,11 @@ anchor / 增益）：
 
 ## 10. 可视化
 
-预测 vs 真实值的直观对比见 [`geopfn-viz.html`](geopfn-viz.html)（校准散点 +
-四口钻孔的 Su-深度剖面）：仅位置时两模型散点云等宽（打平），加土工后 v2 贴对角线、
-geo-PFN 更散；剖面图上 v2 蓝线几乎重合真实点，geo-PFN 橙线只跟大趋势。
+预测 vs 真实值的直观对比见 [`su-prediction-comparison.html`](su-prediction-comparison.html)
+（三模型 TabPFN v2 / TabICL / geo-PFN 的校准散点 + 四口钻孔的 Su-深度剖面）：仅位置（L）时
+三模型散点云都偏向水平（回归到均值），RMSE 相近（v2 17.6、TabICL 18.1、geo-PFN 19.3）；
+加廉价土工特征（LCSG）后 v2（蓝）和 TabICL（青）都更贴对角线、RMSE 降到 14 上下，
+geo-PFN（橙）反而更散、升到 22.9。剖面图上 v2/TabICL 几乎重合真实点，geo-PFN 只跟大趋势。
 
 ## 11. 复现
 
