@@ -1,0 +1,33 @@
+Sparse-context borehole prediction (whole held-out fold; current geopfn2stage.pt)
+========================================================================
+Query = 48 boreholes (fold 0); context = N boreholes sampled from 192-pool, mean over seeds.
+
+## feature set L: mean RMSE by N
+     N   tabicl   geopfn     hgbt   gp-tab
+     3    24.74    28.50    29.05    +3.76
+     6    24.77    24.65    22.74    -0.12
+    12    21.09    20.74    21.97    -0.35
+    25    26.33    20.03    21.47    -6.30
+    50    24.01    20.01    20.81    -4.00
+   100    20.61    18.92    19.67    -1.69
+   192    19.24    19.12    18.53    -0.12
+
+## feature set LSG: mean RMSE by N
+     N   tabicl   geopfn     hgbt   gp-tab
+     3    22.49    26.52    29.41    +4.03
+     6    23.23    26.28    23.58    +3.05
+    12    20.37    22.99    21.33    +2.62
+    25    20.36    22.01    20.54    +1.65
+    50    20.92    21.31    20.12    +0.39
+   100    18.45    20.58    19.26    +2.13
+   192    17.12    20.10    17.36    +2.98
+
+## Test B: geology benefit = RMSE(L) - RMSE(LSG)  (positive = geology helps)
+     N   tabicl   geopfn     hgbt
+     3    +2.25    +1.98    -0.37
+     6    +1.54    -1.63    -0.84
+    12    +0.72    -2.25    +0.64
+    25    +5.97    -1.99    +0.93
+    50    +3.09    -1.30    +0.69
+   100    +2.15    -1.66    +0.41
+   192    +2.11    -0.98    +1.17
