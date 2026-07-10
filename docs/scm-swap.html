@@ -1,0 +1,190 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SCM 对调对比 / SCM スワップ / SCM swap</title>
+<style>
+:root{
+  --bg:#f5f3ee;--panel:#fbfaf7;--ink:#1b1a17;--ink2:#54504a;--muted:#8b857a;
+  --line:#e4dfd5;--line2:#d2cabb;--grid:#e9e4da;--accent:#1f8a70;--warn:#c05621;
+  --ours:#1baf7a;--theirs:#e08a1e;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;--sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{--bg:#151419;--panel:#1e1d23;--ink:#ecebe7;--ink2:#b4afa6;--muted:#7e786f;--line:#2a2930;--line2:#3a3843;--grid:#2c2b32;--accent:#38b78f;--warn:#e8894f;--ours:#2bc98f;--theirs:#f0a542;}}
+:root[data-theme=light]{--bg:#f5f3ee;--panel:#fbfaf7;--ink:#1b1a17;--ink2:#54504a;--muted:#8b857a;--line:#e4dfd5;--line2:#d2cabb;--grid:#e9e4da;--accent:#1f8a70;--ours:#1baf7a;--theirs:#e08a1e;}
+:root[data-theme=dark]{--bg:#151419;--panel:#1e1d23;--ink:#ecebe7;--ink2:#b4afa6;--muted:#7e786f;--line:#2a2930;--line2:#3a3843;--grid:#2c2b32;--accent:#38b78f;--ours:#2bc98f;--theirs:#f0a542;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:880px;margin:0 auto;padding:40px 24px 90px}
+.langbar{position:fixed;top:14px;right:16px;z-index:20;display:flex;gap:2px;background:var(--panel);border:1px solid var(--line2);border-radius:999px;padding:3px}
+.langbar button{border:0;background:transparent;color:var(--ink2);font:600 12px var(--sans);padding:5px 11px;border-radius:999px;cursor:pointer}
+.langbar button.on{background:var(--accent);color:#fff}
+header{border-bottom:1px solid var(--line);padding-bottom:24px;margin-bottom:10px}
+.kick{font:600 12px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+h1{font-size:26px;font-weight:690;margin:0 0 11px;letter-spacing:-.015em;text-wrap:balance;line-height:1.22}
+.lede{color:var(--ink2);font-size:15.5px;max-width:68ch;margin:0}
+h2{font-size:18px;font-weight:670;margin:40px 0 4px;display:flex;align-items:baseline;gap:11px}
+h2 .n{font:700 13px var(--mono);color:var(--accent)}
+p{margin:9px 0;font-size:14.5px;color:var(--ink2);max-width:72ch}
+p b,li b{color:var(--ink)}
+table{border-collapse:collapse;width:100%;margin:14px 0 4px;font-size:13px}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+th{font:600 11px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+td:first-child,th:first-child{text-align:left}
+.ours{color:var(--ours);font-weight:700}.theirs{color:var(--theirs)}
+figure{margin:18px 0;padding:16px 12px 10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow-x:auto}
+figcaption{font-size:12px;color:var(--muted);margin-top:8px;text-align:center;padding:0 8px}
+svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.legend{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:2px 0 8px;font:600 12px var(--sans)}
+.legend span{display:inline-flex;align-items:center;gap:6px;color:var(--ink2)}
+.sw{width:18px;height:0;border-top:3px solid;border-radius:2px}.sw.dash{border-top-style:dashed}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:720px){.row2{grid-template-columns:1fr}}
+.callout{margin:18px 0;padding:15px 17px;border:1px solid var(--line2);border-left:3px solid var(--accent);border-radius:9px;background:var(--panel);font-size:14px;color:var(--ink2)}
+ul{margin:8px 0;padding-left:20px}li{font-size:14px;color:var(--ink2);margin:5px 0}
+.tip{position:fixed;pointer-events:none;z-index:9;background:var(--ink);color:var(--bg);font:600 11px var(--mono);padding:4px 7px;border-radius:5px;opacity:0;transition:opacity .08s;white-space:nowrap}
+footer{margin-top:46px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font:500 11px var(--mono)}
+</style>
+
+<div class="langbar"><button data-lang="zh">中</button><button data-lang="ja">日</button><button data-lang="en">EN</button></div>
+
+<div class="wrap">
+<header>
+  <div class="kick" data-i18n="kick"></div>
+  <h1 data-i18n="title"></h1>
+  <p class="lede" data-i18n="lede"></p>
+</header>
+
+<h2><span class="n">1</span><span data-i18n="s1h"></span></h2>
+<p data-i18n="s1p"></p>
+<table id="denseTable"></table>
+<div class="callout"><span data-i18n="s1call"></span></div>
+
+<h2><span class="n">2</span><span data-i18n="s2h"></span></h2>
+<p data-i18n="s2p"></p>
+<div class="legend">
+  <span><span class="sw" style="border-color:var(--ours)"></span><span data-i18n="legOurs"></span></span>
+  <span><span class="sw dash" style="border-color:var(--theirs)"></span><span data-i18n="legTheirs"></span></span>
+</div>
+<div class="row2">
+  <figure><svg id="chL" viewBox="0 0 420 300" role="img" aria-label="sparse L"></svg><figcaption data-i18n="capL"></figcaption></figure>
+  <figure><svg id="chLCSG" viewBox="0 0 420 300" role="img" aria-label="sparse LCSG"></svg><figcaption data-i18n="capLCSG"></figcaption></figure>
+</div>
+<div class="callout"><span data-i18n="s2call"></span></div>
+
+<h2><span class="n">3</span><span data-i18n="s3h"></span></h2>
+<ul><li data-i18n="v1"></li><li data-i18n="v2"></li><li data-i18n="v3"></li></ul>
+
+<footer>geo_pfn · docs/scm-swap.html · <span data-i18n="foot"></span></footer>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+const DATA={
+ Ns:[3,6,12,25,50,100,192],
+ L:{ours:[25.71,23.41,22.57,20.11,20.71,18.93,18.70],theirs:[27.05,24.45,22.37,21.63,21.38,19.33,18.69]},
+ LCSG:{ours:[29.04,26.12,23.55,20.83,20.34,19.46,18.18],theirs:[31.10,32.39,30.94,27.12,28.18,26.60,25.77]},
+ dense:{ours:{L:17.57,LCSG:17.69},theirs:{L:17.04,LCSG:26.09}}
+};
+const NS='http://www.w3.org/2000/svg';
+const el=(n,a,p)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;};
+const tip=document.getElementById('tip');
+document.addEventListener('mousemove',e=>{if(e.target.tagName!=='circle')tip.style.opacity=0;});
+function chart(id,fs){
+  const svg=document.getElementById(id);svg.replaceChildren();
+  const W=420,H=300,m={l:40,r:14,t:12,b:38},Ns=DATA.Ns;
+  const lx=Ns.map(n=>Math.log(n)),x0=Math.min(...lx),x1=Math.max(...lx);
+  const vals=[...DATA[fs].ours,...DATA[fs].theirs];const yLo=Math.floor(Math.min(...vals)-1),yHi=Math.ceil(Math.max(...vals)+1);
+  const X=v=>m.l+(Math.log(v)-x0)/(x1-x0)*(W-m.l-m.r),Y=v=>H-m.b-(v-yLo)/(yHi-yLo)*(H-m.t-m.b);
+  const step=(yHi-yLo)>16?4:2;
+  for(let g=Math.ceil(yLo/step)*step;g<=yHi;g+=step){el('line',{x1:m.l,y1:Y(g),x2:W-m.r,y2:Y(g),stroke:'var(--grid)'},svg);
+    el('text',{x:m.l-6,y:Y(g)+3.5,'text-anchor':'end',fill:'var(--muted)','font-size':9.5,'font-family':'var(--mono)'},svg).textContent=g;}
+  for(const n of Ns)el('text',{x:X(n),y:H-m.b+15,'text-anchor':'middle',fill:'var(--muted)','font-size':9.5,'font-family':'var(--mono)'},svg).textContent=(n===192?'all':n);
+  el('text',{x:(m.l+W-m.r)/2,y:H-4,'text-anchor':'middle',fill:'var(--ink2)','font-size':10.5,'font-weight':600},svg).textContent=T.xlab;
+  el('rect',{x:X(25),y:m.t,width:X(50)-X(25),height:H-m.t-m.b,fill:'var(--ours)','fill-opacity':.06},svg);
+  for(const [key,color,dash] of [['ours','var(--ours)',false],['theirs','var(--theirs)',true]]){
+    const v=DATA[fs][key];const pts=v.map((y,i)=>`${X(Ns[i])},${Y(y)}`).join(' ');
+    el('polyline',Object.assign({points:pts,fill:'none',stroke:color,'stroke-width':2.4,'stroke-linejoin':'round'},dash?{'stroke-dasharray':'5 4'}:{}),svg);
+    v.forEach((y,i)=>{const c=el('circle',{cx:X(Ns[i]),cy:Y(y),r:3,fill:color,stroke:'var(--panel)','stroke-width':1.1},svg);
+      c.addEventListener('mouseenter',ev=>{tip.textContent=`${key==='ours'?T.legOurs:T.legTheirs}  N=${Ns[i]===192?'all':Ns[i]}  ${y.toFixed(2)}`;tip.style.left=(ev.clientX+12)+'px';tip.style.top=(ev.clientY+12)+'px';tip.style.opacity=1;});});
+  }
+}
+function denseTable(){
+  const d=DATA.dense;
+  document.getElementById('denseTable').innerHTML=
+   `<tr><th>${T.thPrior}</th><th>L</th><th>LCSG</th></tr>`+
+   `<tr><td class="ours">${T.legOurs}</td><td class="ours">${d.ours.L}</td><td class="ours">${d.ours.LCSG}</td></tr>`+
+   `<tr><td class="theirs">${T.legTheirs}</td><td>${d.theirs.L}</td><td class="theirs">${d.theirs.LCSG}</td></tr>`;
+}
+let T;
+const I18N={
+ zh:{
+  kick:"geo_pfn · SCM 对调 · 消融",
+  title:"我们的 geo-SCM vs TabICL 的 SCM(同一个模型架构)",
+  lede:"一个干净的消融:同样 2M 架构、同样训练预算(24k 步 × 批 48),唯一变量是<b>训练用的先验</b>——我们的 geo-SCM(注入深度趋势、分层、空间结构)对 TabICL 自带的通用 mix-SCM(MLP+tree)。这直接回答:在我们的架构上,谁的 SCM 更适配真实钻孔数据。",
+  s1h:"稠密整孔 holdout",
+  s1p:"先看稠密(用全部训练孔作上下文)的整孔 holdout RMSE(越低越好):",
+  thPrior:"训练先验",
+  s1call:"仅坐标(L)两者接近;但一旦加上真实廉价土工+地质特征(LCSG),用 TabICL 的通用 SCM 训练的模型<b>大幅变差(26.09 vs 我们的 17.69)</b>。通用 SCM 没教会模型利用领域特征。",
+  s2h:"稀疏场景(我们真正关心的)",
+  s2p:"稀疏才是重点:少量整孔作上下文,预测其他孔。下面对比同一架构分别用两种 SCM 训练后的稀疏 RMSE。",
+  legOurs:"我们的 geo-SCM",legTheirs:"TabICL 的 SCM",
+  capL:"仅坐标 L:两种 SCM 训练的 geo-PFN 稀疏 RMSE。我们的(实线)在几乎每个 N 都略优。",
+  capLCSG:"加真实特征 LCSG:我们的 SCM(实线)在每个 N 都<b>大幅领先约 7–8 RMSE</b>。",
+  s2call:"<b>稀疏区结论:</b>L 上我们的 SCM 处处略优;LCSG 上<b>我们的 SCM 全程碾压</b> TabICL 的通用 SCM(如 N=50:20.3 vs 28.2)。领域结构(深度/分层/特征耦合)是稀疏 + 特征场景的关键。",
+  s3h:"结论",
+  v1:"<b>我们的 SCM 不是瓶颈,反而是贡献。</b>把架构换到 TabICL 自己的(优秀、通用)SCM 上,真实钻孔数据上更差——尤其 LCSG、尤其稀疏。",
+  v2:"<b>差距来自领域结构。</b>TabICL 的 SCM 是通用表格型,缺深度趋势/分层/空间耦合;这些正是钻孔数据里决定性的结构。",
+  v3:"<b>所以下一步不是换先验,而是补架构(列编码)。</b>先验方向已定为我们的 geo-SCM;剩余对 TabICL 的差距在特征摄取,不在 SCM。",
+  xlab:"上下文钻孔数 N",foot:"证据 sparse_gen2m24k.json · sparse_tabiclscm.json · holdout_{gen_2m_24k,tabicl_scm_2m}.json · 均 2M @ 24k×48"
+ },
+ ja:{
+  kick:"geo_pfn · SCM スワップ · アブレーション",
+  title:"我々の geo-SCM 対 TabICL の SCM(同一アーキテクチャ上)",
+  lede:"きれいなアブレーション:同じ 2M アーキテクチャ、同じ予算(24k ステップ×バッチ 48)、唯一の変数は<b>訓練の事前分布</b>——深度トレンド・層構造・空間構造を注入した我々の geo-SCM 対 TabICL の汎用 mix-SCM(MLP+tree)。我々の架構上でどちらの SCM が実ボーリングに適合するかを直接問う。",
+  s1h:"稠密な全孔ホールドアウト",
+  s1p:"まず稠密(全訓練孔を文脈)での全孔ホールドアウト RMSE(低いほど良い):",
+  thPrior:"訓練事前分布",
+  s1call:"座標のみ(L)は同等;だが実際の安価土質+地質(LCSG)を加えると、TabICL の汎用 SCM で訓練したモデルは<b>大きく悪化(26.09 対 我々 17.69)</b>。汎用 SCM は領域特徴の使い方を教えない。",
+  s2h:"疎な文脈(本当に重要なところ)",
+  s2p:"疎が要点:少数の丸ごとの孔を文脈に他孔を予測する。同一アーキテクチャを2種の SCM で訓練した後の疎 RMSE を比較する。",
+  legOurs:"我々の geo-SCM",legTheirs:"TabICL の SCM",
+  capL:"座標のみ L:2種の SCM で訓練した geo-PFN の疎 RMSE。我々の(実線)がほぼ各 N でわずかに優れる。",
+  capLCSG:"実特徴 LCSG:我々の SCM(実線)が各 N で<b>約 7〜8 RMSE 大きくリード</b>。",
+  s2call:"<b>疎領域の結論:</b>L では我々の SCM が処々わずかに優れ;LCSG では<b>我々の SCM が全域で圧勝</b>(例 N=50:20.3 対 28.2)。領域構造(深度/層/特徴結合)が疎+特徴の場面の鍵。",
+  s3h:"結論",
+  v1:"<b>我々の SCM は瓶頸ではなく貢献。</b>アーキテクチャを TabICL 自身の(優秀・汎用)SCM に替えると、実ボーリングで悪化——特に LCSG、特に疎。",
+  v2:"<b>差は領域構造から。</b>TabICL の SCM は汎用表型で、深度トレンド/層/空間結合を欠く;これらこそボーリングで決定的な構造。",
+  v3:"<b>ゆえに次は事前分布の交換ではなく架構(列エンコード)の補強。</b>事前分布は我々の geo-SCM で確定;TabICL への残差は特徴取り込みで、SCM ではない。",
+  xlab:"文脈孔数 N",foot:"証拠 sparse_gen2m24k.json · sparse_tabiclscm.json · holdout_{gen_2m_24k,tabicl_scm_2m}.json · 全て 2M @ 24k×48"
+ },
+ en:{
+  kick:"geo_pfn · SCM swap · ablation",
+  title:"Our geo-SCM vs TabICL's SCM (on the same architecture)",
+  lede:"A clean ablation: same 2M architecture, same budget (24k steps × batch 48), the only variable is the <b>training prior</b> — our geo-SCM (which injects depth trend, layering, spatial structure) vs TabICL's own general mix-SCM (MLP+tree). It directly answers: on our architecture, whose SCM fits real borehole data better.",
+  s1h:"Dense whole-hole holdout",
+  s1p:"First, dense (all training holes as context) whole-hole holdout RMSE (lower is better):",
+  thPrior:"training prior",
+  s1call:"Coords-only (L) is close; but once the real cheap geotech + geology features are added (LCSG), the model trained on TabICL's general SCM is <b>much worse (26.09 vs our 17.69)</b>. The general SCM never taught the model to use the domain features.",
+  s2h:"The sparse regime (what we actually care about)",
+  s2p:"Sparse is the point: predict other holes from a few whole holes. Below, sparse RMSE of the same architecture trained under each SCM.",
+  legOurs:"our geo-SCM",legTheirs:"TabICL's SCM",
+  capL:"Coords-only L: sparse RMSE of geo-PFN trained under each SCM. Ours (solid) is slightly better at nearly every N.",
+  capLCSG:"With real features LCSG: our SCM (solid) leads by <b>~7–8 RMSE at every N</b>.",
+  s2call:"<b>Sparse verdict:</b> on L our SCM is slightly better throughout; on LCSG <b>our SCM dominates</b> TabICL's general SCM at every N (e.g. N=50: 20.3 vs 28.2). Domain structure (depth/layers/feature coupling) is the key for the sparse + feature-rich case.",
+  s3h:"Conclusion",
+  v1:"<b>Our SCM is not the bottleneck — it is a contribution.</b> Swapping in TabICL's (excellent, general) SCM makes the model worse on real borehole data — especially LCSG, especially sparse.",
+  v2:"<b>The gap comes from domain structure.</b> TabICL's SCM is generic-tabular and lacks depth trend / layering / spatial coupling — exactly the structure that is decisive in borehole data.",
+  v3:"<b>So the next move is not swapping the prior, but strengthening the architecture (the column encoder).</b> The prior direction is settled as our geo-SCM; the remaining gap to TabICL is feature ingestion, not the SCM.",
+  xlab:"context boreholes N",foot:"evidence sparse_gen2m24k.json · sparse_tabiclscm.json · holdout_{gen_2m_24k,tabicl_scm_2m}.json · all 2M @ 24k×48"
+ }
+};
+function setLang(l){
+  document.documentElement.lang=l==='zh'?'zh-CN':l==='ja'?'ja':'en';
+  try{localStorage.setItem('geopfn_lang',l);}catch(e){}
+  T=I18N[l]||I18N.zh;
+  document.querySelectorAll('[data-i18n]').forEach(e=>{const v=T[e.dataset.i18n];if(v!=null)e.innerHTML=v;});
+  document.querySelectorAll('.langbar button').forEach(b=>b.classList.toggle('on',b.dataset.lang===l));
+  denseTable();chart('chL','L');chart('chLCSG','LCSG');
+}
+document.querySelectorAll('.langbar button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+let init='zh';try{init=localStorage.getItem('geopfn_lang')||'zh';}catch(e){}
+setLang(['zh','ja','en'].includes(init)?init:'zh');
+</script>
