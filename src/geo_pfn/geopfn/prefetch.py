@@ -15,16 +15,19 @@ endless stream of random synthetic tasks.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any
+
 import torch
 import torch.multiprocessing as mp
 
-from geo_pfn.geoprior.config import GeoPriorConfig
 from geo_pfn.geoprior.prior import GeoBatch
-from geo_pfn.geoprior.site import sample_geo_site_batch
+
+Sampler = Callable[[Any, int, torch.Generator], GeoBatch]
 
 
 def _worker(
-    prior_cfg: GeoPriorConfig, batch_size: int, seed: int, queue: mp.Queue
+    sampler_fn: Sampler, prior_cfg: Any, batch_size: int, seed: int, queue: mp.Queue
 ) -> None:
     """Endlessly sample batches into ``queue`` (blocks when the queue is full).
 
@@ -32,11 +35,12 @@ def _worker(
     from having many worker *processes*, so letting each also open a full OpenMP
     threadpool would oversubscribe the CPU (N_workers x N_cores threads) and thrash
     any concurrent CPU work. Keeps the box usable while the GPU stays fed.
+    ``sampler_fn`` is any module-level ``(cfg, batch_size, generator) -> GeoBatch``.
     """
     torch.set_num_threads(1)
     generator = torch.Generator().manual_seed(seed)
     while True:
-        queue.put(sample_geo_site_batch(prior_cfg, batch_size, generator))
+        queue.put(sampler_fn(prior_cfg, batch_size, generator))
 
 
 class BatchPrefetcher:
@@ -50,7 +54,8 @@ class BatchPrefetcher:
 
     def __init__(
         self,
-        prior_cfg: GeoPriorConfig,
+        sampler_fn: Sampler,
+        prior_cfg: Any,
         batch_size: int,
         base_seed: int,
         num_workers: int,
@@ -64,7 +69,13 @@ class BatchPrefetcher:
         for wid in range(num_workers):
             proc = ctx.Process(
                 target=_worker,
-                args=(prior_cfg, batch_size, base_seed * 100_003 + wid, self._queue),
+                args=(
+                    sampler_fn,
+                    prior_cfg,
+                    batch_size,
+                    base_seed * 100_003 + wid,
+                    self._queue,
+                ),
                 daemon=True,
             )
             proc.start()

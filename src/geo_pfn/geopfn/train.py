@@ -93,7 +93,10 @@ def _step_loss(
 
 
 def train(
-    train_cfg: GeoPFNTrainConfig, model_cfg: GeoPFNConfig, prior_cfg: GeoPriorConfig
+    train_cfg: GeoPFNTrainConfig,
+    model_cfg: GeoPFNConfig,
+    prior_cfg,
+    sampler_fn=sample_geo_site_batch,
 ) -> tuple[GeoPFN, list[dict[str, float]]]:
     device = resolve_device(train_cfg.device)
     torch.manual_seed(train_cfg.seed)
@@ -119,7 +122,11 @@ def train(
 
     prefetcher = (
         BatchPrefetcher(
-            prior_cfg, train_cfg.batch_size, train_cfg.seed, train_cfg.num_workers
+            sampler_fn,
+            prior_cfg,
+            train_cfg.batch_size,
+            train_cfg.seed,
+            train_cfg.num_workers,
         )
         if train_cfg.num_workers > 0
         else None
@@ -134,11 +141,10 @@ def train(
     model.train()
     for step in range(train_cfg.steps):
         if prefetcher is not None:
-            loss, rmse_norm = _forward_loss(model, prefetcher.get(), device)
+            batch = prefetcher.get()
         else:
-            loss, rmse_norm = _step_loss(
-                model, prior_cfg, train_cfg.batch_size, sampler, device
-            )
+            batch = sampler_fn(prior_cfg, train_cfg.batch_size, sampler)
+        loss, rmse_norm = _forward_loss(model, batch, device)
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), train_cfg.grad_clip)
@@ -196,6 +202,7 @@ def main() -> None:
     parser.add_argument("--feature-emb-dim", type=int, default=48)
     parser.add_argument("--num-workers", type=int, default=0)
     parser.add_argument("--p-geo-realistic", type=float, default=None)
+    parser.add_argument("--prior", type=str, default="geo", choices=["geo", "tabicl"])
     args = parser.parse_args()
 
     train_cfg = GeoPFNTrainConfig(
@@ -217,10 +224,18 @@ def main() -> None:
         row_layers=args.row_layers,
         feature_emb_dim=args.feature_emb_dim,
     )
-    prior_cfg = GeoPriorConfig()
-    if args.p_geo_realistic is not None:
-        prior_cfg = GeoPriorConfig(p_geo_realistic=args.p_geo_realistic)
-    train(train_cfg, model_cfg, prior_cfg)
+    if args.prior == "tabicl":
+        from geo_pfn.geoprior.tabicl_prior import (
+            TabiclPriorConfig,
+            sample_tabicl_batch,
+        )
+
+        train(train_cfg, model_cfg, TabiclPriorConfig(), sample_tabicl_batch)
+    else:
+        prior_cfg = GeoPriorConfig()
+        if args.p_geo_realistic is not None:
+            prior_cfg = GeoPriorConfig(p_geo_realistic=args.p_geo_realistic)
+        train(train_cfg, model_cfg, prior_cfg, sample_geo_site_batch)
 
 
 if __name__ == "__main__":

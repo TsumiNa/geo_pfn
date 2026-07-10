@@ -6,11 +6,14 @@ import torch
 
 from geo_pfn.geopfn.prefetch import BatchPrefetcher
 from geo_pfn.geoprior.config import GeoPriorConfig
+from geo_pfn.geoprior.site import sample_geo_site_batch
 
 
 def test_prefetcher_yields_valid_batches() -> None:
     cfg = GeoPriorConfig()
-    pf = BatchPrefetcher(cfg, batch_size=4, base_seed=0, num_workers=2, prefetch=4)
+    pf = BatchPrefetcher(
+        sample_geo_site_batch, cfg, batch_size=4, base_seed=0, num_workers=2, prefetch=4
+    )
     try:
         for _ in range(3):
             batch = pf.get()
