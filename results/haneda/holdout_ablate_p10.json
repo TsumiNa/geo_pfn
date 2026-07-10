@@ -1,0 +1,39 @@
+{
+ "config": {
+  "data_path": "data/pilot_Su_domain_block_mod4Liu.csv",
+  "out_path": "results/haneda/holdout_ablate_p10.json",
+  "checkpoint": "checkpoints/ablate_p10.pt",
+  "device": "cuda",
+  "feature_sets": [
+   "L",
+   "LCSG"
+  ],
+  "models": [
+   "geopfn"
+  ],
+  "n_folds": 5,
+  "seed": 42,
+  "coherent": {
+   "n_holes": 8,
+   "n_candidates": 24,
+   "n_ensembles": 8
+  }
+ },
+ "checkpoint": "checkpoints/ablate_p10.pt",
+ "records": [
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "rmse": 27.858,
+   "r2": 0.2027,
+   "n": 3521
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "rmse": 29.993,
+   "r2": 0.0758,
+   "n": 3521
+  }
+ ]
+}

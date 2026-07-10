@@ -57,8 +57,9 @@ checkpoints except as ablation references.
 
 Cleanup candidates: the rejected realistic-prior block (`geoprior/realistic.py`,
 `fit_stats.py`, `haneda_stats.json`, config fields) can be removed or left as a
-documented negative result — currently kept, default `p_geo_realistic=0.5` is
-**stale**; if kept, flip the default to 0.0.  ← *small landmine, fix early.*
+documented negative result — kept for ablation reproduction, and the default
+`p_geo_realistic` is now **0.0** (fixed at PR-review time), so plain `train`
+uses the generic geo-SCM.
 
 ## 4. Code map (what exists after this stage)
 

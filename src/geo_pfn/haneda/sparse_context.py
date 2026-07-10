@@ -37,6 +37,7 @@ import torch
 
 from geo_pfn.geopfn.eval_anchor import load_geopfn
 from geo_pfn.geopfn.predict import CoherentConfig, predict_geopfn_coherent
+from geo_pfn.util import resolve_device
 from geo_pfn.haneda.data import (
     GROUP,
     TARGET,
@@ -108,9 +109,7 @@ def _predict(
     if model == "tabicl":
         from tabicl import TabICLRegressor
 
-        est = TabICLRegressor(
-            device=None if device.type == "auto" else device.type, random_state=42
-        )
+        est = TabICLRegressor(device=device.type, random_state=42)
     else:
         from geo_pfn.haneda.runners import make_baseline
 
@@ -124,7 +123,7 @@ def run(config: SparseConfig) -> None:
     df = load_haneda(config.data_path)
     su = df[TARGET].to_numpy(dtype=np.float64)
     bores = df[GROUP].to_numpy()
-    device = torch.device(config.device)
+    device = resolve_device(config.device)
 
     folds = borehole_folds(bores, config.n_folds, config.seed)
     _, query_rows = folds[config.query_fold]

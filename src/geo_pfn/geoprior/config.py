@@ -51,8 +51,10 @@ class GeoPriorConfig:
     min_train_frac: float = 0.3
     max_train_frac: float = 0.8
 
-    # geo-realistic cheap-feature block (docs/geo-scm-design.md §10)
-    p_geo_realistic: float = 0.5  # fraction of tables drawing the realistic block
+    # geo-realistic cheap-feature block (docs/geo-scm-design.md §10).
+    # REJECTED by the A/B (docs/prior-realism-diagnostic.md): monotonically
+    # harmful, so the default is off; kept only for ablation reproduction.
+    p_geo_realistic: float = 0.0  # fraction of tables drawing the realistic block
     realistic_load_jitter: float = 0.12  # per-site jitter of PC1 cluster loadings
     realistic_signal_amp: float = 0.20  # faint contrast axis amplitude in features
     realistic_idio_amp: float = 0.15  # per-row idiosyncratic feature noise

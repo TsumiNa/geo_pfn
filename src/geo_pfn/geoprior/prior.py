@@ -201,21 +201,36 @@ def sample_features(
     """Draw the feature block + target, mixing the generic and geo-realistic priors.
 
     ``scm_input`` is ``[latent s | depth_norm | location]`` along the last axis.
-    With probability ``cfg.p_geo_realistic`` the whole table uses the realistic
-    cheap-feature block (latent dims 0/1 as the soft/signal factors); otherwise it
-    uses the generic random-MLP branch over the full ``scm_input``. Deciding per
-    table keeps each element internally coherent while the batch spans both
-    families.
+    Each *table* (batch element) independently uses the realistic cheap-feature
+    block with probability ``cfg.p_geo_realistic`` (latent dims 0/1 as the
+    soft/signal factors) and the generic random-MLP branch otherwise, so the
+    mixing rate is batch-size-independent while every element stays internally
+    coherent.
     """
     from geo_pfn.geoprior.realistic import realistic_block
 
-    if float(torch.rand(1, generator=g).item()) < cfg.p_geo_realistic:
+    def _realistic(inp: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         sig = 1 if cfg.latent_dim > 1 else 0
-        depth_norm = scm_input[:, :, cfg.latent_dim]
+        depth_norm = inp[:, :, cfg.latent_dim]
         return realistic_block(
-            cfg, scm_input[:, :, 0], scm_input[:, :, sig], depth_norm, n_scm_feat, g
+            cfg, inp[:, :, 0], inp[:, :, sig], depth_norm, n_scm_feat, g
         )
-    return _generic_features(cfg, scm_input, n_scm_feat, g)
+
+    use_real = torch.rand(scm_input.shape[0], generator=g) < cfg.p_geo_realistic
+    if not use_real.any():
+        return _generic_features(cfg, scm_input, n_scm_feat, g)
+    if use_real.all():
+        return _realistic(scm_input)
+    idx_r = use_real.nonzero(as_tuple=True)[0]
+    idx_g = (~use_real).nonzero(as_tuple=True)[0]
+    feats_r, target_r = _realistic(scm_input[idx_r])
+    feats_g, target_g = _generic_features(cfg, scm_input[idx_g], n_scm_feat, g)
+    b, r, _ = scm_input.shape
+    feats = torch.empty(b, r, n_scm_feat, dtype=feats_r.dtype)
+    target = torch.empty(b, r, dtype=target_r.dtype)
+    feats[idx_r], feats[idx_g] = feats_r, feats_g
+    target[idx_r], target[idx_g] = target_r, target_g
+    return feats, target
 
 
 def sample_geo_batch(

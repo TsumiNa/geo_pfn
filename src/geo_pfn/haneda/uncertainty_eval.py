@@ -30,7 +30,6 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 import numpy as np
-import torch
 from scipy.stats import spearmanr
 
 from geo_pfn.geopfn.calibration import (
@@ -41,6 +40,7 @@ from geo_pfn.geopfn.calibration import (
 )
 from geo_pfn.geopfn.eval_anchor import load_geopfn
 from geo_pfn.geopfn.predict import CoherentConfig, predict_geopfn_coherent_dist
+from geo_pfn.util import resolve_device
 from geo_pfn.haneda.data import (
     GROUP,
     TARGET,
@@ -86,7 +86,7 @@ def run(config: UncertaintyConfig) -> None:
     df = load_haneda(config.data_path)
     su = df[TARGET].to_numpy(dtype=np.float64)
     bores = df[GROUP].to_numpy()
-    device = torch.device(config.device)
+    device = resolve_device(config.device)
 
     folds = borehole_folds(bores, config.n_folds, config.seed)
     _, query_rows = folds[config.query_fold]
@@ -124,8 +124,14 @@ def run(config: UncertaintyConfig) -> None:
                 for b in np.unique(query_bores):
                     q = query_rows[query_bores == b]
                     dist = predict_geopfn_coherent_dist(
-                        model, x[ctx_rows], su[ctx_rows], bores[ctx_rows], x[q],
-                        coherent, config.seed + s + int(b), device,
+                        model,
+                        x[ctx_rows],
+                        su[ctx_rows],
+                        bores[ctx_rows],
+                        x[q],
+                        coherent,
+                        config.seed + s + int(b),
+                        device,
                     )
                     y = su[q]
                     args = (dist.probs, dist.ctx_mean, dist.ctx_std, dist.z_edges)
@@ -181,9 +187,7 @@ def run(config: UncertaintyConfig) -> None:
 def _write(config: UncertaintyConfig, records: list[dict]) -> None:
     out = Path(config.out_path)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(
-        json.dumps({"config": asdict(config), "records": records}, indent=1)
-    )
+    out.write_text(json.dumps({"config": asdict(config), "records": records}, indent=1))
 
 
 def _summarize(records: list[dict]) -> None:
