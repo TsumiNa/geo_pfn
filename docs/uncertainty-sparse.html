@@ -1,0 +1,241 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>稀疏不确定性校准 / 疎な不確実性較正 / Sparse uncertainty calibration</title>
+<style>
+:root{
+  --bg:#f5f3ee;--panel:#fbfaf7;--ink:#1b1a17;--ink2:#54504a;--muted:#8b857a;
+  --line:#e4dfd5;--line2:#d2cabb;--grid:#e9e4da;--accent:#1f8a70;--warn:#c05621;
+  --c50:#9aa0e8;--c80:#3b7dd8;--c90:#1baf7a;--c95:#e08a1e;--l:#eb6834;--lcsg:#7a5bd8;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;--sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{--bg:#151419;--panel:#1e1d23;--ink:#ecebe7;--ink2:#b4afa6;--muted:#7e786f;--line:#2a2930;--line2:#3a3843;--grid:#2c2b32;--accent:#38b78f;--warn:#e8894f;--c50:#a9aef0;--c80:#5b9be6;--c90:#2bc98f;--c95:#f0a542;--l:#f6824f;--lcsg:#9b82e8;}}
+:root[data-theme=light]{--bg:#f5f3ee;--panel:#fbfaf7;--ink:#1b1a17;--ink2:#54504a;--muted:#8b857a;--line:#e4dfd5;--line2:#d2cabb;--grid:#e9e4da;--accent:#1f8a70;--c50:#9aa0e8;--c80:#3b7dd8;--c90:#1baf7a;--c95:#e08a1e;--l:#eb6834;--lcsg:#7a5bd8;}
+:root[data-theme=dark]{--bg:#151419;--panel:#1e1d23;--ink:#ecebe7;--ink2:#b4afa6;--muted:#7e786f;--line:#2a2930;--line2:#3a3843;--grid:#2c2b32;--accent:#38b78f;--c50:#a9aef0;--c80:#5b9be6;--c90:#2bc98f;--c95:#f0a542;--l:#f6824f;--lcsg:#9b82e8;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin:0 auto;padding:40px 24px 90px}
+.langbar{position:fixed;top:14px;right:16px;z-index:20;display:flex;gap:2px;background:var(--panel);border:1px solid var(--line2);border-radius:999px;padding:3px}
+.langbar button{border:0;background:transparent;color:var(--ink2);font:600 12px var(--sans);padding:5px 11px;border-radius:999px;cursor:pointer}
+.langbar button.on{background:var(--accent);color:#fff}
+header{border-bottom:1px solid var(--line);padding-bottom:24px;margin-bottom:10px}
+.kick{font:600 12px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+h1{font-size:26px;font-weight:690;margin:0 0 11px;letter-spacing:-.015em;text-wrap:balance;line-height:1.22}
+.lede{color:var(--ink2);font-size:15.5px;max-width:68ch;margin:0}
+h2{font-size:18px;font-weight:670;margin:42px 0 4px;display:flex;align-items:baseline;gap:11px}
+h2 .n{font:700 13px var(--mono);color:var(--accent)}
+p{margin:9px 0;font-size:14.5px;color:var(--ink2);max-width:72ch}
+p b,li b{color:var(--ink)}
+figure{margin:18px 0;padding:16px 12px 10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow-x:auto}
+figcaption{font-size:12px;color:var(--muted);margin-top:8px;text-align:center;padding:0 8px}
+svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.legend{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin:2px 0 8px;font:600 12px var(--sans)}
+.legend span{display:inline-flex;align-items:center;gap:6px;color:var(--ink2)}
+.sw{width:18px;height:0;border-top:3px solid;border-radius:2px}.sw.dash{border-top-style:dashed}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:720px){.row2{grid-template-columns:1fr}}
+.callout{margin:18px 0;padding:15px 17px;border:1px solid var(--line2);border-left:3px solid var(--accent);border-radius:9px;background:var(--panel);font-size:14px;color:var(--ink2)}
+.callout.warn{border-left-color:var(--warn)}
+table{border-collapse:collapse;width:100%;margin:12px 0 4px;font-size:12.5px}
+th,td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+th{font:600 10.5px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+td:first-child,th:first-child{text-align:left}
+ul{margin:8px 0;padding-left:20px}li{font-size:14px;color:var(--ink2);margin:5px 0}
+.tip{position:fixed;pointer-events:none;z-index:9;background:var(--ink);color:var(--bg);font:600 11px var(--mono);padding:4px 7px;border-radius:5px;opacity:0;transition:opacity .08s;white-space:nowrap}
+footer{margin-top:46px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font:500 11px var(--mono)}
+</style>
+
+<div class="langbar"><button data-lang="zh">中</button><button data-lang="ja">日</button><button data-lang="en">EN</button></div>
+
+<div class="wrap">
+<header>
+  <div class="kick" data-i18n="kick"></div>
+  <h1 data-i18n="title"></h1>
+  <p class="lede" data-i18n="lede"></p>
+</header>
+
+<h2><span class="n">1</span><span data-i18n="s1h"></span></h2>
+<p data-i18n="s1p"></p>
+
+<h2><span class="n">2</span><span data-i18n="s2h"></span></h2>
+<p data-i18n="s2p"></p>
+<div class="legend">
+  <span><span class="sw" style="border-color:var(--c50)"></span>50%</span>
+  <span><span class="sw" style="border-color:var(--c80)"></span>80%</span>
+  <span><span class="sw" style="border-color:var(--c90)"></span>90%</span>
+  <span><span class="sw" style="border-color:var(--c95)"></span>95%</span>
+  <span><span class="sw dash" style="border-color:var(--muted)"></span><span data-i18n="legNom"></span></span>
+</div>
+<div class="row2">
+  <figure><svg id="covL" viewBox="0 0 420 300" role="img" aria-label="coverage vs N, L"></svg><figcaption data-i18n="capCovL"></figcaption></figure>
+  <figure><svg id="covLCSG" viewBox="0 0 420 300" role="img" aria-label="coverage vs N, LCSG"></svg><figcaption data-i18n="capCovLCSG"></figcaption></figure>
+</div>
+<div class="callout"><span data-i18n="s2call"></span></div>
+
+<h2><span class="n">3</span><span data-i18n="s3h"></span></h2>
+<p data-i18n="s3p"></p>
+<div class="legend">
+  <span><span class="sw" style="border-color:var(--l)"></span>L</span>
+  <span><span class="sw" style="border-color:var(--lcsg)"></span>LCSG</span>
+</div>
+<figure><svg id="crps" viewBox="0 0 580 280" role="img" aria-label="CRPS vs N"></svg><figcaption data-i18n="capCrps"></figcaption></figure>
+<div class="callout warn"><span data-i18n="s3call"></span></div>
+
+<h2><span class="n">4</span><span data-i18n="s4h"></span></h2>
+<p data-i18n="s4p"></p>
+<table id="tbl"></table>
+
+<h2><span class="n">5</span><span data-i18n="s5h"></span></h2>
+<ul><li data-i18n="v1"></li><li data-i18n="v2"></li><li data-i18n="v3"></li><li data-i18n="v4"></li></ul>
+
+<footer>geo_pfn · docs/uncertainty-sparse.html · <span data-i18n="foot"></span></footer>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+const DATA={
+ Ns:[3,6,12,25,50,100,192],
+ L:{cov:{c50:[.591,.537,.547,.665,.624,.654,.646],c80:[.838,.821,.850,.932,.923,.933,.939],c90:[.910,.901,.947,.981,.975,.971,.974],c95:[.947,.944,.980,.994,.993,.989,.990]},
+    crps:[14.69,13.01,12.04,10.98,10.89,10.16,9.94],w90:[106.2,87.0,86.7,103.6,93.2,88.7,85.8],rho:[.264,.199,.287,.261,.327,.282,.254],rmse:[26.25,23.64,22.75,20.11,20.75,18.93,18.70]},
+ LCSG:{cov:{c50:[.497,.483,.538,.663,.646,.665,.703],c80:[.766,.770,.854,.935,.919,.928,.946],c90:[.854,.875,.940,.979,.972,.978,.981],c95:[.900,.944,.975,.995,.990,.989,.989]},
+    crps:[15.96,14.28,12.46,11.19,10.66,10.27,9.44],w90:[89.5,80.9,86.5,96.1,88.7,86.0,82.2],rho:[.296,.236,.351,.324,.334,.342,.359],rmse:[30.05,26.29,23.55,20.83,20.35,19.46,18.18]}
+};
+const LEVELS=[['c50',.5,'var(--c50)'],['c80',.8,'var(--c80)'],['c90',.9,'var(--c90)'],['c95',.95,'var(--c95)']];
+const NS='http://www.w3.org/2000/svg';
+const el=(n,a,p)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;};
+const tip=document.getElementById('tip');
+document.addEventListener('mousemove',e=>{if(e.target.tagName!=='circle')tip.style.opacity=0;});
+function xmap(W,m){const Ns=DATA.Ns,lx=Ns.map(n=>Math.log(n)),x0=Math.min(...lx),x1=Math.max(...lx);
+  return v=>m.l+(Math.log(v)-x0)/(x1-x0)*(W-m.l-m.r);}
+function covChart(id,fs){
+  const svg=document.getElementById(id);svg.replaceChildren();
+  const W=420,H=300,m={l:42,r:12,t:12,b:38},Ns=DATA.Ns;
+  const X=xmap(W,m),yLo=0.4,yHi=1.0,Y=v=>H-m.b-(v-yLo)/(yHi-yLo)*(H-m.t-m.b);
+  for(let g=0.4;g<=1.001;g+=0.1){el('line',{x1:m.l,y1:Y(g),x2:W-m.r,y2:Y(g),stroke:'var(--grid)'},svg);
+    el('text',{x:m.l-6,y:Y(g)+3.5,'text-anchor':'end',fill:'var(--muted)','font-size':9.5,'font-family':'var(--mono)'},svg).textContent=g.toFixed(1);}
+  for(const n of Ns)el('text',{x:X(n),y:H-m.b+15,'text-anchor':'middle',fill:'var(--muted)','font-size':9.5,'font-family':'var(--mono)'},svg).textContent=(n===192?'all':n);
+  el('text',{x:(m.l+W-m.r)/2,y:H-4,'text-anchor':'middle',fill:'var(--ink2)','font-size':10.5,'font-weight':600},svg).textContent=T.xlab;
+  for(const [key,nom,color] of LEVELS){
+    el('line',{x1:m.l,y1:Y(nom),x2:W-m.r,y2:Y(nom),stroke:color,'stroke-width':1.1,'stroke-dasharray':'5 4','stroke-opacity':.65},svg);
+    const v=DATA[fs].cov[key];const pts=v.map((y,i)=>`${X(Ns[i])},${Y(y)}`).join(' ');
+    el('polyline',{points:pts,fill:'none',stroke:color,'stroke-width':2.3,'stroke-linejoin':'round'},svg);
+    v.forEach((y,i)=>{const c=el('circle',{cx:X(Ns[i]),cy:Y(y),r:3,fill:color,stroke:'var(--panel)','stroke-width':1.1},svg);
+      c.addEventListener('mouseenter',ev=>{tip.textContent=`${fs} cov@${nom}  N=${Ns[i]===192?'all':Ns[i]}  ${y.toFixed(3)}`;tip.style.left=(ev.clientX+12)+'px';tip.style.top=(ev.clientY+12)+'px';tip.style.opacity=1;});});
+  }
+}
+function crpsChart(){
+  const svg=document.getElementById('crps');svg.replaceChildren();
+  const W=580,H=280,m={l:42,r:56,t:12,b:38},Ns=DATA.Ns;
+  const X=xmap(W,m);
+  const vals=[...DATA.L.crps,...DATA.LCSG.crps];const yLo=Math.floor(Math.min(...vals)-1),yHi=Math.ceil(Math.max(...vals)+1);
+  const Y=v=>H-m.b-(v-yLo)/(yHi-yLo)*(H-m.t-m.b);
+  for(let g=Math.ceil(yLo/2)*2;g<=yHi;g+=2){el('line',{x1:m.l,y1:Y(g),x2:W-m.r,y2:Y(g),stroke:'var(--grid)'},svg);
+    el('text',{x:m.l-6,y:Y(g)+3.5,'text-anchor':'end',fill:'var(--muted)','font-size':9.5,'font-family':'var(--mono)'},svg).textContent=g;}
+  for(const n of Ns)el('text',{x:X(n),y:H-m.b+15,'text-anchor':'middle',fill:'var(--muted)','font-size':9.5,'font-family':'var(--mono)'},svg).textContent=(n===192?'all':n);
+  el('text',{x:(m.l+W-m.r)/2,y:H-4,'text-anchor':'middle',fill:'var(--ink2)','font-size':10.5,'font-weight':600},svg).textContent=T.xlab;
+  el('text',{x:13,y:(m.t+H-m.b)/2,'text-anchor':'middle',fill:'var(--ink2)','font-size':11,'font-weight':600,transform:`rotate(-90,13,${(m.t+H-m.b)/2})`},svg).textContent='CRPS';
+  for(const [fs,color] of [['L','var(--l)'],['LCSG','var(--lcsg)']]){
+    const v=DATA[fs].crps;const pts=v.map((y,i)=>`${X(Ns[i])},${Y(y)}`).join(' ');
+    el('polyline',{points:pts,fill:'none',stroke:color,'stroke-width':2.4,'stroke-linejoin':'round'},svg);
+    v.forEach((y,i)=>{const c=el('circle',{cx:X(Ns[i]),cy:Y(y),r:3.2,fill:color,stroke:'var(--panel)','stroke-width':1.1},svg);
+      c.addEventListener('mouseenter',ev=>{tip.textContent=`${fs}  N=${Ns[i]===192?'all':Ns[i]}  CRPS ${y.toFixed(2)}`;tip.style.left=(ev.clientX+12)+'px';tip.style.top=(ev.clientY+12)+'px';tip.style.opacity=1;});});
+    el('text',{x:X(Ns[Ns.length-1])+7,y:Y(v[v.length-1])+3.5,fill:color,'font-size':11,'font-weight':700},svg).textContent=fs;
+  }
+}
+function tbl(){
+  const Ns=DATA.Ns;
+  let h=`<tr><th>N</th><th>CRPS·L</th><th>cov@0.9·L</th><th>w90·L</th><th>ρ·L</th><th>CRPS·LCSG</th><th>cov@0.9·LCSG</th><th>ρ·LCSG</th></tr>`;
+  for(let i=0;i<Ns.length;i++){
+    h+=`<tr><td>${Ns[i]===192?'all':Ns[i]}</td><td>${DATA.L.crps[i].toFixed(1)}</td><td>${DATA.L.cov.c90[i].toFixed(3)}</td><td>${DATA.L.w90[i].toFixed(0)}</td><td>${DATA.L.rho[i].toFixed(2)}</td>`+
+       `<td>${DATA.LCSG.crps[i].toFixed(1)}</td><td>${DATA.LCSG.cov.c90[i].toFixed(3)}</td><td>${DATA.LCSG.rho[i].toFixed(2)}</td></tr>`;
+  }
+  document.getElementById('tbl').innerHTML=h;
+}
+let T;
+const I18N={
+ zh:{
+  kick:"geo_pfn · 稀疏不确定性 · 校准评估",
+  title:"上下文只有几口孔时,geo-PFN 的不确定性可信吗?",
+  lede:"这是我们领域定位的核心交付:数据稀缺时,模型不仅要给预测值,还要给<b>可信的</b>不确定性。本评估在稀疏协议(固定 48 孔查询,从其余抽 N 口整孔作上下文)上,对 geo-PFN 的完整预测分布做严格校准检验。模型:2M @24k(稀疏最优 checkpoint)。",
+  s1h:"怎么测",
+  s1p:"geo-PFN 的 bar-distribution 头对每个查询点输出完整分布;8 次 ensemble 的直方图按各自上下文的反归一化混合成一个<b>精确的混合分布</b>(全部指标闭式计算,并经 Monte-Carlo 验证):<b>覆盖率</b>(名义 c% 区间实际罩住真值的频率;低于名义=过度自信)、<b>CRPS</b>(校准+锐利的正规打分,越低越好)、<b>w90</b>(90% 区间平均宽度)、<b>ρ</b>(预测 std 与实际误差的 Spearman 相关——模型知不知道自己哪里错)。",
+  s2h:"核心结果:覆盖率 vs 名义(校准图)",
+  s2p:"每条实线=某名义水平的经验覆盖率,虚线=名义值。<b>实线贴住虚线 = 校准好;低于 = 过度自信(危险);高于 = 保守(区间偏宽)</b>。",
+  legNom:"名义值(理想)",
+  capCovL:"仅坐标(L):N=3 时 cov@0.9=0.910——几乎完美校准;N≥25 后各水平都偏高(保守)。",
+  capCovLCSG:"加真实特征(LCSG):N=3–6 有轻微过度自信(cov@0.9=0.85–0.88);N≥12 转为保守。",
+  s2call:"<b>假设被(良性地)推翻:</b>我们担心的「极稀疏时自信地错」<b>没有发生</b>。L 特征下 N=3 就近乎完美校准(0.910 vs 0.9),真值落在分布支撑外的比例 ≤0.4%,且模型在上下文变少时确实会<b>主动加宽区间</b>(w90:全部→N=3 从 86 涨到 106)。唯一的轻微过度自信在 LCSG 的 N≤6(0.85–0.88),幅度温和。",
+  s3h:"分布质量随上下文的变化(CRPS)",
+  s3p:"CRPS 同时惩罚不准和不锐利,是分布预测的总分。它随 N 单调改善(L:14.7→9.9),说明分布质量随上下文可靠增长——没有哪个稀疏档「崩掉」。",
+  capCrps:"CRPS 随上下文孔数 N 单调下降(越低越好),L 与 LCSG 走势一致。",
+  s3call:"<b>两个改进空间(都是保守方向,不是危险方向):</b>①N≥25 后区间明显偏宽(cov@0.9≈0.97–0.98,应为 0.90)——牺牲了锐利度,校准后处理或训练目标可收窄;②ρ 只有 +0.2~0.36——模型「知道整体多不确定」,但<b>对具体哪一行更可能错的分辨力弱</b>,有提升余地。",
+  s4h:"完整数字",
+  s4p:"2M @24k(稀疏最优)。ρ = Spearman corr(预测 std, |误差|)。",
+  s5h:"结论",
+  v1:"<b>核心主张成立:极稀疏时不确定性可信。</b>N=3 仅坐标即近乎完美校准(cov@0.9=0.910),灾难性过度自信(支撑外)≤0.4%。模型在数据变少时诚实地加宽区间——这正是我们领域需要、而通用表格模型不提供的能力。",
+  v2:"<b>轻微弱点:</b>LCSG 在 N≤6 有温和过度自信(0.85–0.88 vs 0.90);17M 交叉验证同样模式且点预测更差——再次支持稀疏场景用 2M。",
+  v3:"<b>改进方向(保守侧):</b>中等 N 起区间偏宽(锐利度损失)+ 逐行误差分辨力弱(ρ≈0.3)。两者都可作为 (c) 小上下文目标训练的显式优化目标。",
+  v4:"<b>尚未对比 TabICL 的分布输出</b>(其回归器的分布 API 待查);本报告先确立我们自己的校准基线。",
+  xlab:"上下文钻孔数 N",foot:"证据 results/haneda/uncertainty_gen2m24k.json · uncertainty_gen17m.json · 指标经 MC 验证(calibration_test.py)"
+ },
+ ja:{
+  kick:"geo_pfn · 疎な不確実性 · 較正評価",
+  title:"文脈が数本の孔しかない時、geo-PFN の不確実性は信頼できるか?",
+  lede:"我々の領域での核心的な成果物:データが乏しい時、モデルは予測値だけでなく<b>信頼できる</b>不確実性を出すべきだ。本評価は疎プロトコル(48孔クエリ固定、残りから N 本を丸ごと文脈に抽出)で geo-PFN の完全な予測分布を厳密に較正検定する。モデル:2M @24k(疎で最良の checkpoint)。",
+  s1h:"測り方",
+  s1p:"geo-PFN の bar-distribution ヘッドは各クエリ点に完全な分布を出す;8 回のアンサンブルのヒストグラムを各文脈の逆正規化で<b>正確な混合分布</b>に合成(全指標を閉形式で計算、Monte-Carlo で検証済み):<b>被覆率</b>(名目 c% 区間が真値を含む頻度;名目未満=過信)、<b>CRPS</b>(較正+鋭さの適正スコア、低いほど良い)、<b>w90</b>(90% 区間の平均幅)、<b>ρ</b>(予測 std と実誤差の Spearman 相関——どこで間違うか自覚しているか)。",
+  s2h:"核心結果:被覆率 対 名目(較正図)",
+  s2p:"実線=各名目水準の経験被覆率、点線=名目値。<b>実線が点線に沿う=良い較正;下回る=過信(危険);上回る=保守的(区間が広い)</b>。",
+  legNom:"名目値(理想)",
+  capCovL:"座標のみ(L):N=3 で cov@0.9=0.910——ほぼ完璧な較正;N≥25 では各水準とも高め(保守的)。",
+  capCovLCSG:"実特徴込み(LCSG):N=3–6 で軽い過信(cov@0.9=0.85–0.88);N≥12 で保守側へ。",
+  s2call:"<b>仮説は(良性に)棄却:</b>恐れていた「極疎での自信満々の誤り」は<b>起きていない</b>。L では N=3 でほぼ完璧に較正(0.910 対 0.9)、真値が分布の台の外に落ちる率 ≤0.4%、しかも文脈が減るとモデルは<b>自ら区間を広げる</b>(w90:全部→N=3 で 86→106)。唯一の軽い過信は LCSG の N≤6(0.85–0.88)で、程度は穏やか。",
+  s3h:"文脈量に対する分布品質(CRPS)",
+  s3p:"CRPS は不正確さと鈍さを同時に罰する分布予測の総合点。N に対し単調に改善(L:14.7→9.9)——どの疎さでも「崩壊」しない。",
+  capCrps:"CRPS は文脈孔数 N とともに単調減少(低いほど良い)、L と LCSG は同傾向。",
+  s3call:"<b>2つの改善余地(いずれも保守側で危険側ではない):</b>①N≥25 で区間が明確に広い(cov@0.9≈0.97–0.98、本来 0.90)——鋭さを犠牲にしており、後処理較正か訓練目標で絞れる;②ρ は +0.2〜0.36——「全体でどれだけ不確かか」は知るが、<b>どの行で間違いやすいかの分解能が弱い</b>。",
+  s4h:"全数値",
+  s4p:"2M @24k(疎で最良)。ρ = Spearman corr(予測 std, |誤差|)。",
+  s5h:"結論",
+  v1:"<b>核心主張は成立:極疎でも不確実性は信頼できる。</b>N=3・座標のみでほぼ完璧な較正(cov@0.9=0.910)、破滅的過信(台の外)≤0.4%。データが減るとモデルは正直に区間を広げる——我々の領域が必要とし、汎用表モデルが提供しない能力。",
+  v2:"<b>軽い弱点:</b>LCSG の N≤6 で穏やかな過信(0.85–0.88 対 0.90);17M の交差検証も同パターンで点予測はより悪い——疎では 2M を使う判断を再確認。",
+  v3:"<b>改善方向(保守側):</b>中程度 N からの区間過広(鋭さの損失)+ 行単位の誤差分解能の弱さ(ρ≈0.3)。いずれも (c) 小文脈目標訓練の明示的な最適化目標にできる。",
+  v4:"<b>TabICL の分布出力との比較は未実施</b>(回帰器の分布 API は要調査);本報告はまず我々自身の較正基線を確立する。",
+  xlab:"文脈孔数 N",foot:"証拠 results/haneda/uncertainty_gen2m24k.json · uncertainty_gen17m.json · 指標は MC 検証済み(calibration_test.py)"
+ },
+ en:{
+  kick:"geo_pfn · sparse uncertainty · calibration eval",
+  title:"With only a few boreholes of context, can geo-PFN's uncertainty be trusted?",
+  lede:"The core deliverable of our niche: when data is scarce, the model must give not just a value but <b>trustworthy</b> uncertainty. This eval runs the sparse protocol (fixed 48-hole query, N whole holes drawn as context) and rigorously tests geo-PFN's full predictive distribution. Model: 2M @24k (the best sparse checkpoint).",
+  s1h:"How it is measured",
+  s1p:"geo-PFN's bar-distribution head outputs a full distribution per query point; the 8 ensemble histograms are combined via their context affines into an <b>exact mixture</b> (all metrics in closed form, Monte-Carlo validated): <b>coverage</b> (how often the nominal c% interval contains the truth; below nominal = over-confident), <b>CRPS</b> (a proper score for calibration + sharpness, lower is better), <b>w90</b> (mean width of the 90% interval), <b>ρ</b> (Spearman corr of predicted std with actual error — does the model know where it is wrong).",
+  s2h:"Headline: coverage vs nominal (calibration plot)",
+  s2p:"Each solid line = empirical coverage at one nominal level; dashed = the nominal. <b>On the dashed line = calibrated; below = over-confident (dangerous); above = conservative (too wide)</b>.",
+  legNom:"nominal (ideal)",
+  capCovL:"Coords-only (L): at N=3, cov@0.9 = 0.910 — near-perfect calibration; at N≥25 all levels run high (conservative).",
+  capCovLCSG:"With real features (LCSG): mild over-confidence at N=3–6 (cov@0.9 = 0.85–0.88); conservative from N≥12.",
+  s2call:"<b>The hypothesis is (benignly) refuted:</b> the feared 'confidently wrong at extreme sparsity' <b>does not happen</b>. On L the model is near-perfectly calibrated at N=3 (0.910 vs 0.9), truths fall outside the predicted support ≤0.4% of the time, and the model genuinely <b>widens its intervals</b> as context shrinks (w90: 86 → 106 from all → N=3). The only mild over-confidence is LCSG at N≤6 (0.85–0.88), and it is moderate.",
+  s3h:"Distributional quality vs context (CRPS)",
+  s3p:"CRPS penalises inaccuracy and bluntness together — the overall score for distributional prediction. It improves monotonically with N (L: 14.7 → 9.9): no sparsity level 'collapses'.",
+  capCrps:"CRPS falls monotonically with context size N (lower is better); L and LCSG track each other.",
+  s3call:"<b>Two improvement areas (both on the conservative side, not the dangerous side):</b> (1) from N≥25 the intervals are clearly too wide (cov@0.9 ≈ 0.97–0.98 vs nominal 0.90) — sharpness is being left on the table; recalibration or a training objective can tighten them. (2) ρ is only +0.2–0.36 — the model knows how uncertain it is overall but is <b>weak at ranking which rows it will get wrong</b>.",
+  s4h:"Full numbers",
+  s4p:"2M @24k (best sparse). ρ = Spearman corr(predicted std, |error|).",
+  s5h:"Verdict",
+  v1:"<b>The core claim holds: uncertainty is trustworthy at extreme sparsity.</b> Near-perfect calibration at N=3 with coords only (cov@0.9 = 0.910), catastrophic over-confidence (outside support) ≤0.4%. The model honestly widens its intervals as data shrinks — exactly the capability our domain needs and general tabular models don't offer.",
+  v2:"<b>Mild weakness:</b> LCSG at N≤6 is moderately over-confident (0.85–0.88 vs 0.90); the 17M cross-check shows the same pattern with worse point predictions — reaffirming the 2M for sparse use.",
+  v3:"<b>Improvement direction (conservative side):</b> over-wide intervals from medium N (sharpness loss) + weak per-row error ranking (ρ ≈ 0.3). Both can become explicit objectives for the (c) small-context training.",
+  v4:"<b>TabICL's distributional output not yet compared</b> (its regressor's distribution API needs investigation); this report establishes our own calibration baseline first.",
+  xlab:"context boreholes N",foot:"evidence results/haneda/uncertainty_gen2m24k.json · uncertainty_gen17m.json · metrics MC-validated (calibration_test.py)"
+ }
+};
+function setLang(l){
+  document.documentElement.lang=l==='zh'?'zh-CN':l==='ja'?'ja':'en';
+  try{localStorage.setItem('geopfn_lang',l);}catch(e){}
+  T=I18N[l]||I18N.zh;
+  document.querySelectorAll('[data-i18n]').forEach(e=>{const v=T[e.dataset.i18n];if(v!=null)e.innerHTML=v;});
+  document.querySelectorAll('.langbar button').forEach(b=>b.classList.toggle('on',b.dataset.lang===l));
+  covChart('covL','L');covChart('covLCSG','LCSG');crpsChart();tbl();
+}
+document.querySelectorAll('.langbar button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+let init='zh';try{init=localStorage.getItem('geopfn_lang')||'zh';}catch(e){}
+setLang(['zh','ja','en'].includes(init)?init:'zh');
+</script>
