@@ -1,0 +1,39 @@
+{
+ "config": {
+  "data_path": "data/pilot_Su_domain_block_mod4Liu.csv",
+  "out_path": "results/haneda/holdout_gen_17m.json",
+  "checkpoint": "checkpoints/gen_17m.pt",
+  "device": "cuda",
+  "feature_sets": [
+   "L",
+   "LCSG"
+  ],
+  "models": [
+   "geopfn"
+  ],
+  "n_folds": 5,
+  "seed": 42,
+  "coherent": {
+   "n_holes": 8,
+   "n_candidates": 24,
+   "n_ensembles": 8
+  }
+ },
+ "checkpoint": "checkpoints/gen_17m.pt",
+ "records": [
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "rmse": 17.741,
+   "r2": 0.6767,
+   "n": 3521
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "rmse": 16.81,
+   "r2": 0.7097,
+   "n": 3521
+  }
+ ]
+}

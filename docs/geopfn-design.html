@@ -1,0 +1,339 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>geo-PFN 设计说明 / 設計ノート / Design Notes</title>
+<style>
+:root{
+  --bg:#f5f3ee;--panel:#fbfaf7;--ink:#1b1a17;--ink2:#54504a;--muted:#8b857a;
+  --line:#e4dfd5;--line2:#d2cabb;--accent:#1f8a70;--accent2:#2a6fb0;--warn:#c05621;
+  --gp:#eb6834;--tab:#1baf7a;--v2:#2a78d6;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;--sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{--bg:#151419;--panel:#1e1d23;--ink:#ecebe7;--ink2:#b4afa6;--muted:#7e786f;--line:#2a2930;--line2:#3a3843;--accent:#38b78f;--accent2:#5b9bd6;--warn:#e8894f;}}
+:root[data-theme=light]{--bg:#f5f3ee;--panel:#fbfaf7;--ink:#1b1a17;--ink2:#54504a;--muted:#8b857a;--line:#e4dfd5;--line2:#d2cabb;--accent:#1f8a70;--accent2:#2a6fb0;}
+:root[data-theme=dark]{--bg:#151419;--panel:#1e1d23;--ink:#ecebe7;--ink2:#b4afa6;--muted:#7e786f;--line:#2a2930;--line2:#3a3843;--accent:#38b78f;--accent2:#5b9bd6;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+.wrap{max-width:940px;margin:0 auto;padding:40px 24px 90px}
+.langbar{position:fixed;top:14px;right:16px;z-index:20;display:flex;gap:2px;background:var(--panel);border:1px solid var(--line2);border-radius:999px;padding:3px}
+.langbar button{border:0;background:transparent;color:var(--ink2);font:600 12px var(--sans);padding:5px 11px;border-radius:999px;cursor:pointer}
+.langbar button.on{background:var(--accent);color:#fff}
+header{border-bottom:1px solid var(--line);padding-bottom:26px;margin-bottom:12px}
+.kick{font:600 12px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:15px}
+h1{font-size:30px;font-weight:700;margin:0 0 12px;letter-spacing:-.015em;text-wrap:balance;line-height:1.2}
+.lede{color:var(--ink2);font-size:16px;max-width:64ch;margin:0}
+h2{font-size:19px;font-weight:670;margin:46px 0 6px;letter-spacing:-.005em;display:flex;align-items:baseline;gap:11px}
+h2 .n{font:700 13px var(--mono);color:var(--accent);flex:0 0 auto}
+h3{font-size:14px;font-weight:660;margin:22px 0 4px;color:var(--ink)}
+p{margin:10px 0;font-size:15px;color:var(--ink2)}
+p b,li b{color:var(--ink)}
+.wide{max-width:66ch}
+ul{margin:10px 0;padding-left:20px}
+li{font-size:14.5px;color:var(--ink2);margin:5px 0}
+figure{margin:26px 0;padding:20px 18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow-x:auto}
+figcaption{font-size:12.5px;color:var(--muted);margin-top:12px;text-align:center}
+svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.callout{margin:22px 0;padding:15px 17px;border:1px solid var(--line2);border-left:3px solid var(--accent);border-radius:9px;background:var(--panel);font-size:14px;color:var(--ink2)}
+.callout.warn{border-left-color:var(--warn)}
+.svgbox{fill:var(--panel);stroke:var(--line2)}
+.svgbox2{fill:none;stroke:var(--accent);stroke-dasharray:4 3}
+.svgt{fill:var(--ink);font:600 12px var(--sans)}
+.svgt2{fill:var(--ink2);font:500 10.5px var(--sans)}
+.svgm{fill:var(--muted);font:500 10px var(--mono)}
+.arrow{stroke:var(--muted);stroke-width:1.5;fill:none;marker-end:url(#ah)}
+.pline{stroke:var(--accent);stroke-width:2.2;fill:none}
+.tag{display:inline-block;font:600 10.5px var(--mono);padding:1px 7px;border-radius:5px;background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent);letter-spacing:.02em}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font:500 11.5px var(--mono)}
+code{font:500 12.5px var(--mono);background:color-mix(in srgb,var(--ink) 7%,transparent);padding:1px 5px;border-radius:4px}
+</style>
+
+<div class="langbar">
+  <button data-lang="zh">中</button><button data-lang="ja">日</button><button data-lang="en">EN</button>
+</div>
+
+<div class="wrap">
+<header>
+  <div class="kick" data-i18n="kick"></div>
+  <h1 data-i18n="title"></h1>
+  <p class="lede" data-i18n="lede"></p>
+</header>
+
+<h2><span class="n">1</span><span data-i18n="s1h"></span></h2>
+<p class="wide" data-i18n="s1p1"></p>
+<p class="wide" data-i18n="s1p2"></p>
+<div class="callout"><span data-i18n="s1call"></span></div>
+
+<h2><span class="n">2</span><span data-i18n="s2h"></span></h2>
+<p class="wide" data-i18n="s2p1"></p>
+
+<h2><span class="n">3</span><span data-i18n="s3h"></span></h2>
+<p class="wide" data-i18n="s3p1"></p>
+
+<figure>
+<svg viewBox="0 0 860 250" role="img" aria-label="geo-SCM prior pipeline">
+<defs><marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--muted)"/></marker></defs>
+<!-- pipeline boxes -->
+<g>
+<rect class="svgbox" x="12" y="40" width="118" height="52" rx="8"/>
+<text class="svgt" x="71" y="63" text-anchor="middle" data-i18n="d1a"></text>
+<text class="svgt2" x="71" y="80" text-anchor="middle" data-i18n="d1b"></text>
+<path class="arrow" d="M132 66 L156 66"/>
+<rect class="svgbox" x="158" y="40" width="118" height="52" rx="8"/>
+<text class="svgt" x="217" y="63" text-anchor="middle" data-i18n="d2a"></text>
+<text class="svgt2" x="217" y="80" text-anchor="middle" data-i18n="d2b"></text>
+<path class="arrow" d="M278 66 L302 66"/>
+<rect class="svgbox" x="304" y="34" width="140" height="64" rx="8" style="stroke:var(--accent)"/>
+<text class="svgt" x="374" y="57" text-anchor="middle" data-i18n="d3a"></text>
+<text class="svgt2" x="374" y="74" text-anchor="middle" data-i18n="d3b"></text>
+<path class="arrow" d="M446 66 L470 66"/>
+<rect class="svgbox" x="472" y="40" width="122" height="52" rx="8"/>
+<text class="svgt" x="533" y="63" text-anchor="middle" data-i18n="d4a"></text>
+<text class="svgt2" x="533" y="80" text-anchor="middle" data-i18n="d4b"></text>
+<path class="arrow" d="M596 66 L620 66"/>
+<rect class="svgbox" x="622" y="40" width="120" height="52" rx="8"/>
+<text class="svgt" x="682" y="63" text-anchor="middle" data-i18n="d5a"></text>
+<text class="svgt2" x="682" y="80" text-anchor="middle" data-i18n="d5b"></text>
+</g>
+<!-- multi-hole site -->
+<rect class="svgbox2" x="304" y="118" width="438" height="0.5"/>
+<path class="arrow" d="M374 100 L374 150"/>
+<rect class="svgbox" x="304" y="152" width="438" height="80" rx="8" style="stroke:var(--accent);stroke-dasharray:5 3"/>
+<text class="svgt" x="523" y="174" text-anchor="middle" data-i18n="d6a"></text>
+<text class="svgt2" x="523" y="192" text-anchor="middle" data-i18n="d6b"></text>
+<text class="svgm" x="523" y="214" text-anchor="middle" data-i18n="d6c"></text>
+<!-- depth-profile inset: piecewise smooth -->
+<rect class="svgbox" x="12" y="118" width="270" height="114" rx="8"/>
+<text class="svgm" x="24" y="136" data-i18n="dinset"></text>
+<!-- axes -->
+<line x1="150" y1="128" x2="150" y2="222" stroke="var(--line2)" stroke-width="1"/>
+<line x1="150" y1="222" x2="272" y2="222" stroke="var(--line2)" stroke-width="1"/>
+<text class="svgm" x="205" y="220" text-anchor="middle" style="font-size:8.5px">Su →</text>
+<text class="svgm" x="145" y="150" text-anchor="end" style="font-size:8.5px" transform="rotate(-90,145,150)">depth</text>
+<!-- piecewise-smooth path (gentle within, jumps across) -->
+<path class="pline" d="M168 140 Q176 146 184 143 T200 148 L200 148 M200 162 Q210 165 220 160 T240 166 M240 182 Q250 184 262 181"/>
+<line x1="150" y1="155" x2="272" y2="155" stroke="var(--warn)" stroke-width="0.8" stroke-dasharray="3 2" opacity=".6"/>
+<line x1="150" y1="175" x2="272" y2="175" stroke="var(--warn)" stroke-width="0.8" stroke-dasharray="3 2" opacity=".6"/>
+<text class="svgm" x="266" y="152" text-anchor="end" style="font-size:8px;fill:var(--warn)" data-i18n="djump"></text>
+</svg>
+<figcaption data-i18n="d_cap"></figcaption>
+</figure>
+
+<ul>
+<li data-i18n="s3l1"></li>
+<li data-i18n="s3l2"></li>
+<li data-i18n="s3l3"></li>
+<li data-i18n="s3l4"></li>
+</ul>
+
+<h2><span class="n">4</span><span data-i18n="s4h"></span></h2>
+<p class="wide" data-i18n="s4p1"></p>
+
+<figure>
+<svg viewBox="0 0 860 210" role="img" aria-label="two-stage geo-PFN architecture">
+<!-- input table -->
+<g>
+<rect class="svgbox" x="14" y="60" width="96" height="88" rx="7"/>
+<text class="svgt2" x="62" y="52" text-anchor="middle" data-i18n="a0"></text>
+<line x1="14" y1="82" x2="110" y2="82" stroke="var(--line2)"/><line x1="14" y1="104" x2="110" y2="104" stroke="var(--line2)"/><line x1="14" y1="126" x2="110" y2="126" stroke="var(--line2)"/>
+<line x1="46" y1="60" x2="46" y2="148" stroke="var(--line2)"/><line x1="78" y1="60" x2="78" y2="148" stroke="var(--line2)"/>
+<text class="svgm" x="30" y="76" text-anchor="middle" style="font-size:8px">x·y·z</text>
+<path class="arrow" d="M112 104 L138 104"/>
+<!-- stage 1 -->
+<rect class="svgbox" x="140" y="66" width="140" height="76" rx="8" style="stroke:var(--accent)"/>
+<text class="svgt" x="210" y="92" text-anchor="middle" data-i18n="a1a"></text>
+<text class="svgt2" x="210" y="110" text-anchor="middle" data-i18n="a1b"></text>
+<text class="svgm" x="210" y="130" text-anchor="middle" data-i18n="a1c"></text>
+<path class="arrow" d="M282 104 L308 104"/>
+<!-- stage 2 -->
+<rect class="svgbox" x="310" y="66" width="140" height="76" rx="8" style="stroke:var(--accent)"/>
+<text class="svgt" x="380" y="92" text-anchor="middle" data-i18n="a2a"></text>
+<text class="svgt2" x="380" y="110" text-anchor="middle" data-i18n="a2b"></text>
+<text class="svgm" x="380" y="130" text-anchor="middle" data-i18n="a2c"></text>
+<path class="arrow" d="M452 104 L478 104"/>
+<!-- stage 3 -->
+<rect class="svgbox" x="480" y="66" width="150" height="76" rx="8" style="stroke:var(--accent);stroke-width:2"/>
+<text class="svgt" x="555" y="92" text-anchor="middle" data-i18n="a3a"></text>
+<text class="svgt2" x="555" y="110" text-anchor="middle" data-i18n="a3b"></text>
+<text class="svgm" x="555" y="130" text-anchor="middle" data-i18n="a3c"></text>
+<path class="arrow" d="M632 104 L658 104"/>
+<!-- head -->
+<rect class="svgbox" x="660" y="66" width="132" height="76" rx="8"/>
+<text class="svgt" x="726" y="90" text-anchor="middle" data-i18n="a4a"></text>
+<text class="svgt2" x="726" y="108" text-anchor="middle" data-i18n="a4b"></text>
+<text class="svgm" x="726" y="130" text-anchor="middle" data-i18n="a4c"></text>
+</g>
+</svg>
+<figcaption data-i18n="a_cap"></figcaption>
+</figure>
+
+<div class="callout"><span data-i18n="s4call"></span></div>
+
+<h2><span class="n">5</span><span data-i18n="s5h"></span></h2>
+<p class="wide" data-i18n="s5p1"></p>
+<ul><li data-i18n="s5l1"></li><li data-i18n="s5l2"></li></ul>
+
+<h2><span class="n">6</span><span data-i18n="s6h"></span></h2>
+<p class="wide" data-i18n="s6p1"></p>
+<div class="callout warn"><span data-i18n="s6call"></span></div>
+
+<h2><span class="n">7</span><span data-i18n="s7h"></span></h2>
+<p class="wide" data-i18n="s7p1"></p>
+<ul><li data-i18n="s7l1"></li><li data-i18n="s7l2"></li><li data-i18n="s7l3"></li></ul>
+
+<footer>geo_pfn · docs/geopfn-design.html · <span data-i18n="foot"></span></footer>
+</div>
+
+<script>
+const I18N={
+ zh:{
+  kick:"geo_pfn · 设计说明",
+  title:"地质钻孔的 PFN:用相似的洞,预测未知的洞",
+  lede:"一份把当前 geo-SCM 先验与两段式 geo-PFN 架构讲清楚的设计说明——设计要点,以及为什么这样设计。",
+  s1h:"愿景与赌注",
+  s1p1:"<b>愿景:</b>用户给一个任意坐标 + 一列深度(外加常有的一些廉价土工数据),模型就吐出该处<b>虚拟钻孔的完整属性表</b>,并给出<b>不确定性</b>。难点在于:钻孔稀疏、Su(无侧限抗剪强度)测试昂贵、真实缺失是块状/非随机(MNAR)。",
+  s1p2:"<b>赌注:</b>用浅层预测深层不会好;真正可行的是<b>用相似的洞去预测未知的洞</b>——本质是<b>度量学习</b>(metric learning):在洞与洞之间学一个相似性,让稀疏目标孔借用最像它的邻居的剖面。我们用 <span class='tag'>PFN</span>(Prior-data Fitted Network)来实现它。",
+  s1call:"<b>一句话:</b>先验(合成数据的生成分布)= 模型的归纳偏置。把地质结构写进先验,再让 PFN 在推理期用上下文做贝叶斯式的后验预测——值 + 不确定性一次给出。",
+  s2h:"PFN 是什么(30 秒)",
+  s2p1:"PFN 在<b>合成任务</b>上预训练:每个任务从一个<b>先验</b>采样一张表(上下文行 + 查询行),模型学着从上下文预测查询。训练够多任务后,推理时只需把真实数据当上下文喂进去——<b>无需重训</b>,一次前向就近似出<b>贝叶斯后验预测分布</b>。所以先验设计得多像真实地质,决定了模型的上限。",
+  s3h:"geo-SCM 先验:合成一个工地",
+  s3p1:"我们不采样“随便的表”,而是采样<b>一个工地(site)</b>:若干口共享同一因果律的钻孔。生成流水线(下图)一步步把地质结构注入数据。",
+  d1a:"深度轴",d1b:"指数间隔取样",
+  d2a:"地层分段",d2b:"Poisson 层数·土质",
+  d3a:"潜属性场",d3b:"层内平缓·跨界突变",
+  d4a:"随机 MLP-SCM",d4b:"潜场→特征+目标",
+  d5a:"观测层",d5b:"仿射+块状缺失",
+  d6a:"多孔 site",d6b:"共享 SCM + 平滑空间场",d6c:"近孔相似 · anchor 上下文掩码",
+  dinset:"深度剖面",djump:"跨界跳变",
+  d_cap:"geo-SCM 生成流水线:一次产出一口钻孔(= 表中一行行的试样),再拼成一个多孔工地。左下插图示意“层内平缓、跨界突变”的潜属性随深度演化。",
+  s3l1:"<b>一孔一表:</b>每行是一个深度试样,表按深度排序——匹配真实钻孔的记录形态。",
+  s3l2:"<b>层内平缓、跨界突变:</b>潜场在层内是小步随机游走,过层界则跳变(≈1.3–2× 层内步长)——真实土层的核心结构。",
+  s3l3:"<b>目标在下游:</b>Su 是 SCM 最深层的节点,廉价特征在上游——对应物理“强度是含水率/塑性/密度的结果”。",
+  s3l4:"<b>site = 多孔 + 空间场:</b>近孔潜场被同一平滑空间场整体抬升/压低 → 近孔相似;部分孔只留少量锚点(anchor),直接把部署时的稀疏推理写进训练。",
+  s4h:"两段式 geo-PFN 架构",
+  s4p1:"借鉴 TabICL 的分阶段相互注意力,把“行(钻孔试样)相似性”做成<b>一等建模对象</b>。三段 + 一个回归头:",
+  a0:"钻孔表",
+  a1a:"① 列编码器",a1b:"沿样本轴注意力",a1c:"每列按其分布 embed",
+  a2a:"② 行压缩",a2b:"CLS → 行向量",a2c:"一孔试样 = 一个向量",
+  a3a:"③ 行度量 ICL",a3b:"软 kNN over 行向量",a3c:"← 相似性机制在这里",
+  a4a:"回归头",a4b:"bar-distribution",a4c:"值 + 不确定性",
+  a_cap:"两段式 geo-PFN(2.0M 参数):列编码 → 行压缩 → 行度量 ICL → 分箱分布头。第③段在行向量的度量空间里做软 kNN,正是“用相似的洞预测未知的洞”的落点。",
+  s4call:"<b>bar-distribution(分箱分布)头:</b>把连续目标离散成数百个 bin,输出 bin 上的概率。分布均值 = 点估计,分布宽度 = 不确定性——正好是愿景要的“值 + 不确定性”,也让它能和 TabICL/v2 同台比 RMSE。土质类别另接可配置分类头。",
+  s5h:"为什么这样设计",
+  s5p1:"两段式的关键在于把“整孔/整行的相似性”显式化,而不是像 per-cell 注意力那样在单元格层面混算。这直接实现了你的猜想:",
+  s5l1:"<b>行度量 = 度量学习:</b>第③段学的是“哪口邻居孔最像目标”,与多孔 site 先验的训练目标(跨孔迁移)对齐。",
+  s5l2:"<b>coherent 上下文:</b>推理时按坐标挑<b>最近的整孔</b>作上下文(不是随机行),匹配训练时的“一孔一组”分布——对稀疏/随机上下文更稳健。",
+  s6h:"先验真实性:一个正在修的缺口",
+  s6p1:"我们发现给 geo-PFN 加真实廉价土工特征反而<b>变差</b>(LCSG 整孔 holdout 22.9 > 只用坐标的 19.3)。根因:随机 MLP 先验让每个特征都“信息量大且独立”;而真实廉价特征恰相反——是一个<b>高度共线的簇</b>(PC1 占 76%),且这个主导轴<b>与深度冗余、几乎不含 Su 信号</b>(深度之外只多解释 +0.12 R²)。先验把这套关系教反了。",
+  s6call:"<b>修法(§10 geo-realistic block):</b>让合成廉价特征复现真实结构——由一个平滑“软硬/含水”潜因子沿真实 PC1 方向驱动共线簇、映射到真实边缘分布,目标只受其弱耦合。新先验的重训正在进行,之后做 A/B 看 LCSG 惩罚是否消失。",
+  s7h:"我们已经验证到了什么",
+  s7p1:"在实测钻孔上的<b>稀疏上下文实验</b>(用少量整孔预测其他孔)给出了机制层面的正面证据:",
+  s7l1:"<b>相似性机制显形:</b>中等稀疏区(N=25–50 口上下文)geo-PFN 比 TabICL 低 4–6 RMSE,且随上下文增减<b>单调平稳</b>,而 TabICL 忽高忽低——尽管 geo-PFN 参数/训练量都远小。",
+  s7l2:"<b>廉价地质确有价值:</b>“稀疏珍贵钻孔 + 廉价大尺度地质”对 TabICL/hgbt 每档都提升 +2~6 RMSE;geo-PFN 暂时用不上(先验缺口),正在修。",
+  s7l3:"<b>路线:</b>先验真实性(最大杠杆)→ 扩规模 → 真实数据微调 → 补齐分类头。绝对精度仍落后 TabICL,但相似性这条路被验证是对的。",
+  foot:"设计说明 · 值 + 不确定性 · 用相似的洞预测未知的洞"
+ },
+ ja:{
+  kick:"geo_pfn · 設計ノート",
+  title:"地盤ボーリングのための PFN:似た孔で、未知の孔を予測する",
+  lede:"現行の geo-SCM 事前分布と2段構成 geo-PFN アーキテクチャの設計ノート——設計の要点と、なぜこう設計したか。",
+  s1h:"ビジョンと賭け",
+  s1p1:"<b>ビジョン:</b>任意の座標+深度ベクトル(さらに、しばしば得られる安価な土質データ)を与えると、その地点の<b>仮想ボーリングの全物性テーブル</b>を、<b>不確実性</b>付きで出力する。難しさは:ボーリングが疎、Su(非排水せん断強度)試験が高価、欠測がブロック状・非ランダム(MNAR)であること。",
+  s1p2:"<b>賭け:</b>浅い層で深い層を当てるのは筋が悪い。有効なのは<b>似た孔で未知の孔を予測する</b>——本質は<b>距離学習(metric learning)</b>:孔と孔の類似度を学び、疎な対象孔が最も似た近傍の断面を借りる。これを <span class='tag'>PFN</span>(Prior-data Fitted Network)で実現する。",
+  s1call:"<b>一言で:</b>事前分布(合成データの生成分布)= モデルの帰納バイアス。地盤構造を事前分布に書き込み、推論時に文脈でベイズ的な事後予測を行う——値と不確実性を同時に。",
+  s2h:"PFN とは(30秒)",
+  s2p1:"PFN は<b>合成タスク</b>で事前学習する:各タスクは<b>事前分布</b>から1枚の表(文脈行+クエリ行)をサンプルし、文脈からクエリを予測する。十分なタスクを学べば、推論では実データを文脈として入れるだけ——<b>再学習なし</b>、1回の順伝播で<b>ベイズ事後予測分布</b>を近似する。ゆえに事前分布が実地盤にどれだけ似ているかが上限を決める。",
+  s3h:"geo-SCM 事前分布:一つの現場を合成する",
+  s3p1:"「適当な表」ではなく、<b>一つの現場(site)</b>——同じ因果則を共有する複数のボーリング——をサンプルする。下図の生成パイプラインが地盤構造を一段ずつ注入する。",
+  d1a:"深度軸",d1b:"指数間隔サンプル",
+  d2a:"層序分割",d2b:"Poisson 層数・土質",
+  d3a:"潜在物性場",d3b:"層内は緩・層界で急変",
+  d4a:"ランダム MLP-SCM",d4b:"潜在→特徴+目的",
+  d5a:"観測層",d5b:"アフィン+ブロック欠測",
+  d6a:"多孔 site",d6b:"共有 SCM + 平滑空間場",d6c:"近い孔は類似 · anchor 文脈マスク",
+  dinset:"深度断面",djump:"層界ジャンプ",
+  d_cap:"geo-SCM 生成パイプライン:1回で1本のボーリング(=行ごとの試料)を生成し、多孔の現場に組み立てる。左下の挿図は「層内は緩やか・層界で急変」する潜在物性の深度変化を示す。",
+  s3l1:"<b>1孔1表:</b>各行は1つの深度試料で、表は深度順——実ボーリングの記録形態に一致。",
+  s3l2:"<b>層内は緩・層界で急変:</b>潜在場は層内で小さなランダムウォーク、層界で跳躍(層内歩幅の約1.3〜2倍)——実地層の核心構造。",
+  s3l3:"<b>目的変数は下流:</b>Su は SCM 最深層のノード、安価な特徴は上流——「強度は含水比/塑性/密度の結果」という物理に対応。",
+  s3l4:"<b>site = 多孔 + 空間場:</b>近い孔の潜在場は同じ平滑空間場で一様に上下 → 近孔は類似。一部の孔は少数のアンカーのみ残し、配備時の疎な推論を学習に組み込む。",
+  s4h:"2段構成 geo-PFN アーキテクチャ",
+  s4p1:"TabICL の段階的相互注意を参考に、「行(ボーリング試料)類似性」を<b>一級の対象</b>にする。3段+回帰ヘッド:",
+  a0:"ボーリング表",
+  a1a:"① 列エンコーダ",a1b:"サンプル軸方向の注意",a1c:"各列を分布で埋め込み",
+  a2a:"② 行圧縮",a2b:"CLS → 行ベクトル",a2c:"1試料 = 1ベクトル",
+  a3a:"③ 行距離 ICL",a3b:"行ベクトルの soft-kNN",a3c:"← 類似性機構はここ",
+  a4a:"回帰ヘッド",a4b:"bar-distribution",a4c:"値 + 不確実性",
+  a_cap:"2段構成 geo-PFN(2.0M パラメータ):列エンコード → 行圧縮 → 行距離 ICL → ビン分布ヘッド。第③段が行ベクトルの距離空間で soft-kNN を行う——まさに「似た孔で未知の孔を予測する」の実装点。",
+  s4call:"<b>bar-distribution(ビン分布)ヘッド:</b>連続目的を数百のビンに離散化し、ビン上の確率を出力。分布の平均=点推定、分布の幅=不確実性——ビジョンの「値+不確実性」そのもので、TabICL/v2 と RMSE で同じ土俵に立てる。土質分類には設定可能な分類ヘッドを別に付ける。",
+  s5h:"なぜこう設計するか",
+  s5p1:"2段構成の要は、「孔・行全体の類似性」を明示化し、per-cell 注意のようにセル単位で混ぜないこと。これがあなたの仮説を直接実装する:",
+  s5l1:"<b>行距離 = 距離学習:</b>第③段は「どの近傍孔が対象に最も似るか」を学び、多孔 site 事前分布の目的(孔間転移)と整合する。",
+  s5l2:"<b>coherent 文脈:</b>推論では座標で<b>最も近い丸ごとの孔</b>を文脈に選ぶ(ランダム行でなく)——訓練時の「1孔1組」分布に一致し、疎・ランダム文脈に頑健。",
+  s6h:"事前分布の現実性:修正中のギャップ",
+  s6p1:"geo-PFN に実際の安価な土質特徴を与えると<b>悪化</b>した(LCSG の全孔 holdout 22.9 > 座標のみ 19.3)。原因:ランダム MLP 事前分布は各特徴を「情報量大かつ独立」と教えるが、実特徴は逆——<b>強く共線なクラスタ</b>(PC1 が76%)で、その主軸は<b>深度と冗長でほぼ Su 信号を持たない</b>(深度を超えて +0.12 R² のみ)。事前分布が関係を逆に教えていた。",
+  s6call:"<b>修正(§10 geo-realistic block):</b>合成の安価特徴に実構造を再現させる——平滑な「軟硬/含水」潜在因子が実 PC1 方向に共線クラスタを駆動し、実周辺分布へ写像、目的はその弱結合のみ受ける。新事前分布での再学習が進行中で、その後 A/B で LCSG ペナルティ消失を検証する。",
+  s7h:"これまでに検証できたこと",
+  s7p1:"実ボーリング上の<b>疎文脈実験</b>(少数の丸ごとの孔で他孔を予測)が、機構レベルの肯定的証拠を与えた:",
+  s7l1:"<b>類似性機構の出現:</b>中程度の疎領域(文脈 N=25〜50 孔)で geo-PFN は TabICL より 4〜6 RMSE 低く、文脈増減に対し<b>単調で安定</b>。TabICL は乱高下——geo-PFN のパラメータ/学習量が遥かに小さいにもかかわらず。",
+  s7l2:"<b>安価な地質は有用:</b>「疎で貴重なボーリング + 安価な大規模地質」は TabICL/hgbt を各段で +2〜6 RMSE 改善。geo-PFN は今は活かせない(事前分布のギャップ)、修正中。",
+  s7l3:"<b>ロードマップ:</b>事前分布の現実性(最大のレバー)→ 規模拡大 → 実データ微調整 → 分類ヘッド整備。絶対精度は TabICL に劣るが、類似性の路線は正しいと検証された。",
+  foot:"設計ノート · 値 + 不確実性 · 似た孔で未知の孔を予測する"
+ },
+ en:{
+  kick:"geo_pfn · Design Notes",
+  title:"A PFN for geotechnical boreholes: predict the unknown hole from similar ones",
+  lede:"A design note that makes the current geo-SCM prior and the two-stage geo-PFN architecture legible — the key design choices, and why they are the way they are.",
+  s1h:"Vision & the bet",
+  s1p1:"<b>Vision:</b> the user gives an arbitrary coordinate + a depth vector (plus, often, some cheap geotechnical data), and the model returns the <b>full property table of a virtual borehole</b> there, <b>with uncertainty</b>. What makes it hard: boreholes are sparse, Su (undrained shear strength) testing is expensive, and missingness is block-wise and not-at-random (MNAR).",
+  s1p2:"<b>The bet:</b> predicting deep from shallow won't work; what does is <b>predicting an unknown hole from similar holes</b> — essentially <b>metric learning</b>: learn a hole-to-hole similarity so a sparsely-sampled target borrows the profile of the neighbour it most resembles. We realise it with a <span class='tag'>PFN</span> (Prior-data Fitted Network).",
+  s1call:"<b>In one line:</b> the prior (the generating distribution of the synthetic data) is the model's inductive bias. Write the geology into the prior, then let the PFN do Bayesian-style posterior prediction from context at inference — value and uncertainty together.",
+  s2h:"What a PFN is (30 seconds)",
+  s2p1:"A PFN is pre-trained on <b>synthetic tasks</b>: each task samples one table (context rows + query rows) from a <b>prior</b>, and the model learns to predict the query from the context. After enough tasks, inference just feeds real data as context — <b>no retraining</b>, one forward pass approximates the <b>Bayesian posterior predictive distribution</b>. So how closely the prior resembles real geology sets the ceiling.",
+  s3h:"The geo-SCM prior: synthesise a site",
+  s3p1:"We don't sample \"arbitrary tables\" — we sample <b>a site</b>: several boreholes sharing one causal law. The generative pipeline (below) injects geological structure one stage at a time.",
+  d1a:"Depth axis",d1b:"Exp-spaced samples",
+  d2a:"Stratigraphy",d2b:"Poisson layers · soil",
+  d3a:"Latent field",d3b:"smooth in-layer · jump across",
+  d4a:"Random MLP-SCM",d4b:"latent→features+target",
+  d5a:"Observation",d5b:"affine + block-missing",
+  d6a:"Multi-hole site",d6b:"shared SCM + smooth spatial field",d6c:"near holes similar · anchor context masks",
+  dinset:"depth profile",djump:"layer jump",
+  d_cap:"geo-SCM generative pipeline: one borehole per draw (rows = depth specimens), assembled into a multi-hole site. The lower-left inset sketches the 'smooth within a layer, jump across a boundary' latent evolution with depth.",
+  s3l1:"<b>One hole per table:</b> each row is a depth specimen, ordered by depth — matching how real boreholes are logged.",
+  s3l2:"<b>Smooth within, jump across:</b> the latent field is a small random walk within a layer and jumps at a boundary (≈1.3–2× the in-layer step) — the core structure of real strata.",
+  s3l3:"<b>Target downstream:</b> Su is the deepest SCM node, cheap features are upstream — mirroring the physics that strength is a consequence of water content / plasticity / density.",
+  s3l4:"<b>Site = multi-hole + spatial field:</b> nearby holes' latents are shifted together by one smooth spatial field → near holes resemble each other; some holes keep only a few anchors, writing the sparse deployment inference directly into training.",
+  s4h:"The two-stage geo-PFN architecture",
+  s4p1:"Borrowing TabICL's staged cross-attention, it makes \"row (borehole specimen) similarity\" a <b>first-class object</b>. Three stages + a regression head:",
+  a0:"borehole table",
+  a1a:"① Column encoder",a1b:"attention along sample axis",a1c:"embed each column by its distribution",
+  a2a:"② Row compression",a2b:"CLS → row vector",a2c:"one specimen = one vector",
+  a3a:"③ Row-metric ICL",a3b:"soft kNN over row vectors",a3c:"← similarity mechanism here",
+  a4a:"Regression head",a4b:"bar-distribution",a4c:"value + uncertainty",
+  a_cap:"Two-stage geo-PFN (2.0M params): column-encode → row-compress → row-metric ICL → bar-distribution head. Stage ③ does soft kNN in the row-vector metric space — exactly where 'predict the unknown hole from similar ones' lands.",
+  s4call:"<b>Bar-distribution head:</b> discretise the continuous target into hundreds of bins and output a probability over them. Distribution mean = point estimate, distribution width = uncertainty — precisely the vision's 'value + uncertainty', and it lets the model compete on RMSE with TabICL/v2. Soil class gets a separate, configurable classification head.",
+  s5h:"Why this design",
+  s5p1:"The point of the two-stage form is to make \"whole-row/whole-hole similarity\" explicit, rather than mixing at the cell level like per-cell attention. This directly implements the hypothesis:",
+  s5l1:"<b>Row-metric = metric learning:</b> stage ③ learns \"which neighbour hole most resembles the target\", aligned with the multi-hole site prior's training objective (cross-hole transfer).",
+  s5l2:"<b>Coherent context:</b> at inference it selects the <b>nearest whole boreholes</b> by coordinate as context (not random rows) — matching the training 'one hole = one group' distribution, and robust to sparse/random context.",
+  s6h:"Prior realism: a gap being fixed",
+  s6p1:"We found that giving geo-PFN the real cheap geotech features made it <b>worse</b> (LCSG whole-hole holdout 22.9 > coordinates-only 19.3). Cause: the random-MLP prior teaches every feature to be \"informative and independent\", but the real features are the opposite — a <b>tightly collinear cluster</b> (PC1 is 76%) whose dominant axis is <b>redundant with depth and carries almost no Su signal</b> (only +0.12 R² beyond depth). The prior taught the relationship backwards.",
+  s6call:"<b>The fix (§10 geo-realistic block):</b> make the synthetic cheap features reproduce the real structure — a smooth 'softness/water-state' latent drives the collinear cluster along the real PC1 direction, mapped to real marginals, with the target only weakly coupled to it. Retraining on the new prior is under way; an A/B will then check whether the LCSG penalty disappears.",
+  s7h:"What we have verified so far",
+  s7p1:"The <b>sparse-context experiment</b> on real boreholes (predict other holes from a few whole holes) gives positive mechanism-level evidence:",
+  s7l1:"<b>The similarity mechanism shows up:</b> in the mid-sparse regime (N=25–50 context holes) geo-PFN is 4–6 RMSE below TabICL and degrades <b>monotonically and stably</b> with context size, while TabICL is erratic — despite geo-PFN being far smaller and less trained.",
+  s7l2:"<b>Cheap geology does help:</b> 'sparse precious boreholes + cheap large-scale geology' improves TabICL/hgbt by +2–6 RMSE at every size; geo-PFN can't use it yet (the prior gap), being fixed.",
+  s7l3:"<b>Roadmap:</b> prior realism (the biggest lever) → scale up → real-data fine-tuning → complete the classification head. Absolute accuracy still trails TabICL, but the similarity route is validated.",
+  foot:"design notes · value + uncertainty · predict the unknown hole from similar ones"
+ }
+};
+function setLang(l){
+  document.documentElement.lang=l==='zh'?'zh-CN':l==='ja'?'ja':'en';
+  try{localStorage.setItem('geopfn_lang',l);}catch(e){}
+  const d=I18N[l]||I18N.zh;
+  document.querySelectorAll('[data-i18n]').forEach(e=>{const v=d[e.dataset.i18n];if(v!=null)e.innerHTML=v;});
+  document.querySelectorAll('.langbar button').forEach(b=>b.classList.toggle('on',b.dataset.lang===l));
+}
+document.querySelectorAll('.langbar button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+let init='zh';try{init=localStorage.getItem('geopfn_lang')||'zh';}catch(e){}
+setLang(['zh','ja','en'].includes(init)?init:'zh');
+</script>

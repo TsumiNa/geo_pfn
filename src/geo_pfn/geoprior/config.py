@@ -51,6 +51,21 @@ class GeoPriorConfig:
     min_train_frac: float = 0.3
     max_train_frac: float = 0.8
 
+    # geo-realistic cheap-feature block (docs/geo-scm-design.md §10).
+    # REJECTED by the A/B (docs/prior-realism-diagnostic.md): monotonically
+    # harmful, so the default is off; kept only for ablation reproduction.
+    p_geo_realistic: float = 0.0  # fraction of tables drawing the realistic block
+    realistic_load_jitter: float = 0.12  # per-site jitter of PC1 cluster loadings
+    realistic_signal_amp: float = 0.20  # faint contrast axis amplitude in features
+    realistic_idio_amp: float = 0.15  # per-row idiosyncratic feature noise
+    realistic_target_coefs: tuple[float, float, float] = (
+        1.0,  # depth (dominant)
+        0.05,  # soft axis (redundant with depth, ~no extra Su signal)
+        0.55,  # signal axis (the faint "+R^2 beyond depth" contrast)
+    )
+    realistic_coef_jitter: float = 0.20  # per-site jitter of the target coefficients
+    realistic_target_noise: float = 0.45  # irreducible target noise
+
     # site assembly (multi-borehole tables; docs/geo-scm-design.md §8)
     p_single: float = 0.3  # fraction of tables that are a single borehole
     max_holes: int = 8  # boreholes per multi-hole site
@@ -90,6 +105,20 @@ class GeoPriorConfig:
             raise ValueError("train fractions must satisfy 0 < min <= max < 1")
         if not 0.0 <= self.p_single <= 1.0:
             raise ValueError("p_single must be in [0, 1]")
+        if not 0.0 <= self.p_geo_realistic <= 1.0:
+            raise ValueError("p_geo_realistic must be in [0, 1]")
+        if len(self.realistic_target_coefs) != 3:
+            raise ValueError("realistic_target_coefs must have 3 entries")
+        if any(
+            v < 0
+            for v in (
+                self.realistic_load_jitter,
+                self.realistic_signal_amp,
+                self.realistic_idio_amp,
+                self.realistic_target_noise,
+            )
+        ):
+            raise ValueError("realistic amplitudes/noise must be >= 0")
         if self.max_holes < 2:
             raise ValueError("max_holes must be >= 2")
         if self.min_hole_rows < 2:

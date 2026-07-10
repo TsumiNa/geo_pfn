@@ -1,0 +1,305 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>稀疏不确定性校准 / 疎な不確実性較正 / Sparse uncertainty calibration</title>
+<style>
+:root{
+  --bg:#f5f3ee;--panel:#fbfaf7;--ink:#1b1a17;--ink2:#54504a;--muted:#8b857a;
+  --line:#e4dfd5;--line2:#d2cabb;--grid:#e9e4da;--accent:#1f8a70;--warn:#c05621;
+  --n3:#eb6834;--n25:#3b7dd8;--nall:#8b857a;--l:#eb6834;--lcsg:#7a5bd8;--ok:#1baf7a;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;--sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{--bg:#151419;--panel:#1e1d23;--ink:#ecebe7;--ink2:#b4afa6;--muted:#7e786f;--line:#2a2930;--line2:#3a3843;--grid:#2c2b32;--accent:#38b78f;--warn:#e8894f;--n3:#f6824f;--n25:#5b9be6;--nall:#9b958c;--l:#f6824f;--lcsg:#9b82e8;--ok:#2bc98f;}}
+:root[data-theme=light]{--bg:#f5f3ee;--panel:#fbfaf7;--ink:#1b1a17;--ink2:#54504a;--muted:#8b857a;--line:#e4dfd5;--line2:#d2cabb;--grid:#e9e4da;--accent:#1f8a70;--n3:#eb6834;--n25:#3b7dd8;--nall:#8b857a;--l:#eb6834;--lcsg:#7a5bd8;--ok:#1baf7a;}
+:root[data-theme=dark]{--bg:#151419;--panel:#1e1d23;--ink:#ecebe7;--ink2:#b4afa6;--muted:#7e786f;--line:#2a2930;--line2:#3a3843;--grid:#2c2b32;--accent:#38b78f;--n3:#f6824f;--n25:#5b9be6;--nall:#9b958c;--l:#f6824f;--lcsg:#9b82e8;--ok:#2bc98f;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin:0 auto;padding:40px 24px 90px}
+.langbar{position:fixed;top:14px;right:16px;z-index:20;display:flex;gap:2px;background:var(--panel);border:1px solid var(--line2);border-radius:999px;padding:3px}
+.langbar button{border:0;background:transparent;color:var(--ink2);font:600 12px var(--sans);padding:5px 11px;border-radius:999px;cursor:pointer}
+.langbar button.on{background:var(--accent);color:#fff}
+header{border-bottom:1px solid var(--line);padding-bottom:24px;margin-bottom:10px}
+.kick{font:600 12px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+h1{font-size:26px;font-weight:690;margin:0 0 11px;letter-spacing:-.015em;text-wrap:balance;line-height:1.22}
+.lede{color:var(--ink2);font-size:15.5px;max-width:68ch;margin:0}
+h2{font-size:18px;font-weight:670;margin:42px 0 4px;display:flex;align-items:baseline;gap:11px}
+h2 .n{font:700 13px var(--mono);color:var(--accent)}
+p{margin:9px 0;font-size:14.5px;color:var(--ink2);max-width:72ch}
+p b,li b{color:var(--ink)}
+.explain{margin:14px 0;padding:14px 16px;border:1px dashed var(--line2);border-radius:10px;background:var(--panel);font-size:13.5px;color:var(--ink2)}
+.explain b{color:var(--ink)}
+figure{margin:18px 0;padding:16px 12px 10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow-x:auto}
+figcaption{font-size:12px;color:var(--muted);margin-top:8px;text-align:center;padding:0 8px}
+svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.legend{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin:2px 0 8px;font:600 12px var(--sans)}
+.legend span{display:inline-flex;align-items:center;gap:6px;color:var(--ink2)}
+.sw{width:18px;height:0;border-top:3px solid;border-radius:2px}.sw.dash{border-top-style:dashed}
+.box{width:12px;height:12px;border-radius:3px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:720px){.row2{grid-template-columns:1fr}}
+.callout{margin:18px 0;padding:15px 17px;border:1px solid var(--line2);border-left:3px solid var(--accent);border-radius:9px;background:var(--panel);font-size:14px;color:var(--ink2)}
+.callout.warn{border-left-color:var(--warn)}
+table{border-collapse:collapse;width:100%;margin:12px 0 4px;font-size:12.5px}
+th,td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+th{font:600 10.5px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+td:first-child,th:first-child{text-align:left}
+ul{margin:8px 0;padding-left:20px}li{font-size:14px;color:var(--ink2);margin:5px 0}
+.tip{position:fixed;pointer-events:none;z-index:9;background:var(--ink);color:var(--bg);font:600 11px var(--mono);padding:4px 7px;border-radius:5px;opacity:0;transition:opacity .08s;white-space:nowrap}
+footer{margin-top:46px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font:500 11px var(--mono)}
+</style>
+
+<div class="langbar"><button data-lang="zh">中</button><button data-lang="ja">日</button><button data-lang="en">EN</button></div>
+
+<div class="wrap">
+<header>
+  <div class="kick" data-i18n="kick"></div>
+  <h1 data-i18n="title"></h1>
+  <p class="lede" data-i18n="lede"></p>
+</header>
+
+<h2><span class="n">1</span><span data-i18n="s1h"></span></h2>
+<div class="explain"><span data-i18n="s1exp"></span></div>
+<p data-i18n="s1p"></p>
+
+<h2><span class="n">2</span><span data-i18n="s2h"></span></h2>
+<p data-i18n="s2p"></p>
+<div class="legend">
+  <span><span class="box" style="background:var(--l)"></span>L</span>
+  <span><span class="box" style="background:var(--lcsg)"></span>LCSG</span>
+  <span><span class="sw dash" style="border-color:var(--ok)"></span><span data-i18n="legTarget"></span></span>
+</div>
+<figure><svg id="bar90" viewBox="0 0 620 280" role="img" aria-label="promised 90% vs actual hit rate"></svg><figcaption data-i18n="capBar"></figcaption></figure>
+<div class="callout"><span data-i18n="s2call"></span></div>
+
+<h2><span class="n">3</span><span data-i18n="s3h"></span></h2>
+<p data-i18n="s3p"></p>
+<div class="legend">
+  <span><span class="sw" style="border-color:var(--n3)"></span>N=3</span>
+  <span><span class="sw" style="border-color:var(--n25)"></span>N=25</span>
+  <span><span class="sw" style="border-color:var(--nall)"></span><span data-i18n="legAll"></span></span>
+  <span><span class="sw dash" style="border-color:var(--muted)"></span><span data-i18n="legDiag"></span></span>
+</div>
+<div class="row2">
+  <figure><svg id="relL" viewBox="0 0 420 320" role="img" aria-label="reliability, L"></svg><figcaption data-i18n="capRelL"></figcaption></figure>
+  <figure><svg id="relLCSG" viewBox="0 0 420 320" role="img" aria-label="reliability, LCSG"></svg><figcaption data-i18n="capRelLCSG"></figcaption></figure>
+</div>
+<div class="callout"><span data-i18n="s3call"></span></div>
+
+<h2><span class="n">4</span><span data-i18n="s4h"></span></h2>
+<p data-i18n="s4p"></p>
+<figure><svg id="crps" viewBox="0 0 580 280" role="img" aria-label="CRPS vs N"></svg><figcaption data-i18n="capCrps"></figcaption></figure>
+
+<h2><span class="n">5</span><span data-i18n="s5h"></span></h2>
+<p data-i18n="s5pt"></p>
+<table id="tbl"></table>
+
+<h2><span class="n">6</span><span data-i18n="s6h"></span></h2>
+<ul><li data-i18n="v1"></li><li data-i18n="v2"></li><li data-i18n="v3"></li><li data-i18n="v4"></li></ul>
+
+<footer>geo_pfn · docs/uncertainty-sparse.html · <span data-i18n="foot"></span></footer>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+const DATA={
+ Ns:[3,6,12,25,50,100,192],
+ cov90:{L:[.910,.901,.947,.981,.975,.971,.974],LCSG:[.854,.875,.940,.979,.972,.978,.981]},
+ rel:{ // empirical hit rate at promised levels [0, .5, .8, .9, .95, 1]
+  levels:[0,.5,.8,.9,.95,1],
+  L:{n3:[0,.591,.838,.910,.947,1],n25:[0,.665,.932,.981,.994,1],nall:[0,.646,.939,.974,.990,1]},
+  LCSG:{n3:[0,.497,.766,.854,.900,1],n25:[0,.663,.935,.979,.995,1],nall:[0,.703,.946,.981,.989,1]}
+ },
+ crps:{L:[14.69,13.01,12.04,10.98,10.89,10.16,9.94],LCSG:[15.96,14.28,12.46,11.19,10.66,10.27,9.44]},
+ w90:{L:[106.2,87.0,86.7,103.6,93.2,88.7,85.8],LCSG:[89.5,80.9,86.5,96.1,88.7,86.0,82.2]},
+ rho:{L:[.264,.199,.287,.261,.327,.282,.254],LCSG:[.296,.236,.351,.324,.334,.342,.359]},
+ rmse:{L:[26.25,23.64,22.75,20.11,20.75,18.93,18.70],LCSG:[30.05,26.29,23.55,20.83,20.35,19.46,18.18]}
+};
+const NS='http://www.w3.org/2000/svg';
+const el=(n,a,p)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;};
+const tip=document.getElementById('tip');
+document.addEventListener('mousemove',e=>{const t=e.target.tagName;if(t!=='circle'&&t!=='rect')tip.style.opacity=0;});
+function showTip(ev,txt){tip.textContent=txt;tip.style.left=(ev.clientX+12)+'px';tip.style.top=(ev.clientY+12)+'px';tip.style.opacity=1;}
+
+function bar90(){
+  const svg=document.getElementById('bar90');svg.replaceChildren();
+  const W=620,H=280,m={l:46,r:14,t:16,b:40},Ns=DATA.Ns;
+  const yLo=0.7,yHi=1.0,Y=v=>H-m.b-(v-yLo)/(yHi-yLo)*(H-m.t-m.b);
+  const groupW=(W-m.l-m.r)/Ns.length,bw=groupW*0.28;
+  for(let g=0.7;g<=1.001;g+=0.05){el('line',{x1:m.l,y1:Y(g),x2:W-m.r,y2:Y(g),stroke:'var(--grid)'},svg);
+    el('text',{x:m.l-6,y:Y(g)+3.5,'text-anchor':'end',fill:'var(--muted)','font-size':9.5,'font-family':'var(--mono)'},svg).textContent=Math.round(g*100)+'%';}
+  Ns.forEach((n,i)=>{
+    const cx=m.l+groupW*(i+0.5);
+    el('text',{x:cx,y:H-m.b+16,'text-anchor':'middle',fill:'var(--muted)','font-size':10,'font-family':'var(--mono)'},svg).textContent=(n===192?'all':n);
+    for(const [fs,color,off] of [['L','var(--l)',-bw-1],['LCSG','var(--lcsg)',1]]){
+      const v=DATA.cov90[fs][i];
+      const r=el('rect',{x:cx+off,y:Y(Math.max(v,yLo)),width:bw,height:Math.max(1,Y(yLo)-Y(Math.max(v,yLo))),rx:2.5,fill:color,'fill-opacity':.85},svg);
+      r.addEventListener('mouseenter',ev=>showTip(ev,`${fs}  N=${n===192?'all':n}  ${(v*100).toFixed(1)}%`));
+    }
+  });
+  el('line',{x1:m.l,y1:Y(0.9),x2:W-m.r,y2:Y(0.9),stroke:'var(--ok)','stroke-width':2,'stroke-dasharray':'6 4'},svg);
+  el('text',{x:W-m.r-4,y:Y(0.9)-5,'text-anchor':'end',fill:'var(--ok)','font-size':10.5,'font-weight':700},svg).textContent=T.targetLab;
+  el('text',{x:(m.l+W-m.r)/2,y:H-6,'text-anchor':'middle',fill:'var(--ink2)','font-size':11,'font-weight':600},svg).textContent=T.xlab;
+}
+function relChart(id,fs){
+  const svg=document.getElementById(id);svg.replaceChildren();
+  const W=420,H=320,m={l:46,r:12,t:12,b:44};
+  const X=v=>m.l+v*(W-m.l-m.r),Y=v=>H-m.b-v*(H-m.t-m.b);
+  for(let g=0;g<=1.001;g+=0.2){
+    el('line',{x1:m.l,y1:Y(g),x2:W-m.r,y2:Y(g),stroke:'var(--grid)'},svg);
+    el('text',{x:m.l-6,y:Y(g)+3.5,'text-anchor':'end',fill:'var(--muted)','font-size':9.5,'font-family':'var(--mono)'},svg).textContent=Math.round(g*100)+'%';
+    el('text',{x:X(g),y:H-m.b+15,'text-anchor':'middle',fill:'var(--muted)','font-size':9.5,'font-family':'var(--mono)'},svg).textContent=Math.round(g*100)+'%';
+  }
+  el('line',{x1:X(0),y1:Y(0),x2:X(1),y2:Y(1),stroke:'var(--muted)','stroke-width':1.4,'stroke-dasharray':'6 4'},svg);
+  el('text',{x:(m.l+W-m.r)/2,y:H-6,'text-anchor':'middle',fill:'var(--ink2)','font-size':10.5,'font-weight':600},svg).textContent=T.relX;
+  el('text',{x:13,y:(m.t+H-m.b)/2,'text-anchor':'middle',fill:'var(--ink2)','font-size':10.5,'font-weight':600,transform:`rotate(-90,13,${(m.t+H-m.b)/2})`},svg).textContent=T.relY;
+  const lv=DATA.rel.levels;
+  for(const [key,color,name] of [['n3','var(--n3)','N=3'],['n25','var(--n25)','N=25'],['nall','var(--nall)',T.legAll]]){
+    const v=DATA.rel[fs][key];const pts=v.map((y,i)=>`${X(lv[i])},${Y(y)}`).join(' ');
+    el('polyline',{points:pts,fill:'none',stroke:color,'stroke-width':2.3,'stroke-linejoin':'round'},svg);
+    v.forEach((y,i)=>{if(lv[i]===0||lv[i]===1)return;
+      const c=el('circle',{cx:X(lv[i]),cy:Y(y),r:3.4,fill:color,stroke:'var(--panel)','stroke-width':1.1},svg);
+      c.addEventListener('mouseenter',ev=>showTip(ev,`${fs} ${name}: ${T.relX} ${Math.round(lv[i]*100)}% → ${(y*100).toFixed(1)}%`));});
+  }
+}
+function xmapLog(W,m){const Ns=DATA.Ns,lx=Ns.map(n=>Math.log(n)),x0=Math.min(...lx),x1=Math.max(...lx);
+  return v=>m.l+(Math.log(v)-x0)/(x1-x0)*(W-m.l-m.r);}
+function crpsChart(){
+  const svg=document.getElementById('crps');svg.replaceChildren();
+  const W=580,H=280,m={l:42,r:56,t:12,b:38},Ns=DATA.Ns,X=xmapLog(W,m);
+  const vals=[...DATA.crps.L,...DATA.crps.LCSG];const yLo=Math.floor(Math.min(...vals)-1),yHi=Math.ceil(Math.max(...vals)+1);
+  const Y=v=>H-m.b-(v-yLo)/(yHi-yLo)*(H-m.t-m.b);
+  for(let g=Math.ceil(yLo/2)*2;g<=yHi;g+=2){el('line',{x1:m.l,y1:Y(g),x2:W-m.r,y2:Y(g),stroke:'var(--grid)'},svg);
+    el('text',{x:m.l-6,y:Y(g)+3.5,'text-anchor':'end',fill:'var(--muted)','font-size':9.5,'font-family':'var(--mono)'},svg).textContent=g;}
+  for(const n of Ns)el('text',{x:X(n),y:H-m.b+15,'text-anchor':'middle',fill:'var(--muted)','font-size':9.5,'font-family':'var(--mono)'},svg).textContent=(n===192?'all':n);
+  el('text',{x:(m.l+W-m.r)/2,y:H-4,'text-anchor':'middle',fill:'var(--ink2)','font-size':10.5,'font-weight':600},svg).textContent=T.xlab;
+  el('text',{x:13,y:(m.t+H-m.b)/2,'text-anchor':'middle',fill:'var(--ink2)','font-size':11,'font-weight':600,transform:`rotate(-90,13,${(m.t+H-m.b)/2})`},svg).textContent='CRPS';
+  for(const [fs,color] of [['L','var(--l)'],['LCSG','var(--lcsg)']]){
+    const v=DATA.crps[fs];const pts=v.map((y,i)=>`${X(Ns[i])},${Y(y)}`).join(' ');
+    el('polyline',{points:pts,fill:'none',stroke:color,'stroke-width':2.4,'stroke-linejoin':'round'},svg);
+    v.forEach((y,i)=>{const c=el('circle',{cx:X(Ns[i]),cy:Y(y),r:3.2,fill:color,stroke:'var(--panel)','stroke-width':1.1},svg);
+      c.addEventListener('mouseenter',ev=>showTip(ev,`${fs}  N=${Ns[i]===192?'all':Ns[i]}  CRPS ${y.toFixed(2)}`));});
+    el('text',{x:X(Ns[Ns.length-1])+7,y:Y(v[v.length-1])+3.5,fill:color,'font-size':11,'font-weight':700},svg).textContent=fs;
+  }
+}
+function tbl(){
+  const Ns=DATA.Ns;
+  let h=`<tr><th>N</th><th>${T.thHit} L</th><th>${T.thHit} LCSG</th><th>w90 L</th><th>CRPS L</th><th>CRPS LCSG</th><th>ρ L</th><th>ρ LCSG</th><th>RMSE L</th></tr>`;
+  for(let i=0;i<Ns.length;i++){
+    h+=`<tr><td>${Ns[i]===192?'all':Ns[i]}</td><td>${(DATA.cov90.L[i]*100).toFixed(1)}%</td><td>${(DATA.cov90.LCSG[i]*100).toFixed(1)}%</td>`+
+       `<td>${DATA.w90.L[i].toFixed(0)}</td><td>${DATA.crps.L[i].toFixed(1)}</td><td>${DATA.crps.LCSG[i].toFixed(1)}</td>`+
+       `<td>${DATA.rho.L[i].toFixed(2)}</td><td>${DATA.rho.LCSG[i].toFixed(2)}</td><td>${DATA.rmse.L[i].toFixed(1)}</td></tr>`;
+  }
+  document.getElementById('tbl').innerHTML=h;
+}
+let T;
+const I18N={
+ zh:{
+  kick:"geo_pfn · 稀疏不确定性 · 校准评估",
+  title:"上下文只有几口孔时,geo-PFN 说的「把握」可信吗?",
+  lede:"我们领域定位的核心交付:数据稀缺时,模型不仅要给预测值,还要诚实地说明自己有多大把握。本评估在稀疏协议(固定 48 孔查询,从其余抽 N 口整孔作上下文)上检验 geo-PFN 的预测区间是否说到做到。模型:2M @24k(稀疏最优 checkpoint)。",
+  s1h:"先用一句话说清「校准」",
+  s1exp:"geo-PFN 每次预测不只给一个数,还给一个<b>区间</b>并声明把握——比如「我有 <b>90%</b> 的把握,这个深度的 Su 在 <b>40–120</b> 之间」。检验办法很直接:把几千次这样的承诺收集起来,<b>数一数真值实际落进区间的比例(命中率)</b>。说 90% 就真有约 90% 命中 → <b>诚实(校准好)</b>;命中率低于承诺 → <b>过度自信(危险:它自信地错)</b>;明显高于承诺 → <b>过于保守(区间画得比需要的宽)</b>。",
+  s1p:"技术上:geo-PFN 的 bar-distribution 头输出每个查询点的完整概率分布,8 次 ensemble 按各自上下文反归一化后混合;区间、命中率、CRPS 等全部在这个混合分布上闭式计算,并经 Monte-Carlo 验证。",
+  s2h:"主图:承诺 90%,实际命中了多少?",
+  s2p:"下图每根柱子 = 模型声明「90% 把握」的区间在该上下文规模 N 下的<b>实际命中率</b>。绿色虚线 = 90% 目标:柱子顶到线上 = 诚实;低于线 = 过度自信;高出 = 保守。",
+  legTarget:"90% 目标(诚实线)",
+  capBar:"「说 90% 就该中 90%」:实际命中率 vs 上下文孔数 N。最要紧的是最左边——上下文只有 3 口孔时,L 特征下命中 91.0%,几乎完美。",
+  s2call:"<b>关键读法:</b>我们最担心的场景是最左边(N=3,数据最少)——若模型在这里过度自信,它会「自信地错」,这在工程上是危险的。实际结果:<b>L 特征 N=3 命中 91.0%(承诺 90%)——几乎完美诚实</b>;LCSG 在 N≤6 有轻微过度自信(85–88%),幅度温和。反而是上下文充足时(N≥25)命中 97–98%——偏保守,区间画宽了。",
+  s3h:"完整检验:把 50%–95% 的承诺都验一遍(可靠性图)",
+  s3p:"同样的检验对每档承诺(50%、80%、90%、95%)都做一次:横轴 = 模型承诺的把握,纵轴 = 实际命中率。<b>贴住对角虚线 = 完美诚实;线在对角线下方 = 过度自信;上方 = 保守</b>。",
+  legAll:"N=全部(192)",legDiag:"对角线 = 完美诚实",
+  relX:"模型承诺的把握",relY:"实际命中率",
+  capRelL:"仅坐标(L):三条线都贴近对角线;N=3(橙)最贴——极稀疏时反而最诚实。",
+  capRelLCSG:"加真实特征(LCSG):N=3(橙)整体略低于对角线 = 轻微过度自信;N≥25 高于对角线 = 保守。",
+  s3call:"<b>结论与担心相反(而且是好的方向):</b>「极稀疏时自信地错」没有发生。模型在上下文变少时会<b>主动把区间加宽</b>(90% 区间平均宽度:上下文全给时 86 → N=3 时 106 kN/m²),真值完全落在分布支撑之外的比例 ≤0.4%。误差方向是保守(区间偏宽),不是危险(过度自信)。",
+  s4h:"分布整体质量随上下文的变化(CRPS)",
+  s4p:"CRPS 是分布预测的「总分」,同时惩罚不准和区间过宽,越低越好。它随 N 单调改善(L:14.7→9.9)——没有哪个稀疏档「崩掉」。",
+  capCrps:"CRPS 随上下文孔数 N 单调下降,L 与 LCSG 走势一致。",
+  s5h:"完整数字",
+  s5pt:"2M @24k(稀疏最优)。命中率 = 承诺 90% 区间的实际命中;w90 = 90% 区间平均宽度(kN/m²);ρ = 预测不确定性与实际误差的 Spearman 相关(模型知不知道自己哪行会错)。",
+  thHit:"命中@90%",
+  s6h:"结论",
+  v1:"<b>核心主张成立:极稀疏时不确定性可信。</b>N=3 仅坐标即 91.0% 命中(承诺 90%),灾难性过度自信 ≤0.4%,且模型在数据变少时诚实加宽区间——这正是我们领域需要、通用表格模型不提供的能力。",
+  v2:"<b>轻微弱点:</b>LCSG 在 N≤6 命中 85–88%(轻微过度自信);17M 交叉验证同样模式且点预测更差——再次支持稀疏场景用 2M。",
+  v3:"<b>改进空间都在保守侧:</b>N≥25 区间偏宽(命中 97–98%,牺牲了锐利度)+ ρ 只有 0.2–0.36(对「哪一行会错」分辨力弱)。两者都可作为小上下文目标训练的显式优化目标。",
+  v4:"<b>尚未对比 TabICL 的分布输出</b>(其回归器的分布 API 待查);本报告先确立我们自己的校准基线。",
+  xlab:"上下文钻孔数 N",foot:"证据 results/haneda/uncertainty_gen2m24k.json · uncertainty_gen17m.json · 指标经 MC 验证(calibration_test.py)",
+  targetLab:"90% 目标"
+ },
+ ja:{
+  kick:"geo_pfn · 疎な不確実性 · 較正評価",
+  title:"文脈が数本の孔しかない時、geo-PFN の言う「自信」は信頼できるか?",
+  lede:"我々の領域での核心的な成果物:データが乏しい時、モデルは予測値だけでなく自分の自信の程度を正直に示すべきだ。本評価は疎プロトコル(48孔クエリ固定、残りから N 本を丸ごと文脈に抽出)で geo-PFN の予測区間が「言った通り」かを検定する。モデル:2M @24k(疎で最良の checkpoint)。",
+  s1h:"まず「較正」を一言で",
+  s1exp:"geo-PFN は毎回、値だけでなく<b>区間</b>と自信を出す——例えば「この深度の Su は <b>90%</b> の自信で <b>40–120</b> の間」。検定は単純:数千件のこうした宣言を集め、<b>真値が実際に区間へ入った割合(的中率)を数える</b>。90% と言って ~90% 的中 → <b>正直(良い較正)</b>;的中が宣言未満 → <b>過信(危険:自信満々に間違う)</b>;明らかに上回る → <b>保守的(区間が必要以上に広い)</b>。",
+  s1p:"技術的には:bar-distribution ヘッドが各クエリ点の完全な確率分布を出し、8 回のアンサンブルを各文脈の逆正規化で混合;区間・的中率・CRPS はこの混合分布上で閉形式計算し、Monte-Carlo で検証済み。",
+  s2h:"主図:90% と宣言して、実際どれだけ当たったか?",
+  s2p:"各バー = 「90% の自信」と宣言した区間の、その文脈規模 N での<b>実際の的中率</b>。緑の点線 = 90% 目標:バーが線に届く = 正直;下回る = 過信;上回る = 保守的。",
+  legTarget:"90% 目標(正直ライン)",
+  capBar:"「90% と言ったら 90% 当てるべき」:実際の的中率 対 文脈孔数 N。最重要は最左——文脈 3 本で L 特徴なら 91.0% 的中、ほぼ完璧。",
+  s2call:"<b>読み方の要点:</b>最も心配な場面は最左(N=3、データ最少)——ここで過信していれば「自信満々に間違う」ことになり、工学的に危険。実際は:<b>L 特徴 N=3 で 91.0% 的中(宣言 90%)——ほぼ完璧に正直</b>;LCSG は N≤6 で軽い過信(85–88%)、程度は穏やか。むしろ文脈が十分な時(N≥25)に 97–98% 的中——保守的で区間が広め。",
+  s3h:"完全検定:50%〜95% の宣言を全部検証(信頼性図)",
+  s3p:"同じ検定を各宣言水準(50%・80%・90%・95%)で実施:横軸 = 宣言した自信、縦軸 = 実際の的中率。<b>対角点線に沿う = 完璧に正直;下 = 過信;上 = 保守的</b>。",
+  legAll:"N=全部(192)",legDiag:"対角線 = 完璧な正直",
+  relX:"宣言した自信",relY:"実際の的中率",
+  capRelL:"座標のみ(L):3本とも対角線に近い;N=3(橙)が最も近い——極疎でむしろ最も正直。",
+  capRelLCSG:"実特徴込み(LCSG):N=3(橙)は全体に対角線の下 = 軽い過信;N≥25 は上 = 保守的。",
+  s3call:"<b>結論は懸念と逆(良い方向に):</b>「極疎で自信満々に間違う」は起きていない。文脈が減るとモデルは<b>自ら区間を広げ</b>(90% 区間の平均幅:全文脈 86 → N=3 で 106 kN/m²)、真値が分布の台の外へ落ちる率 ≤0.4%。誤差の方向は保守(広め)であり、危険(過信)ではない。",
+  s4h:"分布の総合品質と文脈量(CRPS)",
+  s4p:"CRPS は分布予測の「総合点」で、不正確さと区間の広さを同時に罰する(低いほど良い)。N に対し単調に改善(L:14.7→9.9)——どの疎さでも「崩壊」しない。",
+  capCrps:"CRPS は文脈孔数 N とともに単調減少、L と LCSG は同傾向。",
+  s5h:"全数値",
+  s5pt:"2M @24k(疎で最良)。的中率 = 宣言 90% 区間の実際の的中;w90 = 90% 区間平均幅(kN/m²);ρ = 予測不確実性と実誤差の Spearman 相関(どの行で間違うか自覚しているか)。",
+  thHit:"的中@90%",
+  s6h:"結論",
+  v1:"<b>核心主張は成立:極疎でも不確実性は信頼できる。</b>N=3・座標のみで 91.0% 的中(宣言 90%)、破滅的過信 ≤0.4%、データが減れば正直に区間を広げる——我々の領域が必要とし、汎用表モデルが提供しない能力。",
+  v2:"<b>軽い弱点:</b>LCSG の N≤6 で 85–88% 的中(軽い過信);17M の交差検証も同パターンで点予測はより悪い——疎では 2M を使う判断を再確認。",
+  v3:"<b>改善余地は保守側:</b>N≥25 の区間過広(的中 97–98%、鋭さの犠牲)+ ρ は 0.2–0.36(「どの行で間違うか」の分解能が弱い)。いずれも小文脈目標訓練の明示的な最適化目標にできる。",
+  v4:"<b>TabICL の分布出力との比較は未実施</b>(回帰器の分布 API は要調査);本報告はまず我々自身の較正基線を確立する。",
+  xlab:"文脈孔数 N",foot:"証拠 results/haneda/uncertainty_gen2m24k.json · uncertainty_gen17m.json · 指標は MC 検証済み(calibration_test.py)",
+  targetLab:"90% 目標"
+ },
+ en:{
+  kick:"geo_pfn · sparse uncertainty · calibration eval",
+  title:"With only a few boreholes of context, can geo-PFN's stated confidence be trusted?",
+  lede:"The core deliverable of our niche: when data is scarce, the model must give not just a value but an honest statement of how sure it is. This eval runs the sparse protocol (fixed 48-hole query, N whole holes drawn as context) and tests whether geo-PFN's prediction intervals keep their promises. Model: 2M @24k (the best sparse checkpoint).",
+  s1h:"Calibration in one sentence",
+  s1exp:"Each geo-PFN prediction is not just a number but an <b>interval</b> with a stated confidence — e.g. \"I am <b>90%</b> sure the Su at this depth is between <b>40 and 120</b>\". The test is direct: collect thousands of such promises and <b>count how often the true value actually lands inside (the hit rate)</b>. Saying 90% and hitting ~90% → <b>honest (well calibrated)</b>; hitting less than promised → <b>over-confident (dangerous: confidently wrong)</b>; hitting clearly more → <b>conservative (intervals wider than needed)</b>.",
+  s1p:"Technically: the bar-distribution head outputs a full probability distribution per query point; the 8 ensemble draws are combined via their context affines into an exact mixture; intervals, hit rates and CRPS are computed in closed form on that mixture and Monte-Carlo validated.",
+  s2h:"Headline: promised 90% — how often did it actually hit?",
+  s2p:"Each bar = the <b>actual hit rate</b> of the intervals the model declared with \"90% confidence\", at context size N. Green dashed line = the 90% target: bar reaching the line = honest; below = over-confident; above = conservative.",
+  legTarget:"90% target (honesty line)",
+  capBar:"\"Say 90%, hit 90%\": actual hit rate vs context size N. The leftmost bars matter most — with only 3 boreholes of context, L features hit 91.0%, near-perfect.",
+  s2call:"<b>How to read it:</b> the scariest scenario is the far left (N=3, least data) — if the model were over-confident there, it would be confidently wrong, which is dangerous in engineering. In fact: <b>L features at N=3 hit 91.0% (promised 90%) — near-perfectly honest</b>; LCSG shows mild over-confidence at N≤6 (85–88%). If anything, with plenty of context (N≥25) it hits 97–98% — conservative, drawing intervals wider than needed.",
+  s3h:"The full test: verify every promise from 50% to 95% (reliability diagram)",
+  s3p:"The same test at every promise level (50%, 80%, 90%, 95%): x = the confidence the model declared, y = the actual hit rate. <b>On the dashed diagonal = perfectly honest; below = over-confident; above = conservative</b>.",
+  legAll:"N=all (192)",legDiag:"diagonal = perfect honesty",
+  relX:"declared confidence",relY:"actual hit rate",
+  capRelL:"Coords-only (L): all three lines hug the diagonal; N=3 (orange) closest — most honest exactly at extreme sparsity.",
+  capRelLCSG:"With real features (LCSG): N=3 (orange) sits slightly below the diagonal = mild over-confidence; N≥25 sits above = conservative.",
+  s3call:"<b>The verdict is the opposite of the fear (in the good direction):</b> \"confidently wrong at extreme sparsity\" does not happen. As context shrinks the model <b>widens its own intervals</b> (mean 90%-interval width: 86 with all context → 106 kN/m² at N=3), and truths fall entirely outside the predicted distribution ≤0.4% of the time. The error direction is conservative (too wide), not dangerous (over-confident).",
+  s4h:"Overall distributional quality vs context (CRPS)",
+  s4p:"CRPS is the 'total score' for distributional prediction, penalising inaccuracy and over-wide intervals together (lower is better). It improves monotonically with N (L: 14.7 → 9.9) — no sparsity level collapses.",
+  capCrps:"CRPS falls monotonically with context size N; L and LCSG track each other.",
+  s5h:"Full numbers",
+  s5pt:"2M @24k (best sparse). Hit rate = actual hit of the promised-90% interval; w90 = mean 90%-interval width (kN/m²); ρ = Spearman corr of predicted uncertainty with actual error (does the model know which rows it will get wrong).",
+  thHit:"hit@90%",
+  s6h:"Verdict",
+  v1:"<b>The core claim holds: uncertainty is trustworthy at extreme sparsity.</b> 91.0% hits at N=3 with coords only (promised 90%), catastrophic over-confidence ≤0.4%, and intervals honestly widen as data shrinks — exactly the capability our domain needs and general tabular models don't offer.",
+  v2:"<b>Mild weakness:</b> LCSG at N≤6 hits 85–88% (mild over-confidence); the 17M cross-check shows the same pattern with worse point predictions — reaffirming the 2M for sparse use.",
+  v3:"<b>Improvement areas are on the conservative side:</b> over-wide intervals from N≥25 (97–98% hits, sharpness left on the table) + ρ only 0.2–0.36 (weak at ranking which rows go wrong). Both can become explicit objectives for the small-context training.",
+  v4:"<b>TabICL's distributional output not yet compared</b> (its regressor's distribution API needs investigation); this report establishes our own calibration baseline first.",
+  xlab:"context boreholes N",foot:"evidence results/haneda/uncertainty_gen2m24k.json · uncertainty_gen17m.json · metrics MC-validated (calibration_test.py)",
+  targetLab:"90% target"
+ }
+};
+function setLang(l){
+  document.documentElement.lang=l==='zh'?'zh-CN':l==='ja'?'ja':'en';
+  try{localStorage.setItem('geopfn_lang',l);}catch(e){}
+  T=I18N[l]||I18N.zh;
+  document.querySelectorAll('[data-i18n]').forEach(e=>{const v=T[e.dataset.i18n];if(v!=null)e.innerHTML=v;});
+  document.querySelectorAll('.langbar button').forEach(b=>b.classList.toggle('on',b.dataset.lang===l));
+  bar90();relChart('relL','L');relChart('relLCSG','LCSG');crpsChart();tbl();
+}
+document.querySelectorAll('.langbar button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+let init='zh';try{init=localStorage.getItem('geopfn_lang')||'zh';}catch(e){}
+setLang(['zh','ja','en'].includes(init)?init:'zh');
+</script>

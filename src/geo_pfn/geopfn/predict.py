@@ -118,6 +118,110 @@ def predict_geopfn_coherent(
     return (total / config.n_ensembles).numpy()
 
 
+@dataclass
+class DistPrediction:
+    """A mixture-of-histograms prediction for a set of query rows.
+
+    Component ``e`` is a histogram with probabilities ``probs[e]`` over the
+    normalized ``z_edges``, mapped to real units by ``v = z * ctx_std[e] +
+    ctx_mean[e]``. Feed directly to :mod:`geo_pfn.geopfn.calibration`.
+    """
+
+    probs: np.ndarray  # (E, Q, B) softmax bin probabilities per ensemble draw
+    ctx_mean: np.ndarray  # (E,)
+    ctx_std: np.ndarray  # (E,)
+    z_edges: np.ndarray  # (B+1,)
+
+    def point(self) -> np.ndarray:
+        """Ensemble-mean point prediction, identical to the point predictors."""
+        z_centers = (self.z_edges[:-1] + self.z_edges[1:]) / 2.0
+        mu = self.probs @ z_centers  # (E, Q)
+        return (mu * self.ctx_std[:, None] + self.ctx_mean[:, None]).mean(0)
+
+
+def _forward_context_probs(
+    model: GeoPFN,
+    cx: torch.Tensor,
+    cy: torch.Tensor,
+    query: torch.Tensor,
+    query_chunk: int,
+    device: torch.device,
+) -> tuple[np.ndarray, float, float]:
+    """One ensemble member: bin probabilities in z space + the context affine."""
+    mean, std = cy.mean(), cy.std(unbiased=False).clamp(min=1e-6)
+    z_ctx = (cy - mean) / std
+    n_c = len(cx)
+    probs = []
+    for start in range(0, len(query), query_chunk):
+        chunk = query[start : start + query_chunk]
+        x = torch.cat([cx, chunk]).unsqueeze(0).to(device)
+        z = torch.cat([z_ctx, torch.zeros(len(chunk))]).unsqueeze(0).to(device)
+        mask = torch.zeros(1, n_c + len(chunk), dtype=torch.bool, device=device)
+        mask[0, :n_c] = True
+        with torch.no_grad():
+            logits = model(x, z, mask)
+            probs.append(torch.softmax(logits[0, n_c:], dim=-1).cpu())
+    return torch.cat(probs).numpy(), float(mean), float(std)
+
+
+def predict_geopfn_coherent_dist(
+    model: GeoPFN,
+    x_context: np.ndarray,
+    y_context: np.ndarray,
+    ctx_bores: np.ndarray,
+    x_query: np.ndarray,
+    config: CoherentConfig,
+    seed: int,
+    device: torch.device,
+    anchor_x: np.ndarray | None = None,
+    anchor_y: np.ndarray | None = None,
+) -> DistPrediction:
+    """Coherent-context prediction returning the full ensemble distribution.
+
+    Same context selection as :func:`predict_geopfn_coherent`, but instead of
+    averaging point estimates it returns every draw's bar-distribution plus its
+    de-normalization affine, so calibration metrics (coverage, CRPS, NLL) can be
+    computed on the exact mixture. ``DistPrediction.point()`` reproduces the
+    point predictor's output.
+    """
+    model.eval()
+    gen = torch.Generator().manual_seed(seed)
+    cx_i, cy_i = config.coord_idx
+    query_xy = x_query[0, [cx_i, cy_i]]
+
+    bores = np.unique(ctx_bores)
+    bore_xy = np.array([x_context[ctx_bores == b][0, [cx_i, cy_i]] for b in bores])
+    order = np.argsort(((bore_xy - query_xy) ** 2).sum(1))
+    nearest = bores[order[: config.n_candidates]]
+
+    ax = None if anchor_x is None else torch.tensor(anchor_x, dtype=torch.float32)
+    ay = None if anchor_y is None else torch.tensor(anchor_y, dtype=torch.float32)
+    query = torch.tensor(x_query, dtype=torch.float32)
+
+    probs, means, stds = [], [], []
+    for _ in range(config.n_ensembles):
+        n = min(config.n_holes, len(nearest))
+        pick = nearest[torch.randperm(len(nearest), generator=gen)[:n].numpy()]
+        rows = np.isin(ctx_bores, pick)
+        cx = torch.tensor(x_context[rows], dtype=torch.float32)
+        cy = torch.tensor(y_context[rows], dtype=torch.float32)
+        if ax is not None and len(ax):
+            cx, cy = torch.cat([ax, cx]), torch.cat([ay, cy])
+        p, m, s = _forward_context_probs(
+            model, cx, cy, query, config.query_chunk, device
+        )
+        probs.append(p)
+        means.append(m)
+        stds.append(s)
+
+    return DistPrediction(
+        probs=np.stack(probs),
+        ctx_mean=np.array(means),
+        ctx_std=np.array(stds),
+        z_edges=model.bar.edges.cpu().numpy(),
+    )
+
+
 def predict_geopfn(
     model: GeoPFN,
     x_context: np.ndarray,

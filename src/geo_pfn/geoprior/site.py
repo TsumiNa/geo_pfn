@@ -27,8 +27,8 @@ from geo_pfn.geoprior.prior import (
     _depth_axis,
     _latent_field,
     _randint,
-    _scm_map,
     _stratigraphy,
+    sample_features,
 )
 
 
@@ -130,12 +130,7 @@ def sample_geo_site_batch(
     b = batch_size
 
     n_scm_feat = max(1, n_feat - 4)
-    feats, target = _scm_map(cfg, scm_input, n_scm_feat, g)
-
-    scale = torch.exp(torch.randn(b, 1, n_scm_feat, generator=g) * 0.6)
-    shift = torch.randn(b, 1, n_scm_feat, generator=g)
-    feats = feats * scale + shift
-    feats = feats + cfg.obs_noise * scale * torch.randn(b, r, n_scm_feat, generator=g)
+    feats, target = sample_features(cfg, scm_input, n_scm_feat, g)
 
     x = torch.cat(
         [depth.unsqueeze(-1), coords, soil.float().unsqueeze(-1), feats], dim=-1
