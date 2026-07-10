@@ -1,0 +1,485 @@
+{
+ "config": {
+  "data_path": "data/pilot_Su_domain_block_mod4Liu.csv",
+  "out_path": "results/haneda/sparse_gen2m24k.json",
+  "checkpoint": "checkpoints/gen_2m_24k.pt",
+  "device": "cuda",
+  "feature_sets": [
+   "L",
+   "LCSG"
+  ],
+  "models": [
+   "geopfn"
+  ],
+  "context_sizes": [
+   3,
+   6,
+   12,
+   25,
+   50,
+   100,
+   -1
+  ],
+  "n_seeds": 4,
+  "query_fold": 0,
+  "n_folds": 5,
+  "seed": 42,
+  "coherent": {
+   "n_holes": 8,
+   "n_candidates": 24,
+   "n_ensembles": 8
+  }
+ },
+ "records": [
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 3,
+   "n_ctx_req": 3,
+   "seed": 0,
+   "n_query": 700,
+   "rmse": 20.23374552284907
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 3,
+   "n_ctx_req": 3,
+   "seed": 0,
+   "n_query": 700,
+   "rmse": 24.168499935435985
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 3,
+   "n_ctx_req": 3,
+   "seed": 1,
+   "n_query": 700,
+   "rmse": 20.696082679439723
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 3,
+   "n_ctx_req": 3,
+   "seed": 1,
+   "n_query": 700,
+   "rmse": 26.02091072776728
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 3,
+   "n_ctx_req": 3,
+   "seed": 2,
+   "n_query": 700,
+   "rmse": 32.07674041435544
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 3,
+   "n_ctx_req": 3,
+   "seed": 2,
+   "n_query": 700,
+   "rmse": 23.708155178079167
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 3,
+   "n_ctx_req": 3,
+   "seed": 3,
+   "n_query": 700,
+   "rmse": 29.841949174671683
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 3,
+   "n_ctx_req": 3,
+   "seed": 3,
+   "n_query": 700,
+   "rmse": 42.28169420121878
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 6,
+   "n_ctx_req": 6,
+   "seed": 0,
+   "n_query": 700,
+   "rmse": 23.512770312713414
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 6,
+   "n_ctx_req": 6,
+   "seed": 0,
+   "n_query": 700,
+   "rmse": 23.002302221210947
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 6,
+   "n_ctx_req": 6,
+   "seed": 1,
+   "n_query": 700,
+   "rmse": 21.007070222317576
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 6,
+   "n_ctx_req": 6,
+   "seed": 1,
+   "n_query": 700,
+   "rmse": 24.352838419643952
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 6,
+   "n_ctx_req": 6,
+   "seed": 2,
+   "n_query": 700,
+   "rmse": 20.442765771526517
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 6,
+   "n_ctx_req": 6,
+   "seed": 2,
+   "n_query": 700,
+   "rmse": 26.08641483994729
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 6,
+   "n_ctx_req": 6,
+   "seed": 3,
+   "n_query": 700,
+   "rmse": 28.689822870587957
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 6,
+   "n_ctx_req": 6,
+   "seed": 3,
+   "n_query": 700,
+   "rmse": 31.01982414205055
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 12,
+   "n_ctx_req": 12,
+   "seed": 0,
+   "n_query": 700,
+   "rmse": 22.27824563608203
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 12,
+   "n_ctx_req": 12,
+   "seed": 0,
+   "n_query": 700,
+   "rmse": 23.507083061628165
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 12,
+   "n_ctx_req": 12,
+   "seed": 1,
+   "n_query": 700,
+   "rmse": 18.726602243976128
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 12,
+   "n_ctx_req": 12,
+   "seed": 1,
+   "n_query": 700,
+   "rmse": 22.767687373705634
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 12,
+   "n_ctx_req": 12,
+   "seed": 2,
+   "n_query": 700,
+   "rmse": 26.805873603692152
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 12,
+   "n_ctx_req": 12,
+   "seed": 2,
+   "n_query": 700,
+   "rmse": 24.294743317548697
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 12,
+   "n_ctx_req": 12,
+   "seed": 3,
+   "n_query": 700,
+   "rmse": 22.462503695569183
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 12,
+   "n_ctx_req": 12,
+   "seed": 3,
+   "n_query": 700,
+   "rmse": 23.626201319373045
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 25,
+   "n_ctx_req": 25,
+   "seed": 0,
+   "n_query": 700,
+   "rmse": 19.918009229578775
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 25,
+   "n_ctx_req": 25,
+   "seed": 0,
+   "n_query": 700,
+   "rmse": 21.03265691156728
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 25,
+   "n_ctx_req": 25,
+   "seed": 1,
+   "n_query": 700,
+   "rmse": 20.575574054546845
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 25,
+   "n_ctx_req": 25,
+   "seed": 1,
+   "n_query": 700,
+   "rmse": 20.70571104069573
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 25,
+   "n_ctx_req": 25,
+   "seed": 2,
+   "n_query": 700,
+   "rmse": 19.683209956150765
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 25,
+   "n_ctx_req": 25,
+   "seed": 2,
+   "n_query": 700,
+   "rmse": 20.653445627929678
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 25,
+   "n_ctx_req": 25,
+   "seed": 3,
+   "n_query": 700,
+   "rmse": 20.258134802124935
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 25,
+   "n_ctx_req": 25,
+   "seed": 3,
+   "n_query": 700,
+   "rmse": 20.92941019528209
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 50,
+   "n_ctx_req": 50,
+   "seed": 0,
+   "n_query": 700,
+   "rmse": 18.731298832908003
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 50,
+   "n_ctx_req": 50,
+   "seed": 0,
+   "n_query": 700,
+   "rmse": 19.50903005623975
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 50,
+   "n_ctx_req": 50,
+   "seed": 1,
+   "n_query": 700,
+   "rmse": 20.842998634794476
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 50,
+   "n_ctx_req": 50,
+   "seed": 1,
+   "n_query": 700,
+   "rmse": 20.24203734863442
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 50,
+   "n_ctx_req": 50,
+   "seed": 2,
+   "n_query": 700,
+   "rmse": 22.581301990636778
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 50,
+   "n_ctx_req": 50,
+   "seed": 2,
+   "n_query": 700,
+   "rmse": 21.306679461348757
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 50,
+   "n_ctx_req": 50,
+   "seed": 3,
+   "n_query": 700,
+   "rmse": 20.66829810341302
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 50,
+   "n_ctx_req": 50,
+   "seed": 3,
+   "n_query": 700,
+   "rmse": 20.315807970201572
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 100,
+   "n_ctx_req": 100,
+   "seed": 0,
+   "n_query": 700,
+   "rmse": 18.977186586711408
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 100,
+   "n_ctx_req": 100,
+   "seed": 0,
+   "n_query": 700,
+   "rmse": 19.285164198251238
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 100,
+   "n_ctx_req": 100,
+   "seed": 1,
+   "n_query": 700,
+   "rmse": 19.36862801482271
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 100,
+   "n_ctx_req": 100,
+   "seed": 1,
+   "n_query": 700,
+   "rmse": 19.624113010237775
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 100,
+   "n_ctx_req": 100,
+   "seed": 2,
+   "n_query": 700,
+   "rmse": 18.625936149969736
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 100,
+   "n_ctx_req": 100,
+   "seed": 2,
+   "n_query": 700,
+   "rmse": 19.343715700380784
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 100,
+   "n_ctx_req": 100,
+   "seed": 3,
+   "n_query": 700,
+   "rmse": 18.747617145326654
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 100,
+   "n_ctx_req": 100,
+   "seed": 3,
+   "n_query": 700,
+   "rmse": 19.593507250474207
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "L",
+   "n_ctx": 192,
+   "n_ctx_req": -1,
+   "seed": 0,
+   "n_query": 700,
+   "rmse": 18.703923218546542
+  },
+  {
+   "model": "geopfn",
+   "feature_set": "LCSG",
+   "n_ctx": 192,
+   "n_ctx_req": -1,
+   "seed": 0,
+   "n_query": 700,
+   "rmse": 18.176076163117596
+  }
+ ]
+}
