@@ -441,7 +441,7 @@ function makeLabel(text,bright,big){
   c.fillText(text,256,48);
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),
     transparent:true,opacity:.9,depthWrite:false,sizeAttenuation:false}));
-  sp.scale.set(big?.15:.11,big?.028:.021,1); return sp;
+  sp.scale.set(big? .15:.11,big? .028:.021,1); return sp;
 }
 { const H=-YBOT;
   const box=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(2.04,H,2.04)),
@@ -503,7 +503,7 @@ function paintSpecimens(ctxSet,showCtx){
   const sc=state.spScale;
   for(let i=0;i<NSP;i++){
     const isCtx=showCtx&&ctxSet.has(SP.bore[i]);
-    const r=(isCtx?.0095:.005)*sc;
+    const r=(isCtx? .0095:.005)*sc;
     M.makeScale(r,r,r); M.setPosition(wx(SP.x[i]),spWY(i),wz(SP.y[i]));
     spheres.setMatrixAt(i,M);
     let c=suColor(SP.su[i]); if(isCtx)c=[1,.75,.22];
@@ -607,7 +607,7 @@ function renderIso(){
   });
   if(!state.section){
     spMat.opacity=foc==null?1:.15;
-    if(colMat)colMat.opacity=foc==null?.30:.08;
+    if(colMat)colMat.opacity=foc==null? .30:.08;
   }
   isoGroup.visible=state.showPred&&state.predicted&&!state.section;
 }
