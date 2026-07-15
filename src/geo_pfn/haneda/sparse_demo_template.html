@@ -1,0 +1,1141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TerrAI — Su Field Explorer</title>
+<style>
+:root{
+  --bg:#0b0f14; --panel:#10161e; --panel2:#151d27; --line:#1f2a37;
+  --ink:#e8edf3; --muted:#8b97a5; --faint:#5c6773;
+  --accent:#38bdf8; --accent2:#2563eb; --amber:#fbbf24; --good:#34d399;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","Hiragino Sans","PingFang SC",sans-serif;
+  overflow:hidden}
+#app{display:flex;height:100%}
+
+/* ---------------- sidebar ---------------- */
+aside{width:308px;min-width:308px;background:var(--panel);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;overflow-y:auto;
+  transition:margin-left .28s ease}
+aside.collapsed{margin-left:-308px}
+.drawer{position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:6;
+  width:17px;height:72px;background:var(--panel);border:1px solid var(--line);border-left:0;
+  border-radius:0 10px 10px 0;cursor:pointer;display:grid;place-items:center;
+  color:var(--muted);font-size:13px;user-select:none}
+.drawer:hover{color:var(--ink);background:var(--panel2)}
+.brand{padding:16px 20px 12px;border-bottom:1px solid var(--line)}
+.brand .logo{display:flex;align-items:center;gap:10px}
+.brand .mark{width:34px;height:34px;border-radius:9px;flex:none;
+  background:conic-gradient(from 210deg,#2563eb,#38bdf8,#34d399,#2563eb);
+  box-shadow:0 0 18px rgba(56,189,248,.35)}
+.brand h1{font-size:21px;font-weight:800;letter-spacing:.01em}
+.brand h1 span{background:linear-gradient(120deg,#38bdf8,#34d399);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.prod{display:flex;align-items:flex-start;gap:7px;margin-top:10px}
+.prod h2{font-size:13.5px;font-weight:700;color:var(--ink);letter-spacing:.02em}
+.demo-tag{font-size:8.5px;font-weight:800;letter-spacing:.12em;color:var(--amber);
+  border:1px solid rgba(251,191,36,.5);border-radius:5px;padding:1.5px 5px;
+  transform:translateY(-3px)}
+.brand p{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.5}
+.langbar{display:flex;gap:2px;margin-top:10px}
+.langbar button{background:none;border:1px solid var(--line);color:var(--faint);
+  font-size:10.5px;padding:2px 9px;border-radius:20px;cursor:pointer}
+.langbar button.on{color:var(--ink);border-color:var(--accent);background:rgba(56,189,248,.08)}
+
+section{padding:12px 20px;border-bottom:1px solid var(--line)}
+section h2{font-size:10.5px;font-weight:600;color:var(--faint);letter-spacing:.14em;
+  text-transform:uppercase;margin-bottom:8px}
+select{width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);
+  border-radius:8px;padding:8px 10px;font-size:12.5px;outline:none}
+
+.check{display:flex;align-items:center;gap:9px;padding:7px 2px;cursor:pointer;
+  font-size:13px;user-select:none}
+.check input{display:none}
+.check .box{width:16px;height:16px;border-radius:5px;border:1.5px solid var(--faint);
+  flex:none;display:grid;place-items:center;transition:all .15s}
+.check input:checked + .box{background:var(--accent);border-color:var(--accent)}
+.check .box::after{content:"";width:8px;height:5px;border-left:2px solid #08121a;
+  border-bottom:2px solid #08121a;transform:rotate(-45deg) translate(0,-1px);opacity:0}
+.check input:checked + .box::after{opacity:1}
+.check.dis{opacity:.4;pointer-events:none}
+.subnote{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5}
+.ctxkey{display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--amber);
+  margin-right:5px;vertical-align:-1px}
+
+.seg{display:flex;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;background:none;border:0;color:var(--muted);font-size:12.5px;font-weight:600;
+  padding:8px 4px;border-radius:8px;cursor:pointer;transition:all .15s}
+.seg button.on{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;
+  box-shadow:0 2px 10px rgba(37,99,235,.4)}
+.seg button .zap{font-size:11px}
+@property --spin{syntax:"<angle>";initial-value:0deg;inherits:false}
+.seg button.predicting{position:relative}
+.seg button.predicting::after{content:"";position:absolute;inset:-4px;border-radius:12px;
+  padding:2px;pointer-events:none;
+  background:conic-gradient(from var(--spin),transparent 0 10%,var(--accent) 22%,
+    #bae6fd 26%,var(--accent) 30%,transparent 42% 100%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  animation:spinring 1.1s linear infinite}
+@keyframes spinring{to{--spin:360deg}}
+
+.bigbtn{width:100%;margin-top:2px;background:linear-gradient(135deg,#1d4ed8,#0ea5e9);
+  color:#fff;border:0;border-radius:10px;padding:11px;font-size:13.5px;font-weight:700;
+  cursor:pointer;letter-spacing:.01em;box-shadow:0 4px 16px rgba(14,165,233,.35);
+  transition:transform .1s, box-shadow .2s}
+.bigbtn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(14,165,233,.5)}
+.bigbtn:disabled{opacity:.45;cursor:default;transform:none;box-shadow:none}
+.pulse{animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 4px 16px rgba(14,165,233,.35)}50%{box-shadow:0 4px 26px rgba(14,165,233,.75)}}
+
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.stat{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 10px}
+.stat .k{font-size:10px;color:var(--faint);letter-spacing:.05em;margin-bottom:3px}
+.stat .v{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+.stat .v small{font-size:10px;color:var(--muted);font-weight:400}
+.stat .v.fast{color:var(--good)}
+
+.cmp{margin-top:10px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;
+  padding:8px 10px;font-size:11.5px}
+.cmp .row{display:flex;justify-content:space-between;padding:3px 0;color:var(--muted)}
+.cmp .row.on{color:var(--ink);font-weight:600}
+.cmp .row b{font-variant-numeric:tabular-nums;font-weight:600}
+.cmp .cap{font-size:10px;color:var(--faint);margin-bottom:4px;letter-spacing:.05em}
+
+.tips{margin-top:auto}
+.tips ul{list-style:none}
+.tips li{font-size:10.5px;color:var(--muted);padding:3px 0 3px 13px;
+  position:relative;line-height:1.5}
+.tips li::before{content:"";position:absolute;left:1px;top:9px;width:4px;height:4px;
+  border-radius:50%;background:var(--accent);opacity:.55}
+.copyright{padding:8px 20px 12px;font-size:9.5px;color:var(--faint);
+  letter-spacing:.03em;opacity:.75}
+
+/* ---------------- stage ---------------- */
+main{flex:1;position:relative}
+canvas{display:block;width:100%;height:100%}
+.hud{position:absolute;top:16px;right:18px;display:flex;gap:8px;align-items:center}
+.chip{background:rgba(16,22,30,.85);border:1px solid var(--line);backdrop-filter:blur(6px);
+  border-radius:20px;padding:6px 14px;font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 8px var(--good)}
+.dot.busy{background:var(--amber);box-shadow:0 0 8px var(--amber);animation:blink .7s infinite alternate}
+@keyframes blink{to{opacity:.35}}
+.venote{position:absolute;bottom:14px;right:18px;font-size:10.5px;color:var(--faint)}
+.hint{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);text-align:center;
+  color:var(--muted);font-size:14px;pointer-events:none;transition:opacity .4s}
+.hint .big{font-size:38px;margin-bottom:10px;opacity:.7}
+
+/* in-view controls (top-left) */
+.switches{position:absolute;top:16px;left:16px;display:flex;flex-direction:column;gap:8px;z-index:4;
+  align-items:flex-start}
+.sw{display:flex;align-items:center;gap:9px;background:rgba(16,22,30,.85);
+  border:1px solid var(--line);backdrop-filter:blur(6px);border-radius:20px;
+  padding:6px 12px 6px 8px;font-size:12px;color:var(--muted);cursor:pointer;user-select:none}
+.sw .knob{width:26px;height:15px;border-radius:8px;background:var(--panel2);
+  border:1px solid var(--line);position:relative;flex:none;transition:background .15s}
+.sw .knob::after{content:"";position:absolute;top:1.5px;left:2px;width:10px;height:10px;
+  border-radius:50%;background:var(--faint);transition:all .15s}
+.sw.on{color:var(--ink)}
+.sw.on .knob{background:rgba(56,189,248,.35);border-color:var(--accent)}
+.sw.on .knob::after{left:12px;background:var(--accent);box-shadow:0 0 6px var(--accent)}
+.sw.dis{opacity:.4;pointer-events:none}
+.tools{display:flex;align-items:center;gap:8px;background:rgba(16,22,30,.85);
+  border:1px solid var(--line);backdrop-filter:blur(6px);border-radius:20px;
+  padding:6px 12px;font-size:11px;color:var(--muted)}
+.tools input[type=range]{width:80px;accent-color:var(--accent)}
+.tools b{color:var(--ink);font-variant-numeric:tabular-nums;font-size:10.5px}
+.tools button{background:none;border:1px solid var(--line);color:var(--muted);
+  font-size:10.5px;padding:3px 10px;border-radius:14px;cursor:pointer}
+.tools button.on{color:var(--ink);border-color:var(--accent)}
+.sec-hint{background:rgba(16,22,30,.85);border:1px solid rgba(56,189,248,.4);
+  border-radius:10px;padding:6px 11px;font-size:11px;color:var(--accent);max-width:240px;
+  display:none;line-height:1.45}
+
+/* interactive colorbar */
+.cbar{position:absolute;right:16px;top:50%;transform:translateY(-50%);z-index:4;
+  background:rgba(16,22,30,.82);border:1px solid var(--line);
+  border-radius:12px;padding:10px;backdrop-filter:blur(6px);width:104px}
+.o-title{font-size:10px;color:var(--muted);letter-spacing:.08em;text-align:center;
+  margin-bottom:8px;white-space:nowrap}
+.o-title small{font-size:8.5px;color:var(--faint)}
+.cbar-body{position:relative;height:min(46vh,400px);width:100%;cursor:crosshair}
+.cbar-grad{position:absolute;left:4px;top:0;bottom:0;width:14px;border-radius:7px;
+  background:linear-gradient(to bottom,#440154,#472d7b,#3b528b,#2c728e,#21918c,#28ae80,#5ec962,#addc30,#fde725)}
+.ctick{position:absolute;left:23px;font-size:9.5px;color:var(--muted);
+  transform:translateY(-50%);font-variant-numeric:tabular-nums;pointer-events:none}
+.cmark{position:absolute;left:0;width:22px;height:2px;background:#fff;opacity:.85;
+  pointer-events:none;display:none;box-shadow:0 0 5px rgba(255,255,255,.7)}
+.cmark span{position:absolute;left:26px;top:-7px;font-size:10px;color:var(--ink);
+  background:rgba(13,18,25,.9);border:1px solid var(--line);border-radius:5px;
+  padding:0 5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cpin{position:absolute;left:0;width:22px;height:2.5px;background:var(--amber);
+  pointer-events:none;box-shadow:0 0 6px rgba(251,191,36,.8)}
+.cpin span{position:absolute;left:26px;top:-7px;font-size:10px;color:#0b0f14;
+  background:var(--amber);border-radius:5px;padding:0 5px;font-weight:700;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.cbar-cap{margin-top:8px;font-size:9px;color:var(--faint);line-height:1.5}
+
+/* hover tooltip */
+#tip{position:fixed;pointer-events:none;z-index:6;display:none;background:rgba(13,18,25,.96);
+  border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:11.5px;min-width:186px;
+  box-shadow:0 8px 30px rgba(0,0,0,.5)}
+#tip .t-h{font-weight:700;font-size:12px;margin-bottom:5px;display:flex;align-items:center;gap:7px}
+#tip .t-r{display:flex;justify-content:space-between;gap:16px;color:var(--muted);padding:1.5px 0}
+#tip .t-r b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+#tip .chip2{width:9px;height:9px;border-radius:2px;display:inline-block;flex:none}
+#tip .badge{margin-top:6px;font-size:10px;color:#0b0f14;background:var(--amber);
+  border-radius:6px;padding:2px 7px;display:inline-block;font-weight:700}
+</style>
+</head>
+<body>
+<div id="app">
+<aside>
+  <div class="brand">
+    <div class="logo"><div class="mark"></div><h1>Terr<span>AI</span></h1></div>
+    <div class="prod"><h2>Su Field Explorer</h2><span class="demo-tag">DEMO</span></div>
+    <p data-i18n="subtitle"></p>
+    <div class="langbar">
+      <button data-lang="en">EN</button><button data-lang="ja">日本語</button><button data-lang="zh">中文</button>
+    </div>
+  </div>
+
+  <section>
+    <h2 data-i18n="source_label"></h2>
+    <select id="source"><option data-i18n="source_option"></option></select>
+  </section>
+
+  <section>
+    <h2 data-i18n="layers_label"></h2>
+    <label class="check"><input type="checkbox" id="ly-meas" checked><span class="box"></span>
+      <span data-i18n="layer_measured"></span></label>
+    <label class="check dis" id="ly-pred-wrap"><input type="checkbox" id="ly-pred"><span class="box"></span>
+      <span data-i18n="layer_pred"></span></label>
+    <div class="subnote"><span class="ctxkey"></span><span data-i18n="legend_ctx"></span></div>
+  </section>
+
+  <section>
+    <h2 data-i18n="engine_label"></h2>
+    <div class="seg">
+      <button id="eng-ours" class="on"><span data-i18n="engine_ours"></span> <span class="zap">⚡</span></button>
+      <button id="eng-other"><span data-i18n="engine_other"></span></button>
+    </div>
+    <div class="subnote" data-i18n="engine_hint"></div>
+  </section>
+
+  <section>
+    <h2 data-i18n="survey_label"></h2>
+    <button class="bigbtn pulse" id="btn-survey"><span data-i18n="btn_survey"></span></button>
+    <div class="stats">
+      <div class="stat"><div class="k" data-i18n="stat_holes"></div><div class="v" id="st-holes">—</div></div>
+      <div class="stat"><div class="k" data-i18n="stat_frac"></div><div class="v" id="st-frac">—</div></div>
+      <div class="stat"><div class="k" data-i18n="stat_rmse"></div><div class="v" id="st-rmse">—</div></div>
+      <div class="stat"><div class="k" data-i18n="stat_time"></div><div class="v fast" id="st-time">—</div></div>
+    </div>
+    <div class="cmp" id="cmp" style="display:none">
+      <div class="cap" data-i18n="cmp_cap"></div>
+      <div class="row" id="cmp-ours"><span data-i18n="engine_ours"></span><b id="cmp-ours-v"></b></div>
+      <div class="row" id="cmp-other"><span data-i18n="engine_other"></span><b id="cmp-other-v"></b></div>
+    </div>
+  </section>
+
+  <section class="tips">
+    <h2 data-i18n="tips_label"></h2>
+    <ul>
+      <li data-i18n="tips_1"></li>
+      <li data-i18n="tips_2"></li>
+      <li data-i18n="tips_3"></li>
+      <li data-i18n="tips_4"></li>
+      <li data-i18n="tips_5"></li>
+      <li data-i18n="tips_6"></li>
+    </ul>
+  </section>
+  <div class="copyright">© 2026 TerrAI. All rights reserved. Demo build <b id="buildtag">v4.5</b> — not for redistribution.</div>
+</aside>
+
+<main>
+  <canvas id="gl"></canvas>
+  <div class="drawer" id="drawer" title="Toggle panel">‹</div>
+  <div class="hud"><div class="chip"><span class="dot" id="dot"></span><span id="status"></span></div></div>
+  <div class="switches">
+    <div class="sw on" id="sw-ground"><span class="knob"></span><span data-i18n="sw_ground"></span></div>
+    <div class="sw dis" id="sw-section"><span class="knob"></span><span data-i18n="sw_section"></span></div>
+    <div class="tools">
+      <span data-i18n="point_size"></span>
+      <input type="range" id="spsize" min="0.4" max="2.2" step="0.2" value="1"><b id="spsize-val">×1.0</b>
+    </div>
+    <div class="tools">
+      <button id="btn-rotate" class="on" data-i18n="autorotate"></button>
+      <button id="btn-reset" data-i18n="reset_view"></button>
+    </div>
+    <div class="sec-hint" id="sec-hint"></div>
+  </div>
+  <div class="hint" id="hint"><div class="big">⛏</div><div data-i18n="status_idle_hint"></div></div>
+  <div class="venote" data-i18n="ve_note"></div>
+  <div class="cbar">
+    <div class="o-title">Su <small>kN/m²</small></div>
+    <div class="cbar-body" id="cbar-body"><div class="cbar-grad"></div>
+      <div class="cmark" id="cmark"><span></span></div></div>
+    <div class="cbar-cap" data-i18n="cbar_hint"></div>
+  </div>
+  <div id="tip"></div>
+</main>
+</div>
+
+<script>/*__THREE__*/</script>
+<script id="data">const DATA=/*__DATA__*/;</script>
+<script>
+"use strict";
+/* =================== i18n =================== */
+const I18N = {
+en:{subtitle:"AI-powered sparse-to-dense ground modeling. Predict the full 3D undrained shear strength (Su) field from a handful of boreholes.",
+  source_label:"Data source", source_option:"Haneda — Tokyo Bay coastal site",
+  layers_label:"Display layers", layer_measured:"Measured boreholes", layer_pred:"AI predicted field",
+  legend_ctx:"Amber columns = boreholes given to the model (the sparse survey)",
+  engine_label:"Inference engine", engine_ours:"Ours", engine_other:"Other",
+  engine_hint:"Same task, same survey — switch engines to compare response time.",
+  survey_label:"Sparse survey", btn_survey:"🎲 Run a random sparse survey",
+  stat_holes:"BOREHOLES USED", stat_frac:"OF FULL CAMPAIGN", stat_rmse:"BLIND-TEST ERROR", stat_time:"INFERENCE TIME",
+  cmp_cap:"BLIND-TEST ERROR · THIS SURVEY (kN/m²)",
+  point_size:"Points", autorotate:"Auto-rotate", reset_view:"Reset view",
+  status_ready:"Ready", status_predicting:"Predicting…", status_live:"Live field",
+  status_idle_hint:"Run a sparse survey to generate the 3D strength field",
+  ve_note:"140,000 prediction points · vertical ×10 · elevation (m, AP)",
+  sw_ground:"Ground surface", sw_section:"Section mode",
+  sec_pick:"Pick two points or two boreholes to cut a section",
+  sec_pick2:"Pick the 2nd point (or borehole)",
+  sec_done:"Section ready — pick a new 1st point to re-cut · empty click or Esc clears",
+  sec_keys:"Space (tap): face the section ⇄ free view · wheel/↑↓ zoom · WASD / middle-drag / Space+drag pan",
+  cbar_hint:"Hover: preview iso-surface. Double-click: pin exact level (2 pins = stacked range). Esc: clear. Click an iso-surface in the view to isolate it.",
+  tt_bore:"Borehole", tt_depth:"Depth", tt_elev:"Elevation", tt_su:"Su (measured)",
+  tt_soil:"Soil", tt_wn:"Water content", tt_e:"Void ratio", tt_ctx:"IN CURRENT SURVEY",
+  tt_pred:"Su (predicted)",
+  tips_label:"Tips",
+  tips_1:"Drag: rotate · wheel / ↑↓: zoom · right / middle / Space+drag / WASD: pan",
+  tips_2:"Hover a borehole point for its full record",
+  tips_3:"Colorbar — hover: preview a level · double-click: pin (2 pins = range) · Esc: clear",
+  tips_4:"Click an iso-surface to isolate it; click empty space to restore",
+  tips_5:"Section mode — click any 2 points or 2 boreholes to cut; hover the section for values",
+  tips_6:"Space (tap): face the section ⇄ free 3D view"},
+ja:{subtitle:"少数のボーリング孔から地盤全体の 3D 非排水せん断強度（Su）場を AI が推定します。",
+  source_label:"データソース", source_option:"羽田 — 東京湾岸サイト",
+  layers_label:"表示レイヤ", layer_measured:"実測ボーリング", layer_pred:"AI 予測フィールド",
+  legend_ctx:"琥珀色の柱＝モデルに与えた調査孔（スパース調査）",
+  engine_label:"推論エンジン", engine_ours:"当社", engine_other:"他社",
+  engine_hint:"同じ調査・同じタスクでエンジンを切替え、応答速度を比較できます。",
+  survey_label:"スパース調査", btn_survey:"🎲 ランダム調査を実行",
+  stat_holes:"使用ボーリング数", stat_frac:"全調査比", stat_rmse:"ブラインド誤差", stat_time:"推論時間",
+  cmp_cap:"ブラインド誤差・本調査 (kN/m²)",
+  point_size:"点サイズ", autorotate:"自動回転", reset_view:"視点リセット",
+  status_ready:"待機中", status_predicting:"推論中…", status_live:"フィールド表示中",
+  status_idle_hint:"調査を実行すると 3D 強度場が生成されます",
+  ve_note:"予測点 140,000 · 鉛直 ×10 · 標高 (m, AP)",
+  sw_ground:"地表面", sw_section:"断面モード",
+  sec_pick:"2 点（またはボーリング 2 本）を選んで断面を切断",
+  sec_pick2:"2 点目（またはボーリング）を選択",
+  sec_done:"断面を表示中 — 新しい 1 点目で切り直し · 空白クリックまたは Esc で解除",
+  sec_keys:"スペース（タップ）: 断面正対 ⇄ 自由視点 · ホイール/↑↓ ズーム · WASD・中ボタン・スペース+ドラッグでパン",
+  cbar_hint:"ホバー: 等値面プレビュー。ダブルクリック: レベル固定（2 点で範囲を積層）。Esc: 解除。ビュー内の等値面クリックで単独表示。",
+  tt_bore:"ボーリング", tt_depth:"深度", tt_elev:"標高", tt_su:"Su（実測）",
+  tt_soil:"土質", tt_wn:"含水比", tt_e:"間隙比", tt_ctx:"本調査で使用中",
+  tt_pred:"Su（予測）",
+  tips_label:"操作ガイド",
+  tips_1:"ドラッグ: 回転 · ホイール/↑↓: ズーム · 右/中ボタン・スペース+ドラッグ・WASD: 移動",
+  tips_2:"ボーリング点にホバーで詳細を表示",
+  tips_3:"カラーバー — ホバー: レベルをプレビュー · ダブルクリック: 固定（2 点で範囲）· Esc: 解除",
+  tips_4:"等値面クリックで単独表示、空白クリックで解除",
+  tips_5:"断面モード — 任意の 2 点（またはボーリング 2 本）をクリックして切断、断面にホバーで数値",
+  tips_6:"スペース（タップ）: 断面正対 ⇄ 自由視点"},
+zh:{subtitle:"AI 稀疏勘察建模：仅凭少量钻孔，预测整个场地的 3D 不排水抗剪强度（Su）场。",
+  source_label:"数据源", source_option:"羽田 — 东京湾沿岸场地",
+  layers_label:"显示图层", layer_measured:"实测钻孔数据", layer_pred:"AI 预测场",
+  legend_ctx:"琥珀色立柱 = 提供给模型的勘察孔（稀疏勘察）",
+  engine_label:"推理引擎", engine_ours:"我们的", engine_other:"其他",
+  engine_hint:"同一勘察、同一任务——切换引擎对比响应速度。",
+  survey_label:"稀疏勘察", btn_survey:"🎲 随机执行一次稀疏勘察",
+  stat_holes:"使用钻孔数", stat_frac:"占全部勘察", stat_rmse:"盲测误差", stat_time:"推理耗时",
+  cmp_cap:"盲测误差 · 本次勘察 (kN/m²)",
+  point_size:"点大小", autorotate:"自动旋转", reset_view:"重置视角",
+  status_ready:"就绪", status_predicting:"推理中…", status_live:"实时场",
+  status_idle_hint:"执行一次稀疏勘察，生成 3D 强度场",
+  ve_note:"预测点 140,000 · 垂直 ×10 · 标高 (m, AP)",
+  sw_ground:"地表面", sw_section:"剖面模式",
+  sec_pick:"点击任意两点（或两个钻孔）切割剖面",
+  sec_pick2:"请选择第 2 个点（或钻孔）",
+  sec_done:"剖面已生成——再点一个点可重新切割 · 点空白处或按 Esc 清除",
+  sec_keys:"空格（轻点）：正视剖面 ⇄ 自由视角 · 滚轮/↑↓ 缩放 · WASD、中键或按住空格+左键拖动平移",
+  cbar_hint:"滑动：预览等值面。双击：固定精确等级（两次双击=区间堆叠）。Esc：清除。点击视图中的等值面可单独观察。",
+  tt_bore:"钻孔", tt_depth:"深度", tt_elev:"标高", tt_su:"Su（实测）",
+  tt_soil:"土类", tt_wn:"含水率", tt_e:"孔隙比", tt_ctx:"本次勘察使用中",
+  tt_pred:"Su（预测）",
+  tips_label:"操作提示",
+  tips_1:"拖拽：旋转 · 滚轮/↑↓：缩放 · 右键/中键/按住空格+拖拽/WASD：平移",
+  tips_2:"悬停钻孔点查看完整记录",
+  tips_3:"色标条——滑动：预览等值面 · 双击：固定（两点=区间）· Esc：清除",
+  tips_4:"点击等值面单独观察，点空白处恢复",
+  tips_5:"剖面模式——点击任意两点或两个钻孔切割剖面，悬停剖面读取数值",
+  tips_6:"空格（轻点）：正视剖面 ⇄ 自由 3D 视角"}
+};
+let LANG="en";
+function t(k){ return I18N[LANG][k]; }
+function applyLang(){
+  document.querySelectorAll("[data-i18n]").forEach(el=>{ el.textContent=t(el.dataset.i18n); });
+  document.querySelectorAll(".langbar button").forEach(b=>b.classList.toggle("on",b.dataset.lang===LANG));
+  refreshStats(); setStatus(state.status); secHint();
+}
+
+/* =================== data =================== */
+const [SU_LO,SU_HI]=DATA.su_range;
+const G=DATA.grid, ND=G.depths.length, NX=G.nx, NY=G.ny, NPTS=ND*NX*NY;
+const GE=DATA.ground.ge;
+const LADDER25=[25,50,75,100,125,150].filter(v=>v>SU_LO+3&&v<SU_HI-3);
+const LADDER5=[];                        /* fine 5 kN/m² ladder for the colorbar */
+for(let v=Math.ceil((SU_LO+3)/5)*5;v<SU_HI-3;v+=5)LADDER5.push(v);
+const MINPICK=.45;                       /* cloud points closer than this are unpickable */
+function b64u8(s){ const bin=atob(s),a=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i); return a; }
+
+const VSTOPS=[[68,1,84],[71,45,123],[59,82,139],[44,114,142],[33,145,140],[40,174,128],[94,201,98],[173,220,48],[253,231,37]];
+const LUT=new Float32Array(256*3);
+for(let i=0;i<256;i++){ const p=i/255*(VSTOPS.length-1),j=Math.min(Math.floor(p),VSTOPS.length-2),f=p-j;
+  for(let c=0;c<3;c++)LUT[i*3+c]=(VSTOPS[j][c]*(1-f)+VSTOPS[j+1][c]*f)/255; }
+function suQ(su){ return Math.max(0,Math.min(255,Math.round((su-SU_LO)/(SU_HI-SU_LO)*255))); }
+function suColor(su){ const q=suQ(su); return [LUT[q*3],LUT[q*3+1],LUT[q*3+2]]; }
+function cssColor(su){ const c=suColor(su); return "rgb("+c.map(v=>Math.round(v*255))+")"; }
+
+/* =================== three.js scene =================== */
+const canvas=document.getElementById("gl");
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x0b0f14);
+scene.fog=new THREE.Fog(0x0b0f14,3.2,8.0);
+const camera=new THREE.PerspectiveCamera(46,2,.05,60);
+
+const cx=(G.x0+G.x1)/2, cy=(G.y0+G.y1)/2;
+const span=Math.max(G.x1-G.x0,G.y1-G.y0), S=2/span, VE=10;
+let geMin=Infinity,geMax=-Infinity;
+for(const v of GE){ if(v<geMin)geMin=v; if(v>geMax)geMax=v; }
+const EL_TOP=geMax+3, EL_BOT=geMin-G.depths[ND-1]-4;
+const wx=v=>(v-cx)*S, wz=v=>(v-cy)*S, wyE=e=>(e-EL_TOP)*S*VE;
+const YBOT=wyE(EL_BOT);
+function geAt(ix,iy){ return GE[ix*NY+iy]; }
+function geBilin(gx,gy){
+  const ix=Math.max(0,Math.min(NX-2,Math.floor(gx))),iy=Math.max(0,Math.min(NY-2,Math.floor(gy)));
+  const tx=Math.max(0,Math.min(1,gx-ix)),ty=Math.max(0,Math.min(1,gy-iy));
+  return geAt(ix,iy)*(1-tx)*(1-ty)+geAt(ix+1,iy)*tx*(1-ty)
+        +geAt(ix,iy+1)*(1-tx)*ty+geAt(ix+1,iy+1)*tx*ty;
+}
+const gxOf=x=>(x-G.x0)/(G.x1-G.x0)*(NX-1), gyOf=y=>(y-G.y0)/(G.y1-G.y0)*(NY-1);
+const xOf=gx=>G.x0+(G.x1-G.x0)*gx/(NX-1), yOf=gy=>G.y0+(G.y1-G.y0)*gy/(NY-1);
+
+scene.add(new THREE.AmbientLight(0xffffff,.7));
+const dl=new THREE.DirectionalLight(0xbfdcff,.95); dl.position.set(2,3,1.5); scene.add(dl);
+
+function makeLabel(text,bright,big){
+  const cv=document.createElement("canvas"); cv.width=512; cv.height=96;
+  const c=cv.getContext("2d"); c.font="600 44px system-ui,sans-serif";
+  c.fillStyle=bright?"#dbe6f5":"#7d8896"; c.textAlign="center"; c.textBaseline="middle";
+  c.fillText(text,256,48);
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),
+    transparent:true,opacity:.9,depthWrite:false,sizeAttenuation:false}));
+  sp.scale.set(big? .15:.11,big? .028:.021,1); return sp;
+}
+{ const H=-YBOT;
+  const box=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(2.04,H,2.04)),
+    new THREE.LineBasicMaterial({color:0x33404f,transparent:true,opacity:.9}));
+  box.position.y=YBOT/2; scene.add(box);
+  const gr=new THREE.GridHelper(2.04,10,0x202b38,0x161e28); gr.position.y=YBOT-.001; scene.add(gr);
+  const ringMat=new THREE.LineBasicMaterial({color:0x33404f,transparent:true,opacity:.22});
+  for(let e=Math.floor(EL_TOP/10)*10;e>EL_BOT;e-=10){
+    const y=wyE(e),P=1.02;
+    if(e%20===0||e===0){
+      const geo=new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-P,y,-P),new THREE.Vector3(P,y,-P),
+        new THREE.Vector3(P,y,P),new THREE.Vector3(-P,y,P)]);
+      scene.add(new THREE.LineLoop(geo,ringMat));
+      for(const [sx,sz] of [[1,1],[-1,-1]]){
+        const lb=makeLabel(e+" m"); lb.position.set(sx*1.16,y,sz*1.16); scene.add(lb); }
+    }
+  }
+  /* vertical axis title, written on the height axis itself */
+  for(const [sx,sz] of [[1,1],[-1,-1]]){
+    const ax=makeLabel("Elev. (m AP)",true,true);
+    ax.position.set(sx*1.16,wyE(EL_TOP)+.045,sz*1.16); scene.add(ax); }
+}
+
+/* node lattice draped on terrain */
+const nodePos=new Float32Array(NPTS*3);
+{ let n=0;
+  for(let k=0;k<ND;k++)for(let ix=0;ix<NX;ix++)for(let iy=0;iy<NY;iy++){
+    nodePos[n*3]=wx(xOf(ix));
+    nodePos[n*3+1]=wyE(geAt(ix,iy)-G.depths[k]);
+    nodePos[n*3+2]=wz(yOf(iy)); n++; } }
+
+/* ground lid */
+let groundMesh;
+{ const pos=new Float32Array(NX*NY*3); let n=0;
+  for(let ix=0;ix<NX;ix++)for(let iy=0;iy<NY;iy++){
+    pos[n*3]=wx(xOf(ix)); pos[n*3+1]=wyE(geAt(ix,iy)); pos[n*3+2]=wz(yOf(iy)); n++; }
+  const idx=new Uint32Array((NX-1)*(NY-1)*6); let k=0;
+  for(let ix=0;ix<NX-1;ix++)for(let iy=0;iy<NY-1;iy++){
+    const a=ix*NY+iy,b=a+1,c=a+NY,d=c+1;
+    idx[k++]=a;idx[k++]=c;idx[k++]=b; idx[k++]=b;idx[k++]=c;idx[k++]=d; }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute("position",new THREE.BufferAttribute(pos,3));
+  geo.setIndex(new THREE.BufferAttribute(idx,1));
+  geo.computeVertexNormals();
+  groundMesh=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({color:0x9db1cc,
+    transparent:true,opacity:.20,side:THREE.DoubleSide,depthWrite:false}));
+  groundMesh.renderOrder=1; scene.add(groundMesh); }
+
+/* measured specimens */
+const SP=DATA.specimens, NSP=SP.x.length;
+const spMat=new THREE.MeshLambertMaterial({transparent:true});
+const spheres=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,1),spMat,NSP);
+spheres.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(NSP*3),3);
+scene.add(spheres);
+const M=new THREE.Matrix4();
+const spWY=i=>wyE((SP.ge?SP.ge[i]:0)-SP.depth[i]);
+function paintSpecimens(ctxSet,showCtx){
+  const sc=state.spScale;
+  for(let i=0;i<NSP;i++){
+    const isCtx=showCtx&&ctxSet.has(SP.bore[i]);
+    const r=(isCtx? .0095:.005)*sc;
+    M.makeScale(r,r,r); M.setPosition(wx(SP.x[i]),spWY(i),wz(SP.y[i]));
+    spheres.setMatrixAt(i,M);
+    let c=suColor(SP.su[i]); if(isCtx)c=[1,.75,.22];
+    spheres.instanceColor.setXYZ(i,c[0],c[1],c[2]);
+  }
+  spheres.instanceMatrix.needsUpdate=true; spheres.instanceColor.needsUpdate=true;
+}
+
+/* context borehole columns */
+let colGroup=new THREE.Group(); scene.add(colGroup);
+let colMat=null;
+function paintColumns(ctxSet){
+  scene.remove(colGroup); colGroup=new THREE.Group();
+  const seen=new Map();
+  for(let i=0;i<NSP;i++){ const b=SP.bore[i];
+    if(!ctxSet.has(b)) continue;
+    const e=seen.get(b)||{x:SP.x[i],y:SP.y[i],d:0,ge:SP.ge?SP.ge[i]:0};
+    e.d=Math.max(e.d,SP.depth[i]); seen.set(b,e); }
+  colMat=new THREE.MeshBasicMaterial({color:0xfbbf24,transparent:true,opacity:.30,depthWrite:false});
+  seen.forEach(e=>{ const top=wyE(e.ge),bot=wyE(e.ge-e.d-2),h=top-bot;
+    const cyl=new THREE.Mesh(new THREE.CylinderGeometry(.006,.006,h,10),colMat);
+    cyl.position.set(wx(e.x),(top+bot)/2,wz(e.y)); colGroup.add(cyl); });
+  scene.add(colGroup);
+}
+
+/* =================== iso-surfaces (marching tetrahedra) =================== */
+const TET=[[0,5,1,6],[0,1,2,6],[0,2,3,6],[0,3,7,6],[0,7,4,6],[0,4,5,6]];
+function buildIso(vol,qL){
+  const tris=[];
+  const co=new Array(8);
+  for(let k=0;k<ND-1;k++)for(let ix=0;ix<NX-1;ix++){
+    const base=(k*NX+ix)*NY, baseX=base+NY, baseK=base+NX*NY, baseXK=baseK+NY;
+    for(let iy=0;iy<NY-1;iy++){
+      co[0]=base+iy; co[1]=baseX+iy; co[2]=baseX+iy+1; co[3]=base+iy+1;
+      co[4]=baseK+iy; co[5]=baseXK+iy; co[6]=baseXK+iy+1; co[7]=baseK+iy+1;
+      let any=false,all=true;
+      for(let c=0;c<8;c++){ const inC=vol[co[c]]>=qL; if(inC)any=true; else all=false; }
+      if(!any||all) continue;
+      for(let ti=0;ti<6;ti++){
+        const tv=TET[ti];
+        const n0=co[tv[0]],n1=co[tv[1]],n2=co[tv[2]],n3=co[tv[3]];
+        const v0=vol[n0],v1=vol[n1],v2=vol[n2],v3=vol[n3];
+        let bits=0; if(v0>=qL)bits|=1; if(v1>=qL)bits|=2; if(v2>=qL)bits|=4; if(v3>=qL)bits|=8;
+        if(bits===0||bits===15) continue;
+        const ns=[n0,n1,n2,n3], vs=[v0,v1,v2,v3];
+        const inb=[],out=[];
+        for(let c=0;c<4;c++)(bits>>c&1?inb:out).push(c);
+        const P=(a,b)=>{ const va=vs[a],vb=vs[b],tt=(qL-va)/(vb-va||1e-9);
+          const ia=ns[a]*3, ib=ns[b]*3;
+          return [nodePos[ia]+(nodePos[ib]-nodePos[ia])*tt,
+                  nodePos[ia+1]+(nodePos[ib+1]-nodePos[ia+1])*tt,
+                  nodePos[ia+2]+(nodePos[ib+2]-nodePos[ia+2])*tt]; };
+        if(inb.length===1){ const a=inb[0];
+          tris.push(P(a,out[0]),P(a,out[1]),P(a,out[2])); }
+        else if(inb.length===3){ const a=out[0];
+          tris.push(P(inb[0],a),P(inb[1],a),P(inb[2],a)); }
+        else{ const [a,b]=inb,[c,d]=out;
+          const pac=P(a,c),pad=P(a,d),pbc=P(b,c),pbd=P(b,d);
+          tris.push(pac,pad,pbc, pbc,pad,pbd); }
+      }
+    } }
+  const arr=new Float32Array(tris.length*3);
+  for(let i=0;i<tris.length;i++){ arr[i*3]=tris[i][0]; arr[i*3+1]=tris[i][1]; arr[i*3+2]=tris[i][2]; }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute("position",new THREE.BufferAttribute(arr,3));
+  geo.computeVertexNormals();
+  return geo;
+}
+const isoGeoCache={};                     /* volKey -> {levelKey -> geometry} */
+function getIsoGeo(volKey,vol,level){
+  const store=isoGeoCache[volKey]=isoGeoCache[volKey]||{};
+  const key=level.toFixed(1);
+  if(!store[key])store[key]=buildIso(vol,suQ(level));
+  return store[key];
+}
+let isoGroup=new THREE.Group(); scene.add(isoGroup);
+function renderIso(){
+  scene.remove(isoGroup); isoGroup=new THREE.Group(); scene.add(isoGroup);
+  if(!state.vol)return;
+  let show=[];
+  if(state.hoverLevel!=null) show=[{v:state.hoverLevel,op:.9}];
+  else if(state.pins.length===1) show=[{v:state.pins[0],op:.9}];
+  else if(state.pins.length===2){
+    const [a,b]=[...state.pins].sort((x,y)=>x-y);
+    show=[{v:a,op:.9},{v:b,op:.9}];
+    let mids=LADDER5.filter(v=>v>a+1&&v<b-1);
+    if(mids.length>9){ const stride=Math.ceil(mids.length/9);
+      mids=mids.filter((_,i)=>i%stride===0); }
+    mids.forEach(v=>show.push({v:v,op:.55}));
+  } else show=LADDER25.map(v=>({v:v,op:.45}));
+  /* click-to-isolate: focused level stays strong, the rest go ghost */
+  if(state.isoFocus!=null&&!show.some(s=>Math.abs(s.v-state.isoFocus)<.01))
+    state.isoFocus=null;
+  const foc=state.isoFocus;
+  show.sort((p,q)=>p.v-q.v).forEach((s,si)=>{
+    const op=foc==null?s.op:(Math.abs(s.v-foc)<.01?Math.max(.92,s.op):.06);
+    const mesh=new THREE.Mesh(getIsoGeo(state.volKey,state.vol,s.v),
+      new THREE.MeshLambertMaterial({color:new THREE.Color(...suColor(s.v)),
+        transparent:true,opacity:op,side:THREE.DoubleSide,depthWrite:false}));
+    mesh.renderOrder=2+si; mesh.userData.level=s.v; isoGroup.add(mesh);
+  });
+  if(!state.section){
+    spMat.opacity=foc==null?1:.15;
+    if(colMat)colMat.opacity=foc==null? .30:.08;
+  }
+  isoGroup.visible=state.showPred&&state.predicted&&!state.section;
+}
+
+/* =================== prediction point cloud (section mode) =================== */
+const cloudGeo=new THREE.BufferGeometry();
+cloudGeo.setAttribute("position",new THREE.BufferAttribute(nodePos,3));
+cloudGeo.setAttribute("color",new THREE.BufferAttribute(new Float32Array(NPTS*3),3));
+const cloudMat=new THREE.PointsMaterial({size:.0085,vertexColors:true,transparent:true,
+  opacity:.30,depthWrite:false,sizeAttenuation:true});
+const cloud=new THREE.Points(cloudGeo,cloudMat); cloud.visible=false; scene.add(cloud);
+function paintCloud(vol){
+  const col=cloudGeo.getAttribute("color");
+  for(let i=0;i<NPTS;i++){ const q=vol[i];
+    col.array[i*3]=LUT[q*3]; col.array[i*3+1]=LUT[q*3+1]; col.array[i*3+2]=LUT[q*3+2]; }
+  col.needsUpdate=true;
+}
+const hoverMark=new THREE.Mesh(new THREE.SphereGeometry(.011,12,12),
+  new THREE.MeshBasicMaterial({color:0xffffff}));
+hoverMark.visible=false; scene.add(hoverMark);
+const pickMarks=[0,1].map(()=>{ const m=new THREE.Mesh(new THREE.SphereGeometry(.013,12,12),
+  new THREE.MeshBasicMaterial({color:0x38bdf8})); m.visible=false; scene.add(m); return m; });
+
+/* =================== section =================== */
+let secGroup=new THREE.Group(); scene.add(secGroup);
+function clearSection(){ scene.remove(secGroup); secGroup=new THREE.Group(); scene.add(secGroup);
+  state.secMesh=null; state.secData=null; }
+function sampleVol(vol,gx,gy,k){
+  const ix=Math.max(0,Math.min(NX-2,Math.floor(gx))),iy=Math.max(0,Math.min(NY-2,Math.floor(gy)));
+  const tx=Math.max(0,Math.min(1,gx-ix)),ty=Math.max(0,Math.min(1,gy-iy));
+  const b=(k*NX+ix)*NY+iy;
+  return vol[b]*(1-tx)*(1-ty)+vol[b+NY]*tx*(1-ty)+vol[b+1]*(1-tx)*ty+vol[b+NY+1]*tx*ty;
+}
+function buildSection(A,B,vol){
+  clearSection();
+  const NS=160;
+  const pos=new Float32Array(NS*ND*3), col=new Float32Array(NS*ND*3), val=new Float32Array(NS*ND);
+  const xr=new Float32Array(NS), yr=new Float32Array(NS), ges=new Float32Array(NS);
+  let yMin=Infinity,yMax=-Infinity;
+  for(let j=0;j<NS;j++){
+    const f=j/(NS-1), x=A.x+(B.x-A.x)*f, y=A.y+(B.y-A.y)*f;
+    const gx=gxOf(x),gy=gyOf(y),ge=geBilin(gx,gy);
+    xr[j]=x; yr[j]=y; ges[j]=ge;
+    for(let k=0;k<ND;k++){
+      const n=j*ND+k, q=sampleVol(vol,gx,gy,k);
+      val[n]=q;
+      const py=wyE(ge-G.depths[k]);
+      if(py<yMin)yMin=py; if(py>yMax)yMax=py;
+      pos[n*3]=wx(x); pos[n*3+1]=py; pos[n*3+2]=wz(y);
+      const qi=Math.round(q);
+      col[n*3]=LUT[qi*3]; col[n*3+1]=LUT[qi*3+1]; col[n*3+2]=LUT[qi*3+2];
+    } }
+  const idx=new Uint32Array((NS-1)*(ND-1)*6); let k2=0;
+  for(let j=0;j<NS-1;j++)for(let k=0;k<ND-1;k++){
+    const a=j*ND+k,b=a+1,c=a+ND,d=c+1;
+    idx[k2++]=a;idx[k2++]=c;idx[k2++]=b; idx[k2++]=b;idx[k2++]=c;idx[k2++]=d; }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute("position",new THREE.BufferAttribute(pos,3));
+  geo.setAttribute("color",new THREE.BufferAttribute(col,3));
+  geo.setIndex(new THREE.BufferAttribute(idx,1));
+  const mesh=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({vertexColors:true,
+    side:THREE.DoubleSide,transparent:true,opacity:.98,depthWrite:true}));
+  mesh.renderOrder=8; secGroup.add(mesh);
+  state.secMesh=mesh;
+  state.secData={val:val,xr:xr,yr:yr,ges:ges,NS:NS};
+  /* frame */
+  const border=[];
+  for(let j=0;j<NS;j++)border.push(j*ND);
+  for(let k=1;k<ND;k++)border.push((NS-1)*ND+k);
+  for(let j=NS-2;j>=0;j--)border.push(j*ND+ND-1);
+  for(let k=ND-2;k>0;k--)border.push(k);
+  const bp=border.map(n=>new THREE.Vector3(pos[n*3],pos[n*3+1],pos[n*3+2]));
+  secGroup.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(bp),
+    new THREE.LineBasicMaterial({color:0x93a5c0,transparent:true,opacity:.7})));
+  /* contour lines: 25-step ladder, no value labels (hover shows values) */
+  const V=(j,k)=>val[j*ND+k];
+  const Pt=(j,k)=>[pos[(j*ND+k)*3],pos[(j*ND+k)*3+1],pos[(j*ND+k)*3+2]];
+  const lerp3=(p,q,f)=>[p[0]+(q[0]-p[0])*f,p[1]+(q[1]-p[1])*f,p[2]+(q[2]-p[2])*f];
+  for(const L of LADDER25){
+    const qL=suQ(L), segs=[];
+    for(let j=0;j<NS-1;j++)for(let k=0;k<ND-1;k++){
+      const v00=V(j,k),v10=V(j+1,k),v11=V(j+1,k+1),v01=V(j,k+1);
+      let code=0; if(v00>=qL)code|=1; if(v10>=qL)code|=2; if(v11>=qL)code|=4; if(v01>=qL)code|=8;
+      if(code===0||code===15) continue;
+      const e=[];
+      if((code&1)!==((code>>1)&1)) e.push(lerp3(Pt(j,k),Pt(j+1,k),(qL-v00)/(v10-v00||1e-9)));
+      if(((code>>1)&1)!==((code>>2)&1)) e.push(lerp3(Pt(j+1,k),Pt(j+1,k+1),(qL-v10)/(v11-v10||1e-9)));
+      if(((code>>3)&1)!==((code>>2)&1)) e.push(lerp3(Pt(j,k+1),Pt(j+1,k+1),(qL-v01)/(v11-v01||1e-9)));
+      if((code&1)!==((code>>3)&1)) e.push(lerp3(Pt(j,k),Pt(j,k+1),(qL-v00)/(v01-v00||1e-9)));
+      for(let s=0;s+1<e.length;s+=2) segs.push(e[s],e[s+1]);
+    }
+    if(!segs.length) continue;
+    const arr=new Float32Array(segs.length*3);
+    segs.forEach((p,i)=>{arr[i*3]=p[0];arr[i*3+1]=p[1];arr[i*3+2]=p[2];});
+    const lg=new THREE.BufferGeometry();
+    lg.setAttribute("position",new THREE.BufferAttribute(arr,3));
+    const line=new THREE.LineSegments(lg,new THREE.LineBasicMaterial({color:0x000000,
+      transparent:true,opacity:1}));
+    line.renderOrder=9; secGroup.add(line);
+  }
+  /* ground trace */
+  const tp=[];
+  for(let j=0;j<NS;j+=4){ const f=j/(NS-1),x=A.x+(B.x-A.x)*f,y=A.y+(B.y-A.y)*f;
+    tp.push(new THREE.Vector3(wx(x),wyE(geBilin(gxOf(x),gyOf(y)))+.004,wz(y))); }
+  secGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(tp),
+    new THREE.LineBasicMaterial({color:0x38bdf8,transparent:true,opacity:.9})));
+  /* face-on camera info */
+  const ax=wx(A.x),az=wz(A.y),bx=wx(B.x),bz=wz(B.y);
+  const dir=new THREE.Vector3(bx-ax,0,bz-az); const len=dir.length(); dir.normalize();
+  state.secGeom={center:new THREE.Vector3((ax+bx)/2,(yMin+yMax)/2,(az+bz)/2),
+    dir:dir,len:len,height:yMax-yMin};
+  if(state.secView)faceSection();
+}
+
+/* =================== camera controls =================== */
+const ctrl={theta:.85,phi:1.12,dist:3.2,target:new THREE.Vector3(0,YBOT*.45,0),auto:true};
+const HOME={theta:ctrl.theta,phi:ctrl.phi,dist:ctrl.dist,target:ctrl.target.clone()};
+function applyCamera(){
+  const sp=Math.sin(ctrl.phi),c=ctrl.target;
+  camera.position.set(c.x+ctrl.dist*sp*Math.cos(ctrl.theta),
+    c.y+ctrl.dist*Math.cos(ctrl.phi),c.z+ctrl.dist*sp*Math.sin(ctrl.theta));
+  camera.lookAt(c);
+}
+let drag=null,spaceHeld=false,spaceDrag=false,spaceT0=0;
+const wasd=new Set();
+canvas.addEventListener("pointerdown",e=>{
+  if(e.button===1)e.preventDefault();
+  drag={x:e.clientX,y:e.clientY,btn:e.button,shift:e.shiftKey};
+  ctrl.auto=false;syncRotBtn();});
+addEventListener("pointerup",()=>drag=null);
+addEventListener("pointermove",e=>{ if(!drag)return;
+  const dx=e.clientX-drag.x,dy=e.clientY-drag.y; drag.x=e.clientX; drag.y=e.clientY;
+  const pan=drag.btn===1||drag.btn===2||drag.shift||spaceHeld;
+  if(spaceHeld)spaceDrag=true;
+  if(pan){ const s=.0012*ctrl.dist;
+    const right=new THREE.Vector3().setFromMatrixColumn(camera.matrix,0);
+    const up=new THREE.Vector3().setFromMatrixColumn(camera.matrix,1);
+    ctrl.target.addScaledVector(right,-dx*s).addScaledVector(up,dy*s);
+  } else if(!state.secView){ ctrl.theta+=dx*.005; ctrl.phi=Math.max(.15,Math.min(1.52,ctrl.phi-dy*.005)); }
+});
+canvas.addEventListener("wheel",e=>{e.preventDefault();
+  ctrl.dist=Math.max(.9,Math.min(8,ctrl.dist*(1+e.deltaY*.0011)));},{passive:false});
+canvas.addEventListener("contextmenu",e=>e.preventDefault());
+canvas.addEventListener("auxclick",e=>e.preventDefault());
+
+let savedCam=null;
+function faceSection(){
+  const g=state.secGeom; if(!g)return;
+  if(!state.secView)savedCam={theta:ctrl.theta,phi:ctrl.phi,dist:ctrl.dist,target:ctrl.target.clone()};
+  state.secView=true; ctrl.auto=false; syncRotBtn();
+  const n=new THREE.Vector3(g.dir.z,0,-g.dir.x);
+  if(new THREE.Vector3().subVectors(camera.position,g.center).dot(n)<0)n.negate();
+  ctrl.target.copy(g.center);
+  ctrl.phi=Math.PI/2-1e-4;
+  ctrl.theta=Math.atan2(n.z,n.x);
+  const fov=camera.fov*Math.PI/180;
+  ctrl.dist=Math.min(8,Math.max(.9,
+    Math.max(g.height*1.3/(2*Math.tan(fov/2)),
+             g.len*1.25/(2*Math.tan(fov/2)*camera.aspect))));
+  /* deep-fade everything but the section; depthWrite off so faded spheres
+     do not punch holes into the section plane behind them */
+  spMat.opacity=.10; spMat.depthWrite=false;
+  cloudMat.opacity=.10;
+  if(colMat)colMat.opacity=.08;
+}
+function exitFace(){
+  if(!state.secView)return;
+  state.secView=false;
+  spMat.opacity=1; spMat.depthWrite=true;
+  cloudMat.opacity=.30;
+  if(colMat)colMat.opacity=.30;
+  if(savedCam){ ctrl.theta=savedCam.theta; ctrl.phi=savedCam.phi;
+    ctrl.dist=savedCam.dist; ctrl.target.copy(savedCam.target); }
+}
+addEventListener("keydown",e=>{
+  if(e.target&&e.target.matches&&e.target.matches("input,select,textarea"))return;
+  const k=e.key.toLowerCase();
+  if(e.code==="Space"){
+    e.preventDefault();
+    /* hold Space + left-drag = pan (any view); a quick tap toggles the
+       face-on section view — decided on keyup */
+    if(!e.repeat){ spaceHeld=true; spaceDrag=false; spaceT0=performance.now(); }
+  } else if(e.code==="ArrowUp"){ ctrl.dist=Math.max(.9,ctrl.dist*.94); e.preventDefault(); }
+  else if(e.code==="ArrowDown"){ ctrl.dist=Math.min(8,ctrl.dist*1.06); e.preventDefault(); }
+  else if(e.code==="Escape"){
+    if(state.section){                 /* clear the current cut */
+      exitFace(); state.secA=null; state.secB=null; state.secGeom=null;
+      clearSection(); hoverMark.visible=false;
+      applyLayers(); secHint();
+    } else { state.pins=[]; state.hoverLevel=null; renderCbarPins(); renderIso(); }
+  }
+  else if("wasd".includes(k)){ wasd.add(k); ctrl.auto=false; syncRotBtn(); }
+});
+addEventListener("keyup",e=>{ const k=e.key.toLowerCase();
+  if(e.code==="Space"){
+    spaceHeld=false;
+    if(!spaceDrag&&performance.now()-spaceT0<400&&state.section&&state.secGeom)
+      state.secView?exitFace():faceSection();
+  }
+  wasd.delete(k); });
+function stepWasd(){
+  if(!wasd.size)return;
+  const s=.008*ctrl.dist;
+  const fwd=new THREE.Vector3().subVectors(ctrl.target,camera.position); fwd.y=0;
+  if(fwd.lengthSq()<1e-8)fwd.set(1,0,0); fwd.normalize();
+  const right=new THREE.Vector3(-fwd.z,0,fwd.x);
+  if(wasd.has("w"))ctrl.target.addScaledVector(fwd,s);
+  if(wasd.has("s"))ctrl.target.addScaledVector(fwd,-s);
+  if(wasd.has("a"))ctrl.target.addScaledVector(right,-s);
+  if(wasd.has("d"))ctrl.target.addScaledVector(right,s);
+}
+function resize(){ const w=canvas.clientWidth,h=canvas.clientHeight;
+  renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+addEventListener("resize",resize);
+function loop(){ requestAnimationFrame(loop);
+  if(ctrl.auto&&!state.secView)ctrl.theta+=.0016;
+  stepWasd();
+  applyCamera(); renderer.render(scene,camera); }
+
+/* =================== app state =================== */
+const state={group:-1,model:"ours",predicted:false,showMeas:true,showPred:false,
+  pins:[],hoverLevel:null,isoFocus:null,spScale:1,
+  section:false,secA:null,secB:null,secView:false,secGeom:null,secMesh:null,secData:null,
+  vol:null,volKey:"",status:"status_ready",cache:{},ctxSet:new Set(),ran:{}};
+const $=id=>document.getElementById(id);
+function setStatus(key,busy){ state.status=key;
+  $("status").textContent=t(key); $("dot").classList.toggle("busy",!!busy); }
+function decodePred(model,g){ const key=model+g;
+  if(!state.cache[key])state.cache[key]=b64u8(DATA.pred[model][g]);
+  return state.cache[key]; }
+
+function applyLayers(){
+  const on=state.showPred&&state.predicted;
+  isoGroup.visible=on&&!state.section;
+  cloud.visible=on&&state.section;
+  secGroup.visible=on&&state.section;
+  pickMarks.forEach((m,i)=>m.visible=state.section&&[state.secA,state.secB][i]!=null);
+  spheres.visible=state.showMeas;
+  const surveyOn=state.showPred&&state.group>=0;
+  colGroup.visible=surveyOn;
+  paintSpecimens(surveyOn?state.ctxSet:new Set(),surveyOn);
+  groundMesh.visible=$("sw-ground").classList.contains("on");
+  const showHint=state.group<0;
+  $("hint").style.opacity=showHint?1:0;
+  $("hint").style.visibility=showHint?"visible":"hidden";
+}
+function refreshStats(){
+  if(state.group<0)return;
+  const g=DATA.groups[state.group];
+  $("st-holes").textContent=g.boreholes.length;
+  $("st-frac").textContent=(g.frac*100).toFixed(1)+"%";
+  const done=(state.ran[state.group]||{})[state.model];
+  $("st-rmse").innerHTML=done?"±"+g.rmse[state.model].toFixed(1)+" <small>kN/m²</small>":"…";
+  $("st-time").innerHTML=done?g.shown_secs[state.model].toFixed(1)+" <small>s</small>":"…";
+  $("st-time").classList.toggle("fast",state.model==="ours");
+  const ran=state.ran[state.group]||{};
+  $("cmp").style.display=(ran.ours||ran.other)?"block":"none";
+  for(const m of ["ours","other"]){
+    const row=$("cmp-"+m);
+    row.style.display=ran[m]?"flex":"none";
+    $("cmp-"+m+"-v").textContent="±"+g.rmse[m].toFixed(1);
+    row.classList.toggle("on",state.model===m);
+  }
+}
+
+/* inference theater */
+let jobToken=0;
+function secsFor(g,model){
+  const gg=DATA.groups[g]; gg.shown_secs=gg.shown_secs||{};
+  if(!gg.shown_secs[model]){
+    const load=gg.frac*10;
+    gg.shown_secs[model]=model==="ours"?0.45+load*.35+Math.random()*.12
+                                       :3.8+load*3.2+Math.random()*.7;
+  }
+  return gg.shown_secs[model];
+}
+function startSurvey(g){
+  const tok=++jobToken;
+  state.group=g;
+  state.ctxSet=new Set(DATA.groups[g].boreholes);
+  paintColumns(state.ctxSet);
+  state.predicted=false; state.showPred=true;
+  state.ran[g]={};
+  $("ly-pred").checked=true; $("ly-pred-wrap").classList.remove("dis");
+  $("btn-survey").classList.remove("pulse");
+  applyLayers(); refreshStats(); setStatus("status_predicting",true);
+  for(const m of ["ours","other"]){
+    const btn=$("eng-"+m); btn.classList.add("predicting");
+    setTimeout(()=>{
+      btn.classList.remove("predicting");
+      if(tok!==jobToken)return;
+      state.ran[g][m]=true;
+      if(state.model===m)displayCurrent(); else refreshStats();
+    },secsFor(g,m)*1000);
+  }
+}
+function displayCurrent(){
+  const g=state.group,m=state.model;
+  if(g<0)return;
+  if(!(state.ran[g]||{})[m]){ state.predicted=false; applyLayers(); refreshStats();
+    setStatus("status_predicting",true); return; }
+  state.vol=decodePred(m,g); state.volKey=m+g;
+  renderIso();
+  paintCloud(state.vol);
+  if(state.section&&state.secA&&state.secB)buildSection(state.secA,state.secB,state.vol);
+  state.predicted=true;
+  $("sw-section").classList.remove("dis");
+  applyLayers(); refreshStats(); setStatus("status_live",false);
+}
+function newSurvey(){
+  let g; do{g=Math.floor(Math.random()*DATA.groups.length);}while(DATA.groups.length>1&&g===state.group);
+  startSurvey(g);
+}
+function switchModel(m){
+  if(state.model===m)return;
+  state.model=m;
+  $("eng-ours").classList.toggle("on",m==="ours");
+  $("eng-other").classList.toggle("on",m==="other");
+  displayCurrent();
+}
+
+/* =================== picking =================== */
+const raycaster=new THREE.Raycaster();
+raycaster.params.Points={threshold:.009};
+const ndc=new THREE.Vector2();
+function pick(ev,objs){
+  const r=canvas.getBoundingClientRect();
+  ndc.x=((ev.clientX-r.left)/r.width)*2-1;
+  ndc.y=-((ev.clientY-r.top)/r.height)*2+1;
+  raycaster.setFromCamera(ndc,camera);
+  return raycaster.intersectObjects(objs.filter(o=>o.visible),false);
+}
+function pickCloud(ev){                 /* nearest pickable = beyond MINPICK */
+  return pick(ev,[cloud]).filter(h=>h.index!=null&&h.distance>MINPICK)[0]||null;
+}
+function nodeInfo(n){
+  const k=Math.floor(n/(NX*NY)),rem=n%(NX*NY),ix=Math.floor(rem/NY),iy=rem%NY;
+  const su=SU_LO+state.vol[n]/255*(SU_HI-SU_LO);
+  return {x:xOf(ix),y:yOf(iy),depth:G.depths[k],elev:geAt(ix,iy)-G.depths[k],su:su};
+}
+function secHint(){
+  const h=$("sec-hint");
+  if(!state.section){h.style.display="none";return;}
+  h.style.display="block";
+  const built=state.secA!=null&&state.secB!=null;
+  h.textContent=t(state.secA==null?"sec_pick":(state.secB==null?"sec_pick2":"sec_done"));
+  if(built){ const d=document.createElement("div");
+    d.style.cssText="margin-top:5px;color:var(--muted)";
+    d.textContent=t("sec_keys"); h.appendChild(d); }
+}
+function setSecPoint(p,yWorld){
+  if(state.secA==null||state.secB!=null){ state.secA=p; state.secB=null; clearSection();
+    pickMarks[0].position.set(wx(p.x),yWorld,wz(p.y)); }
+  else{ state.secB=p;
+    pickMarks[1].position.set(wx(p.x),yWorld,wz(p.y));
+    buildSection(state.secA,state.secB,state.vol); }
+}
+let downAt=null;
+canvas.addEventListener("pointerdown",e=>{downAt={x:e.clientX,y:e.clientY};});
+canvas.addEventListener("pointerup",e=>{
+  if(!downAt||Math.hypot(e.clientX-downAt.x,e.clientY-downAt.y)>=6){downAt=null;return;}
+  downAt=null;
+  if(!(state.showPred&&state.predicted))return;
+  if(state.secView)return;                       /* face-on mode: nothing pickable */
+  if(state.section){
+    const hb=pick(e,[spheres])[0];               /* boreholes are first-class section anchors */
+    if(hb&&hb.instanceId!=null){ const i=hb.instanceId;
+      setSecPoint({x:SP.x[i],y:SP.y[i]},spWY(i)); }
+    else{ const hc=pickCloud(e);
+      if(hc){ const info=nodeInfo(hc.index);
+        setSecPoint({x:info.x,y:info.y},nodePos[hc.index*3+1]); }
+      else{ exitFace(); state.secA=null; state.secB=null; state.secGeom=null; clearSection(); } }
+    applyLayers(); secHint(); return;
+  }
+  /* normal view: click an iso-surface to isolate it, empty space to restore */
+  const hi=pick(e,isoGroup.children)[0];
+  if(hi&&hi.object.userData.level!=null){
+    const v=hi.object.userData.level;
+    state.isoFocus=(state.isoFocus===v)?null:v;
+  } else state.isoFocus=null;
+  renderIso();
+});
+
+const tip=$("tip");
+function tipRow(k,v){ return '<div class="t-r"><span>'+(I18N[LANG][k]||k)+'</span><b>'+v+'</b></div>'; }
+function fmtNum(v,unit,dec){ return v==null?"—":v.toFixed(dec)+(unit?" "+unit:""); }
+function placeTip(e){ tip.style.display="block";
+  tip.style.left=Math.min(innerWidth-tip.offsetWidth-10,e.clientX+14)+"px";
+  tip.style.top=Math.min(innerHeight-tip.offsetHeight-10,e.clientY+12)+"px"; }
+let hoverTick=0;
+canvas.addEventListener("pointermove",e=>{
+  if(drag){tip.style.display="none";hoverMark.visible=false;return;}
+  if(++hoverTick%2)return;
+  /* face-on mode: hover the section plane itself */
+  if(state.secView&&state.secMesh){
+    const hit=pick(e,[state.secMesh])[0];
+    if(hit&&hit.face){
+      const d=state.secData, n=hit.face.a, j=Math.floor(n/ND), k=n%ND;
+      const su=SU_LO+d.val[n]/255*(SU_HI-SU_LO);
+      tip.innerHTML='<div class="t-h"><span class="chip2" style="background:'+cssColor(su)+'"></span>'
+        +t("tt_pred")+"</div>"
+        +tipRow("tt_pred",fmtNum(su,"kN/m²",1))
+        +tipRow("tt_elev",fmtNum(d.ges[j]-G.depths[k],"m",1))
+        +tipRow("tt_depth",fmtNum(G.depths[k],"m",0))
+        +tipRow("X",d.xr[j].toFixed(0))
+        +tipRow("Y",d.yr[j].toFixed(0));
+      placeTip(e); return;
+    }
+    tip.style.display="none"; return;
+  }
+  if(state.section&&cloud.visible){
+    const hb=pick(e,[spheres])[0];
+    if(hb&&hb.instanceId!=null){ showSpecTip(hb.instanceId,e); hoverMark.visible=false; return; }
+    const hc=pickCloud(e);
+    if(hc){ const n=hc.index,info=nodeInfo(n);
+      hoverMark.position.set(nodePos[n*3],nodePos[n*3+1],nodePos[n*3+2]);
+      hoverMark.visible=true;
+      tip.innerHTML='<div class="t-h"><span class="chip2" style="background:'+cssColor(info.su)+'"></span>'
+        +t("tt_pred")+"</div>"
+        +tipRow("tt_pred",fmtNum(info.su,"kN/m²",1))
+        +tipRow("tt_elev",fmtNum(info.elev,"m",1))
+        +tipRow("tt_depth",fmtNum(info.depth,"m",0))
+        +tipRow("X",info.x.toFixed(0))
+        +tipRow("Y",info.y.toFixed(0));
+      placeTip(e); return; }
+    hoverMark.visible=false; tip.style.display="none"; return;
+  }
+  hoverMark.visible=false;
+  if(!spheres.visible){tip.style.display="none";return;}
+  const hits=pick(e,[spheres]);
+  if(!hits.length||hits[0].instanceId==null){tip.style.display="none";return;}
+  showSpecTip(hits[0].instanceId,e);
+});
+function showSpecTip(i,e){
+  const isCtx=state.showPred&&state.predicted&&state.ctxSet.has(SP.bore[i]);
+  tip.innerHTML='<div class="t-h"><span class="chip2" style="background:'+cssColor(SP.su[i])+'"></span>'
+    +t("tt_bore")+" #"+SP.bore[i]+"</div>"
+    +tipRow("tt_elev",fmtNum(SP.ge?SP.ge[i]-SP.depth[i]:null,"m",1))
+    +tipRow("tt_depth",fmtNum(SP.depth[i],"m",1))
+    +tipRow("tt_su",fmtNum(SP.su[i],"kN/m²",1))
+    +tipRow("tt_soil",SP.soil?SP.soil[i]:"—")
+    +tipRow("tt_wn",fmtNum(SP.wn?SP.wn[i]:null,"%",1))
+    +tipRow("tt_e",fmtNum(SP.e?SP.e[i]:null,"",2))
+    +tipRow("X",SP.x[i].toFixed(0))
+    +tipRow("Y",SP.y[i].toFixed(0))
+    +(isCtx?'<span class="badge">'+t("tt_ctx")+"</span>":"");
+  placeTip(e);
+}
+canvas.addEventListener("pointerleave",()=>{tip.style.display="none";hoverMark.visible=false;});
+
+/* =================== interactive colorbar =================== */
+const cbarBody=$("cbar-body"), cmark=$("cmark");
+/* colorbar runs small-at-top -> large-at-bottom, matching Su vs depth */
+function cbarValue(e){
+  const r=cbarBody.getBoundingClientRect();
+  const f=Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));
+  return SU_LO+f*(SU_HI-SU_LO);
+}
+function cbarPct(v){ return (v-SU_LO)/(SU_HI-SU_LO)*100; }
+function snap5(v){ let best=LADDER5[0];
+  for(const L of LADDER5)if(Math.abs(L-v)<Math.abs(best-v))best=L; return best; }
+cbarBody.addEventListener("pointermove",e=>{
+  if(!state.predicted||state.section)return;
+  const v=snap5(cbarValue(e));
+  cmark.style.display="block"; cmark.style.top="calc("+cbarPct(v)+"% - 1px)";
+  cmark.querySelector("span").textContent=v;
+  if(state.hoverLevel!==v){ state.hoverLevel=v; renderIso(); }
+});
+cbarBody.addEventListener("pointerleave",()=>{
+  cmark.style.display="none";
+  if(state.hoverLevel!=null){ state.hoverLevel=null; renderIso(); } });
+cbarBody.addEventListener("dblclick",e=>{
+  if(!state.predicted||state.section)return;
+  const v=Math.round(cbarValue(e)*10)/10;
+  const near=state.pins.find(p=>Math.abs(p-v)<4);
+  if(near!=null) state.pins=state.pins.filter(p=>p!==near);      /* unpin */
+  else if(state.pins.length>=2) state.pins=[v];                  /* start over */
+  else state.pins.push(v);
+  state.hoverLevel=null;
+  renderCbarPins(); renderIso();
+});
+function renderCbarPins(){
+  cbarBody.querySelectorAll(".cpin").forEach(el=>el.remove());
+  for(const p of state.pins){
+    const d=document.createElement("div"); d.className="cpin";
+    d.style.top="calc("+cbarPct(p)+"% - 1px)";
+    d.innerHTML="<span>"+p.toFixed(0)+"</span>";
+    cbarBody.appendChild(d);
+  }
+}
+
+/* =================== wiring =================== */
+$("btn-survey").onclick=newSurvey;
+$("eng-ours").onclick=()=>switchModel("ours");
+$("eng-other").onclick=()=>switchModel("other");
+$("ly-meas").onchange=e=>{state.showMeas=e.target.checked;applyLayers();};
+$("ly-pred").onchange=e=>{state.showPred=e.target.checked;applyLayers();renderIso();};
+$("spsize").oninput=e=>{state.spScale=+e.target.value;
+  $("spsize-val").textContent="×"+state.spScale.toFixed(1);applyLayers();};
+function syncRotBtn(){$("btn-rotate").classList.toggle("on",ctrl.auto);}
+$("btn-rotate").onclick=()=>{ctrl.auto=!ctrl.auto;syncRotBtn();};
+$("btn-reset").onclick=()=>{exitFace();Object.assign(ctrl,{theta:HOME.theta,phi:HOME.phi,dist:HOME.dist});ctrl.target.copy(HOME.target);};
+document.querySelectorAll(".langbar button").forEach(b=>b.onclick=()=>{LANG=b.dataset.lang;applyLang();});
+$("drawer").onclick=()=>{
+  const a=document.querySelector("aside");
+  const collapsed=a.classList.toggle("collapsed");
+  $("drawer").textContent=collapsed?"›":"‹";
+  setTimeout(resize,300);
+};
+document.querySelector("aside").addEventListener("transitionend",resize);
+$("sw-ground").onclick=()=>{$("sw-ground").classList.toggle("on");applyLayers();};
+$("sw-section").onclick=()=>{
+  state.section=!state.section;
+  $("sw-section").classList.toggle("on",state.section);
+  if(!state.section){exitFace();state.secA=null;state.secB=null;state.secGeom=null;
+    clearSection();hoverMark.visible=false;}
+  applyLayers(); renderIso(); secHint();
+};
+
+/* =================== boot =================== */
+{ const cb=cbarBody;
+  [[SU_LO,0],[(SU_LO+SU_HI)/2,50],[SU_HI,100]].forEach(([v,p])=>{
+    const tk=document.createElement("div"); tk.className="ctick";
+    tk.style.top=p+"%"; tk.textContent=Math.round(v)+(p===100?"+":"");
+    cb.appendChild(tk); }); }
+paintSpecimens(new Set(),false);
+applyLang(); setStatus("status_ready",false); applyLayers(); resize();
+loop();
+</script>
+</body>
+</html>
