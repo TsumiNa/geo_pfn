@@ -20,3 +20,7 @@ results/haneda/predictions/
 
 # Large prediction grids (regenerate with geo_pfn.haneda.su_grid)
 results/haneda/*.parquet
+
+# Sparse-survey demo artifacts (regenerate with geo_pfn.haneda.sparse_grid + sparse_demo)
+results/haneda/sparse_grid/
+results/haneda/*.html
