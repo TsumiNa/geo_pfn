@@ -198,7 +198,35 @@ TabICLv2（soda-inria，代码与权重均 BSD-3）在相同折上配对评估
   零训练成本。infill 评估是下一步性价比最高的实验；层序 warping 对齐
   （DTW 检验）是场景 A 残存的最后假设。
 
-## 11. 复现
+## 11. 后续实验三：孔内补全（infill）——钻孔偏差不可实用回收（2026-07-09）
+
+§10 提出的假设：钻孔级偏差在"孔内补全"场景（浅部已测、预测深部）可回收。
+`geo_pfn.haneda.infill` 做了折内配对检验：固定查询 = 每孔最深 50% 行，
+`holdout` 臂只用训练孔拟合，`infill` 臂额外加入测试孔的浅部行（ICL 模型
+当上下文、树/线性模型当额外训练样本），预测同一批深部行。
+
+| 模型 | holdout RMSE | infill RMSE | 配对差 |
+|---|---|---|---|
+| TabICLv2 | 16.27 | 15.91 | **−0.36 ± 0.07** |
+| TabPFN v2 | 16.43 | 15.99 | **−0.45 ± 0.21** |
+| HGBT（重训练） | 17.32 | 16.91 | −0.41 ± 0.26 |
+| Ridge（重训练） | 18.38 | 18.39 | +0.01 ± 0.08 |
+
+**结论：只回收约 0.4 RMSE，远小于 §10 的 −1.9 上界；且三类模型一致，
+ICL 相对树模型重训练无任何优势——这是"更多数据"效应，不是同孔个性化。**
+
+诊断（v2 残差，深部查询集）：oracle 减去每孔深部真实均值偏差可达 −2.97
+（天花板），但用浅部行估计偏差再迁移到深部反而 +0.36（更糟）。原因是
+孔内残差自相关衰减极快（lag-1=0.185、lag-3=0.058、lag-5 转负），
+corr(浅部偏差, 深部偏差) 仅 0.34——**钻孔偏差是"深度局部噪声"，
+不是可迁移的整孔恒定偏移**。query_frac 扫描证实 0.25（更近查询）
+相关更低（0.27），换更浅查询不会改善。
+
+**对方案 D 的修正**：钻孔级结构在羽田这类致密均一场地上大部分是不可约
+偶然噪声，"组级潜变量先验建模"理论正确但此数据集收益有限；其价值需在
+稀疏勘察、地层多变的场地才能显现（应向数据整理人索取此类数据）。
+
+## 12. 复现
 
 ```bash
 uv run pytest src/geo_pfn/haneda/            # 31 个测试
@@ -209,6 +237,9 @@ uv run python -m geo_pfn.haneda.run --experiments ablation --no-save-predictions
 uv run python -m geo_pfn.haneda.finetune     # MPS，~2.5 h/臂
 # TabICL 基线（tabicl 非项目依赖，用临时覆盖环境运行）
 uv run --with tabicl python -m geo_pfn.haneda.eval_tabicl
+# 孔内补全（infill）：核心模型 MPS，TabICL 用覆盖环境
+uv run python -m geo_pfn.haneda.infill --models v2-reg,hgbt,linear
+uv run --with tabicl python -m geo_pfn.haneda.infill --models tabicl --device cpu --out results/haneda/infill.json
 ```
 
 数据文件 `data/pilot_Su_domain_block_mod4Liu.csv` 不入库，需向数据整理人索取。
